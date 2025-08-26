@@ -3,3 +3,6 @@ def user():
 
 def admin():
     return admin
+
+def login():
+    return login
