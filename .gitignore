@@ -1,0 +1,27 @@
+# File Sensitif dan Konfigurasi Lokal
+.env                 # File variabel lingkungan yang berisi kredensial sensitif
+.DS_Store            # File macOS yang dihasilkan otomatis
+.vscode/             # Folder konfigurasi Visual Studio Code (opsional)
+
+# Django
+*.pyc                # File Python bytecode
+__pycache__/         # Folder cache
+db.sqlite3           # Jika Anda menggunakan SQLite untuk pengembangan
+
+# Log, Cache, dan Build
+/logs/
+/tmp/
+/dist/
+/build/
+
+# Node.js
+/node_modules        # Folder dependensi Node.js
+npm-debug.log* # Log dari npm
+yarn-error.log* # Log dari yarn
+.pnpm-debug.log* # Log dari pnpm
+.npm/
+
+
+# Statis dan Media Lokal
+/staticfiles         # File statis yang dikumpulkan oleh Django (jika di-deploy)
+/media               # File media yang di-upload oleh pengguna
