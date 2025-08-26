@@ -9,3 +9,6 @@ def login():
 
 def logout():
     return logout
+
+def register():
+    return register
