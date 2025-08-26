@@ -1,0 +1,27 @@
+# File Sensitif dan Konfigurasi Lokal
+.env
+.DS_Store
+.vscode/
+
+# Django
+*.pyc
+__pycache__/
+db.sqlite3
+
+# Log, Cache, dan Build
+/logs/
+/tmp/
+/dist/
+/build/
+
+# Node.js
+/node_modules
+npm-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+.npm/
+
+
+# Statis dan Media Lokal
+/staticfiles
+/media
