@@ -6,3 +6,6 @@ def admin():
 
 def login():
     return login
+
+def logout():
+    return logout
