@@ -1,0 +1,416 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="id" class="h-full bg-gray-50">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ history.title }} - Detail Sejarah</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="h-full">
+    <div class="min-h-full">
+        <!-- Navigation -->
+        <nav class="bg-white shadow-sm border-b border-gray-200">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between h-16">
+                    <div class="flex items-center space-x-4">
+                        <a href="{% url 'village_profile:history_list' %}" class="text-sm font-medium text-gray-600 hover:text-amber-600">
+                            <i class="fas fa-arrow-left mr-2"></i>
+                            Kembali ke Daftar
+                        </a>
+                        <div class="h-6 border-l border-gray-300"></div>
+                        <a href="{% url 'village_profile:dashboard' %}" class="text-sm font-medium text-gray-600 hover:text-amber-600">
+                            <i class="fas fa-home mr-2"></i>
+                            Dashboard
+                        </a>
+                    </div>
+                    <div class="flex items-center space-x-3">
+                        <a href="{% url 'village_profile:history_edit' history.pk %}" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-amber-600 hover:bg-amber-700">
+                            <i class="fas fa-edit mr-2"></i>
+                            Edit
+                        </a>
+                        <a href="{% url 'village_profile:history_delete' history.pk %}" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700" onclick="return confirm('Apakah Anda yakin ingin menghapus data sejarah ini?')">
+                            <i class="fas fa-trash mr-2"></i>
+                            Hapus
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+            <!-- Page Header -->
+            <div class="px-4 py-6 sm:px-0">
+                <div class="bg-white shadow rounded-lg p-6">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-4">
+                            <div class="flex-shrink-0">
+                                <div class="w-16 h-16 bg-amber-100 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-scroll text-amber-600 text-2xl"></i>
+                                </div>
+                            </div>
+                            <div>
+                                <h1 class="text-3xl font-bold text-gray-900">{{ history.title }}</h1>
+                                <p class="text-lg text-gray-600 mt-1">
+                                    {{ history.period_start|date:"Y" }}{% if history.period_end %} - {{ history.period_end|date:"Y" }}{% endif %}
+                                </p>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            {% if history.is_featured %}
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800">
+                                    <i class="fas fa-star mr-2"></i>
+                                    Unggulan
+                                </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Description -->
+            <div class="px-4 py-6 sm:px-0">
+                <div class="bg-white shadow rounded-lg">
+                    <div class="px-6 py-4 border-b border-gray-200">
+                        <h2 class="text-xl font-semibold text-gray-900">
+                            <i class="fas fa-file-alt mr-2 text-amber-600"></i>
+                            Deskripsi Sejarah
+                        </h2>
+                    </div>
+                    <div class="p-6">
+                        <div class="prose prose-amber max-w-none">
+                            <div class="text-gray-700 leading-relaxed text-lg">
+                                {{ history.description|linebreaks }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Key Events -->
+            {% if history.key_events %}
+                <div class="px-4 py-6 sm:px-0">
+                    <div class="bg-white shadow rounded-lg">
+                        <div class="px-6 py-4 border-b border-gray-200">
+                            <h2 class="text-xl font-semibold text-gray-900">
+                                <i class="fas fa-list-ul mr-2 text-amber-600"></i>
+                                Peristiwa Penting
+                            </h2>
+                        </div>
+                        <div class="p-6">
+                            <div class="space-y-4">
+                                {% for event in history.key_events %}
+                                    <div class="flex items-start space-x-3 p-4 bg-amber-50 rounded-lg">
+                                        <div class="flex-shrink-0">
+                                            <div class="w-8 h-8 bg-amber-200 rounded-full flex items-center justify-center">
+                                                <i class="fas fa-dot-circle text-amber-600 text-sm"></i>
+                                            </div>
+                                        </div>
+                                        <div class="flex-1">
+                                            <p class="text-gray-700 leading-relaxed">{{ event }}</p>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+
+            <!-- Historical Figures -->
+            {% if history.historical_figures %}
+                <div class="px-4 py-6 sm:px-0">
+                    <div class="bg-white shadow rounded-lg">
+                        <div class="px-6 py-4 border-b border-gray-200">
+                            <h2 class="text-xl font-semibold text-gray-900">
+                                <i class="fas fa-users mr-2 text-amber-600"></i>
+                                Tokoh Bersejarah
+                            </h2>
+                        </div>
+                        <div class="p-6">
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                {% for figure in history.historical_figures %}
+                                    <div class="bg-blue-50 p-4 rounded-lg border border-blue-100">
+                                        <div class="flex items-center space-x-3">
+                                            <div class="flex-shrink-0">
+                                                <div class="w-10 h-10 bg-blue-200 rounded-full flex items-center justify-center">
+                                                    <i class="fas fa-user text-blue-600"></i>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <h3 class="text-sm font-medium text-blue-900">{{ figure }}</h3>
+                                                <p class="text-xs text-blue-700">Tokoh Bersejarah</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+
+            <!-- Sources -->
+            {% if history.sources %}
+                <div class="px-4 py-6 sm:px-0">
+                    <div class="bg-white shadow rounded-lg">
+                        <div class="px-6 py-4 border-b border-gray-200">
+                            <h2 class="text-xl font-semibold text-gray-900">
+                                <i class="fas fa-book mr-2 text-amber-600"></i>
+                                Sumber Referensi
+                            </h2>
+                        </div>
+                        <div class="p-6">
+                            <div class="space-y-3">
+                                {% for source in history.sources %}
+                                    <div class="flex items-start space-x-3 p-3 bg-gray-50 rounded-lg">
+                                        <div class="flex-shrink-0">
+                                            <i class="fas fa-book-open text-gray-500 mt-1"></i>
+                                        </div>
+                                        <div class="flex-1">
+                                            <p class="text-gray-700">{{ source }}</p>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+
+            <!-- Additional Information -->
+            <div class="px-4 py-6 sm:px-0">
+                <div class="bg-white shadow rounded-lg">
+                    <div class="px-6 py-4 border-b border-gray-200">
+                        <h3 class="text-lg font-medium text-gray-900">
+                            <i class="fas fa-info-circle mr-2 text-amber-600"></i>
+                            Informasi Detail
+                        </h3>
+                    </div>
+                    <div class="p-6">
+                        <dl class="grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-2">
+                            <div>
+                                <dt class="text-sm font-medium text-gray-500 flex items-center">
+                                    <i class="fas fa-calendar-alt mr-2"></i>
+                                    Periode Mulai
+                                </dt>
+                                <dd class="mt-1 text-sm text-gray-900">{{ history.period_start|date:"d F Y" }}</dd>
+                            </div>
+                            
+                            {% if history.period_end %}
+                            <div>
+                                <dt class="text-sm font-medium text-gray-500 flex items-center">
+                                    <i class="fas fa-calendar-times mr-2"></i>
+                                    Periode Berakhir
+                                </dt>
+                                <dd class="mt-1 text-sm text-gray-900">{{ history.period_end|date:"d F Y" }}</dd>
+                            </div>
+                            {% endif %}
+                            
+                            <div>
+                                <dt class="text-sm font-medium text-gray-500 flex items-center">
+                                    <i class="fas fa-star mr-2"></i>
+                                    Status
+                                </dt>
+                                <dd class="mt-1">
+                                    {% if history.is_featured %}
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                            Unggulan
+                                        </span>
+                                    {% else %}
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                            Biasa
+                                        </span>
+                                    {% endif %}
+                                </dd>
+                            </div>
+                            
+                            <div>
+                                <dt class="text-sm font-medium text-gray-500 flex items-center">
+                                    <i class="fas fa-clock mr-2"></i>
+                                    Dibuat
+                                </dt>
+                                <dd class="mt-1 text-sm text-gray-900">{{ history.created_at|date:"d F Y H:i" }}</dd>
+                            </div>
+                            
+                            {% if history.updated_at != history.created_at %}
+                            <div>
+                                <dt class="text-sm font-medium text-gray-500 flex items-center">
+                                    <i class="fas fa-edit mr-2"></i>
+                                    Terakhir Diperbarui
+                                </dt>
+                                <dd class="mt-1 text-sm text-gray-900">{{ history.updated_at|date:"d F Y H:i" }}</dd>
+                            </div>
+                            {% endif %}
+                            
+                            {% if history.key_events %}
+                            <div>
+                                <dt class="text-sm font-medium text-gray-500 flex items-center">
+                                    <i class="fas fa-list-ul mr-2"></i>
+                                    Jumlah Peristiwa
+                                </dt>
+                                <dd class="mt-1 text-sm text-gray-900">{{ history.key_events|length }} peristiwa</dd>
+                            </div>
+                            {% endif %}
+                            
+                            {% if history.historical_figures %}
+                            <div>
+                                <dt class="text-sm font-medium text-gray-500 flex items-center">
+                                    <i class="fas fa-users mr-2"></i>
+                                    Jumlah Tokoh
+                                </dt>
+                                <dd class="mt-1 text-sm text-gray-900">{{ history.historical_figures|length }} tokoh</dd>
+                            </div>
+                            {% endif %}
+                            
+                            {% if history.sources %}
+                            <div>
+                                <dt class="text-sm font-medium text-gray-500 flex items-center">
+                                    <i class="fas fa-book mr-2"></i>
+                                    Jumlah Sumber
+                                </dt>
+                                <dd class="mt-1 text-sm text-gray-900">{{ history.sources|length }} sumber</dd>
+                            </div>
+                            {% endif %}
+                        </dl>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="px-4 py-6 sm:px-0">
+                <div class="bg-white shadow rounded-lg p-6">
+                    <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                        <a href="{% url 'village_profile:history_edit' history.pk %}" class="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-amber-600 hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500">
+                            <i class="fas fa-edit mr-2"></i>
+                            Edit Sejarah
+                        </a>
+                        <a href="{% url 'village_profile:history_list' %}" class="inline-flex items-center justify-center px-6 py-3 border border-gray-300 text-base font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500">
+                            <i class="fas fa-list mr-2"></i>
+                            Lihat Semua Sejarah
+                        </a>
+                        <a href="{% url 'village_profile:history_add' %}" class="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                            <i class="fas fa-plus mr-2"></i>
+                            Tambah Sejarah Baru
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Print Section -->
+            <div class="px-4 py-6 sm:px-0">
+                <div class="bg-white shadow rounded-lg p-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h3 class="text-lg font-medium text-gray-900">
+                                <i class="fas fa-print mr-2 text-gray-600"></i>
+                                Cetak Dokumen
+                            </h3>
+                            <p class="text-sm text-gray-600">Cetak data sejarah untuk keperluan dokumentasi</p>
+                        </div>
+                        <button onclick="window.print()" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500">
+                            <i class="fas fa-print mr-2"></i>
+                            Cetak
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Navigation to Other Histories -->
+            <div class="px-4 py-6 sm:px-0">
+                <div class="bg-white shadow rounded-lg p-6">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">
+                        <i class="fas fa-history mr-2 text-amber-600"></i>
+                        Sejarah Lainnya
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {% if previous_history %}
+                            <a href="{% url 'village_profile:history_detail' previous_history.pk %}" class="block p-4 border border-gray-200 rounded-lg hover:border-amber-300 hover:bg-amber-50 transition-colors">
+                                <div class="flex items-center space-x-3">
+                                    <i class="fas fa-chevron-left text-amber-600"></i>
+                                    <div>
+                                        <p class="text-sm font-medium text-gray-900">Sebelumnya</p>
+                                        <p class="text-sm text-gray-600">{{ previous_history.title|truncatewords:5 }}</p>
+                                    </div>
+                                </div>
+                            </a>
+                        {% endif %}
+                        
+                        {% if next_history %}
+                            <a href="{% url 'village_profile:history_detail' next_history.pk %}" class="block p-4 border border-gray-200 rounded-lg hover:border-amber-300 hover:bg-amber-50 transition-colors">
+                                <div class="flex items-center justify-end space-x-3">
+                                    <div class="text-right">
+                                        <p class="text-sm font-medium text-gray-900">Selanjutnya</p>
+                                        <p class="text-sm text-gray-600">{{ next_history.title|truncatewords:5 }}</p>
+                                    </div>
+                                    <i class="fas fa-chevron-right text-amber-600"></i>
+                                </div>
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Print Styles -->
+    <style media="print">
+        @page {
+            margin: 1in;
+        }
+        
+        nav, .no-print {
+            display: none !important;
+        }
+        
+        .print-title {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .print-section {
+            page-break-inside: avoid;
+            margin-bottom: 2rem;
+        }
+        
+        body {
+            font-size: 12pt;
+            line-height: 1.5;
+        }
+        
+        h1, h2, h3 {
+            color: black !important;
+        }
+    </style>
+
+    <!-- JavaScript -->
+    <script>
+        // Print functionality
+        function printDocument() {
+            window.print();
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            // Ctrl+P for print
+            if (e.ctrlKey && e.key === 'p') {
+                e.preventDefault();
+                printDocument();
+            }
+            // Ctrl+E for edit
+            if (e.ctrlKey && e.key === 'e') {
+                e.preventDefault();
+                window.location.href = "{% url 'village_profile:history_edit' history.pk %}";
+            }
+        });
+
+        // Add print-specific content
+        window.addEventListener('beforeprint', function() {
+            document.title = 'Sejarah - {{ history.title }}';
+        });
+    </script>
+</body>
+</html>

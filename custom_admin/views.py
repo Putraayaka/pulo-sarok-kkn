@@ -74,8 +74,8 @@ def dashboard_stats_api(request):
         total_umkm = Business.objects.count()
         
         # Gender statistics
-        male_count = Penduduk.objects.filter(jenis_kelamin='L').count()
-        female_count = Penduduk.objects.filter(jenis_kelamin='P').count()
+        male_count = Penduduk.objects.filter(gender='L').count()
+        female_count = Penduduk.objects.filter(gender='P').count()
         
         # Calculate percentages
         total_gender = male_count + female_count
@@ -85,14 +85,14 @@ def dashboard_stats_api(request):
         # Age groups (approximate based on birth date)
         today = timezone.now().date()
         age_0_17 = Penduduk.objects.filter(
-            tanggal_lahir__gte=today - timedelta(days=17*365)
+            birth_date__gte=today - timedelta(days=17*365)
         ).count()
         age_18_60 = Penduduk.objects.filter(
-            tanggal_lahir__lt=today - timedelta(days=17*365),
-            tanggal_lahir__gte=today - timedelta(days=60*365)
+            birth_date__lt=today - timedelta(days=17*365),
+            birth_date__gte=today - timedelta(days=60*365)
         ).count()
         age_60_plus = Penduduk.objects.filter(
-            tanggal_lahir__lt=today - timedelta(days=60*365)
+            birth_date__lt=today - timedelta(days=60*365)
         ).count()
         
         data = {

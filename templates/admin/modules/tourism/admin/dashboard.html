@@ -1,0 +1,276 @@
+{% extends 'admin/base.html' %}
+{% load static %}
+
+{% block title %}Dashboard Admin Wisata{% endblock %}
+{% block page_title %}Dashboard Admin Wisata{% endblock %}
+
+{% block content %}
+<div class="p-6">
+    <!-- Header Section -->
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900 mb-2">🏗️ Dashboard Admin Wisata Desa</h1>
+        <p class="text-gray-600">Kelola dan monitor semua aspek wisata Desa Pulosarok</p>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <!-- Total Lokasi Wisata -->
+        <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-blue-500">
+            <div class="flex items-center">
+                <div class="p-3 bg-blue-100 rounded-full">
+                    <i class="fas fa-map-marker-alt text-blue-600 text-xl"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-600">Total Lokasi Wisata</p>
+                    <p class="text-2xl font-bold text-gray-900">{{ total_locations }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Total Kategori -->
+        <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-green-500">
+            <div class="flex items-center">
+                <div class="p-3 bg-green-100 rounded-full">
+                    <i class="fas fa-tags text-green-600 text-xl"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-600">Kategori Wisata</p>
+                    <p class="text-2xl font-bold text-gray-900">{{ total_categories }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Total Review -->
+        <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-purple-500">
+            <div class="flex items-center">
+                <div class="p-3 bg-purple-100 rounded-full">
+                    <i class="fas fa-comments text-purple-600 text-xl"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-600">Total Review</p>
+                    <p class="text-2xl font-bold text-gray-900">{{ total_reviews }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Total Event -->
+        <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-yellow-500">
+            <div class="flex items-center">
+                <div class="p-3 bg-yellow-100 rounded-full">
+                    <i class="fas fa-calendar-alt text-yellow-600 text-xl"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-600">Total Event</p>
+                    <p class="text-2xl font-bold text-gray-900">{{ total_events }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+        <h2 class="text-xl font-semibold text-gray-900 mb-4">⚡ Aksi Cepat</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <a href="{% url 'tourism:admin_location_create' %}" class="flex items-center p-4 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors duration-200">
+                <i class="fas fa-plus text-blue-600 text-xl mr-3"></i>
+                <div>
+                    <p class="font-medium text-blue-900">Tambah Wisata</p>
+                    <p class="text-sm text-blue-700">Lokasi baru</p>
+                </div>
+            </a>
+            
+            <a href="{% url 'tourism:admin_location_list' %}" class="flex items-center p-4 bg-green-50 hover:bg-green-100 rounded-lg transition-colors duration-200">
+                <i class="fas fa-edit text-green-600 text-xl mr-3"></i>
+                <div>
+                    <p class="font-medium text-green-900">Kelola Wisata</p>
+                    <p class="text-sm text-green-700">Edit & hapus</p>
+                </div>
+            </a>
+            
+            <a href="{% url 'tourism:event_list' %}" class="flex items-center p-4 bg-purple-50 hover:bg-purple-100 rounded-lg transition-colors duration-200">
+                <i class="fas fa-calendar-plus text-purple-600 text-xl mr-3"></i>
+                <div>
+                    <p class="font-medium text-purple-900">Event Wisata</p>
+                    <p class="text-sm text-purple-700">Kelola acara</p>
+                </div>
+            </a>
+            
+            <a href="{% url 'tourism:search' %}" class="flex items-center p-4 bg-orange-50 hover:bg-orange-100 rounded-lg transition-colors duration-200">
+                <i class="fas fa-search text-orange-600 text-xl mr-3"></i>
+                <div>
+                    <p class="font-medium text-orange-900">Cari Wisata</p>
+                    <p class="text-sm text-orange-700">Filter & pencarian</p>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <!-- Recent Locations -->
+    {% if recent_locations %}
+    <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+        <div class="flex items-center justify-between mb-6">
+            <h2 class="text-xl font-semibold text-gray-900">🆕 Wisata Terbaru</h2>
+            <a href="{% url 'tourism:admin_location_list' %}" class="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                Lihat Semua <i class="fas fa-arrow-right ml-1"></i>
+            </a>
+        </div>
+        
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Wisata</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kategori</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal Dibuat</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for location in recent_locations %}
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex items-center">
+                                <div class="flex-shrink-0 h-10 w-10">
+                                    {% if location.gallery.all %}
+                                        <img class="h-10 w-10 rounded-full object-cover" 
+                                             src="{{ location.gallery.first.image.url }}" 
+                                             alt="{{ location.title }}">
+                                    {% else %}
+                                        <div class="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center">
+                                            <i class="fas fa-image text-gray-600"></i>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="ml-4">
+                                    <div class="text-sm font-medium text-gray-900">{{ location.title }}</div>
+                                    <div class="text-sm text-gray-500">{{ location.get_location_type_display }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                {{ location.category.name }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            {% if location.status == 'published' %}
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                    Dipublikasi
+                                </span>
+                            {% elif location.status == 'draft' %}
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                    Draft
+                                </span>
+                            {% else %}
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                    Diarsipkan
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {{ location.created_at|date:"d M Y" }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <div class="flex space-x-2">
+                                <a href="{% url 'tourism:location_detail' location.slug %}" 
+                                   class="text-blue-600 hover:text-blue-900">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="{% url 'tourism:admin_location_edit' location.id %}" 
+                                   class="text-indigo-600 hover:text-indigo-900">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Pending Reviews -->
+    {% if pending_reviews %}
+    <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+        <div class="flex items-center justify-between mb-6">
+            <h2 class="text-xl font-semibold text-gray-900">⏳ Review Menunggu Persetujuan</h2>
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                {{ pending_reviews|length }} review
+            </span>
+        </div>
+        
+        <div class="space-y-4">
+            {% for review in pending_reviews %}
+            <div class="border border-gray-200 rounded-lg p-4">
+                <div class="flex items-start justify-between">
+                    <div class="flex-1">
+                        <h4 class="font-medium text-gray-900">{{ review.title }}</h4>
+                        <p class="text-sm text-gray-600 mb-2">{{ review.tourism_location.title }}</p>
+                        <div class="flex items-center text-sm text-gray-500 space-x-4">
+                            <span><i class="fas fa-user mr-1"></i>{{ review.user.username }}</span>
+                            <span><i class="fas fa-star mr-1 text-yellow-500"></i>{{ review.rating }}/5</span>
+                            <span><i class="fas fa-calendar mr-1"></i>{{ review.created_at|date:"d M Y" }}</span>
+                        </div>
+                        <p class="text-sm text-gray-700 mt-2">{{ review.comment|truncatechars:150 }}</p>
+                    </div>
+                    
+                    <div class="flex items-center space-x-2 ml-4">
+                        <button class="text-green-600 hover:text-green-900" title="Setujui">
+                            <i class="fas fa-check"></i>
+                        </button>
+                        <button class="text-red-600 hover:text-red-900" title="Tolak">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Upcoming Events -->
+    {% if upcoming_events %}
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <div class="flex items-center justify-between mb-6">
+            <h2 class="text-xl font-semibold text-gray-900">📅 Event Mendatang</h2>
+            <a href="{% url 'tourism:event_list' %}" class="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                Lihat Semua <i class="fas fa-arrow-right ml-1"></i>
+            </a>
+        </div>
+        
+        <div class="space-y-4">
+            {% for event in upcoming_events %}
+            <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow duration-200">
+                <div class="flex items-center justify-between">
+                    <div class="flex-1">
+                        <h3 class="font-semibold text-gray-900">{{ event.title }}</h3>
+                        <p class="text-sm text-gray-600 mb-2">{{ event.tourism_location.title }}</p>
+                        <div class="flex items-center text-sm text-gray-500 space-x-4">
+                            <span><i class="fas fa-calendar mr-1"></i>{{ event.start_date|date:"d M Y H:i" }}</span>
+                            <span><i class="fas fa-clock mr-1"></i>{{ event.end_date|date:"d M Y H:i" }}</span>
+                            {% if event.organizer %}
+                                <span><i class="fas fa-user mr-1"></i>{{ event.organizer }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center space-x-2">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                            {{ event.get_event_type_display }}
+                        </span>
+                        <a href="{% url 'tourism:event_detail' event.id %}" 
+                           class="bg-purple-600 text-white py-2 px-3 rounded-md text-sm hover:bg-purple-700 transition-colors duration-200">
+                            Detail
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

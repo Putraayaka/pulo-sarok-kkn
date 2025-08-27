@@ -1,0 +1,27 @@
+{% extends 'admin/base.html' %}
+{% load static %}
+
+{% block title %}Event Wisata - Desa Pulosarok{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-6">
+    <h1 class="text-3xl font-bold text-gray-900 mb-6">Event Wisata</h1>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for event in events %}
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-2">{{ event.title }}</h3>
+            <p class="text-sm text-gray-600 mb-4">{{ event.description|truncatewords:20 }}</p>
+            <div class="text-sm text-gray-500">
+                <p>Tanggal: {{ event.start_date|date:"d M Y" }}</p>
+                <p>Lokasi: {{ event.location }}</p>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-span-full text-center py-12">
+            <p class="text-gray-500">Belum ada event wisata yang tersedia.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
