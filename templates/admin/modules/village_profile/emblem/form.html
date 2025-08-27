@@ -1,0 +1,620 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="id" class="h-full bg-gray-50">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% if emblem %}Edit{% else %}Tambah{% endif %} Emblem - Profil Desa</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="h-full" x-data="emblemForm()">
+    <div class="min-h-full">
+        <!-- Navigation -->
+        <nav class="bg-white shadow-sm border-b border-gray-200">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between h-16">
+                    <div class="flex items-center space-x-4">
+                        <a href="{% url 'village_profile:emblem_list' %}" class="text-sm font-medium text-gray-600 hover:text-green-600">
+                            <i class="fas fa-arrow-left mr-2"></i>
+                            Kembali ke Daftar
+                        </a>
+                        <div class="h-6 border-l border-gray-300"></div>
+                        <a href="{% url 'village_profile:dashboard' %}" class="text-sm font-medium text-gray-600 hover:text-green-600">
+                            <i class="fas fa-home mr-2"></i>
+                            Dashboard
+                        </a>
+                    </div>
+                    <div class="flex items-center space-x-3">
+                        <button type="button" @click="saveForm()" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700">
+                            <i class="fas fa-save mr-2"></i>
+                            Simpan
+                        </button>
+                        <a href="{% url 'village_profile:emblem_list' %}" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                            <i class="fas fa-times mr-2"></i>
+                            Batal
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="max-w-4xl mx-auto py-6 sm:px-6 lg:px-8">
+            <!-- Page Header -->
+            <div class="px-4 py-6 sm:px-0">
+                <div class="bg-white shadow rounded-lg p-6">
+                    <div class="flex items-center space-x-4">
+                        <div class="flex-shrink-0">
+                            <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-map-marker-alt text-green-600 text-xl"></i>
+                            </div>
+                        </div>
+                        <div>
+                            <h1 class="text-2xl font-bold text-gray-900">
+                                {% if emblem %}Edit Emblem{% else %}Tambah Emblem Baru{% endif %}
+                            </h1>
+                            <p class="text-gray-600">Kelola emblem Google Maps untuk profil desa</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form -->
+            <div class="px-4 py-6 sm:px-0">
+                <form method="post" enctype="multipart/form-data" id="emblemForm" class="space-y-6">
+                    {% csrf_token %}
+                    
+                    <!-- Basic Information -->
+                    <div class="bg-white shadow rounded-lg">
+                        <div class="px-6 py-4 border-b border-gray-200">
+                            <h2 class="text-lg font-medium text-gray-900">
+                                <i class="fas fa-info-circle mr-2 text-green-600"></i>
+                                Informasi Dasar
+                            </h2>
+                        </div>
+                        <div class="p-6 space-y-6">
+                            <!-- Name -->
+                            <div>
+                                <label for="{{ form.name.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                    <i class="fas fa-tag mr-2"></i>
+                                    Nama Emblem *
+                                </label>
+                                {{ form.name }}
+                                <div class="mt-1 flex justify-between">
+                                    <p class="text-sm text-gray-500">Masukkan nama emblem yang akan ditampilkan</p>
+                                    <span class="text-sm text-gray-400" x-text="nameCount + '/200'"></span>
+                                </div>
+                                {% if form.name.errors %}
+                                    <div class="mt-1 text-sm text-red-600">
+                                        {{ form.name.errors.0 }}
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Emblem Type -->
+                            <div>
+                                <label for="{{ form.emblem_type.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                    <i class="fas fa-layer-group mr-2"></i>
+                                    Jenis Emblem *
+                                </label>
+                                {{ form.emblem_type }}
+                                <p class="mt-1 text-sm text-gray-500">Pilih jenis emblem yang sesuai</p>
+                                {% if form.emblem_type.errors %}
+                                    <div class="mt-1 text-sm text-red-600">
+                                        {{ form.emblem_type.errors.0 }}
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Category -->
+                            <div>
+                                <label for="{{ form.category.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                    <i class="fas fa-folder mr-2"></i>
+                                    Kategori *
+                                </label>
+                                {{ form.category }}
+                                <p class="mt-1 text-sm text-gray-500">Pilih kategori emblem</p>
+                                {% if form.category.errors %}
+                                    <div class="mt-1 text-sm text-red-600">
+                                        {{ form.category.errors.0 }}
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Description -->
+                            <div>
+                                <label for="{{ form.description.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                    <i class="fas fa-file-alt mr-2"></i>
+                                    Deskripsi
+                                </label>
+                                {{ form.description }}
+                                <div class="mt-1 flex justify-between">
+                                    <p class="text-sm text-gray-500">Deskripsi detail tentang emblem</p>
+                                    <span class="text-sm text-gray-400" x-text="descriptionCount + '/1000'"></span>
+                                </div>
+                                {% if form.description.errors %}
+                                    <div class="mt-1 text-sm text-red-600">
+                                        {{ form.description.errors.0 }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Location and Coordinates -->
+                    <div class="bg-white shadow rounded-lg">
+                        <div class="px-6 py-4 border-b border-gray-200">
+                            <h2 class="text-lg font-medium text-gray-900">
+                                <i class="fas fa-map-marker-alt mr-2 text-green-600"></i>
+                                Lokasi dan Koordinat
+                            </h2>
+                        </div>
+                        <div class="p-6 space-y-6">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <!-- Latitude -->
+                                <div>
+                                    <label for="{{ form.latitude.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                        <i class="fas fa-crosshairs mr-2"></i>
+                                        Latitude *
+                                    </label>
+                                    {{ form.latitude }}
+                                    <p class="mt-1 text-sm text-gray-500">Koordinat lintang (contoh: -6.2088)</p>
+                                    {% if form.latitude.errors %}
+                                        <div class="mt-1 text-sm text-red-600">
+                                            {{ form.latitude.errors.0 }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+
+                                <!-- Longitude -->
+                                <div>
+                                    <label for="{{ form.longitude.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                        <i class="fas fa-crosshairs mr-2"></i>
+                                        Longitude *
+                                    </label>
+                                    {{ form.longitude }}
+                                    <p class="mt-1 text-sm text-gray-500">Koordinat bujur (contoh: 106.8456)</p>
+                                    {% if form.longitude.errors %}
+                                        <div class="mt-1 text-sm text-red-600">
+                                            {{ form.longitude.errors.0 }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <!-- Address -->
+                            <div>
+                                <label for="{{ form.address.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                    <i class="fas fa-map-marker-alt mr-2"></i>
+                                    Alamat
+                                </label>
+                                {{ form.address }}
+                                <div class="mt-1 flex justify-between">
+                                    <p class="text-sm text-gray-500">Alamat lengkap lokasi emblem</p>
+                                    <span class="text-sm text-gray-400" x-text="addressCount + '/500'"></span>
+                                </div>
+                                {% if form.address.errors %}
+                                    <div class="mt-1 text-sm text-red-600">
+                                        {{ form.address.errors.0 }}
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Map Preview -->
+                            <div class="mt-6">
+                                <h3 class="text-sm font-medium text-gray-700 mb-2">
+                                    <i class="fas fa-map mr-2"></i>
+                                    Pratinjau Lokasi
+                                </h3>
+                                <div class="w-full h-64 bg-gray-200 rounded-lg flex items-center justify-center">
+                                    <div class="text-center">
+                                        <i class="fas fa-map text-4xl text-gray-400 mb-2"></i>
+                                        <p class="text-gray-600">Peta akan dimuat berdasarkan koordinat</p>
+                                        <p class="text-sm text-gray-500" x-text="'Lat: ' + (latitude || '0') + ', Lng: ' + (longitude || '0')"></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Icon and Appearance -->
+                    <div class="bg-white shadow rounded-lg">
+                        <div class="px-6 py-4 border-b border-gray-200">
+                            <h2 class="text-lg font-medium text-gray-900">
+                                <i class="fas fa-image mr-2 text-green-600"></i>
+                                Icon dan Tampilan
+                            </h2>
+                        </div>
+                        <div class="p-6 space-y-6">
+                            <!-- Icon Image -->
+                            <div>
+                                <label for="{{ form.icon_image.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                    <i class="fas fa-image mr-2"></i>
+                                    Icon Emblem
+                                </label>
+                                <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md" 
+                                     x-data="{ dragOver: false }"
+                                     @dragover.prevent="dragOver = true"
+                                     @dragleave.prevent="dragOver = false"
+                                     @drop.prevent="dragOver = false; handleFileDrop($event)"
+                                     :class="{ 'border-green-400 bg-green-50': dragOver }">
+                                    <div class="space-y-1 text-center">
+                                        <div x-show="!imagePreview">
+                                            <i class="fas fa-cloud-upload-alt text-4xl text-gray-400"></i>
+                                            <div class="flex text-sm text-gray-600">
+                                                <label for="{{ form.icon_image.id_for_label }}" class="relative cursor-pointer bg-white rounded-md font-medium text-green-600 hover:text-green-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-green-500">
+                                                    <span>Upload file</span>
+                                                    {{ form.icon_image }}
+                                                </label>
+                                                <p class="pl-1">atau drag and drop</p>
+                                            </div>
+                                            <p class="text-xs text-gray-500">PNG, JPG, GIF hingga 10MB</p>
+                                        </div>
+                                        <div x-show="imagePreview" class="relative">
+                                            <img :src="imagePreview" alt="Preview" class="mx-auto h-32 w-32 object-cover rounded-lg">
+                                            <button type="button" @click="removeImage()" class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% if form.icon_image.errors %}
+                                    <div class="mt-1 text-sm text-red-600">
+                                        {{ form.icon_image.errors.0 }}
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                <!-- Icon Size -->
+                                <div>
+                                    <label for="{{ form.icon_size.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                        <i class="fas fa-expand-arrows-alt mr-2"></i>
+                                        Ukuran Icon (px)
+                                    </label>
+                                    {{ form.icon_size }}
+                                    <p class="mt-1 text-sm text-gray-500">Ukuran icon dalam pixel</p>
+                                    {% if form.icon_size.errors %}
+                                        <div class="mt-1 text-sm text-red-600">
+                                            {{ form.icon_size.errors.0 }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+
+                                <!-- Icon Color -->
+                                <div>
+                                    <label for="{{ form.icon_color.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                        <i class="fas fa-palette mr-2"></i>
+                                        Warna Icon
+                                    </label>
+                                    <div class="flex space-x-2">
+                                        {{ form.icon_color }}
+                                        <div class="w-10 h-10 border border-gray-300 rounded" :style="'background-color: ' + (iconColor || '#000000')"></div>
+                                    </div>
+                                    <p class="mt-1 text-sm text-gray-500">Warna icon dalam format hex</p>
+                                    {% if form.icon_color.errors %}
+                                        <div class="mt-1 text-sm text-red-600">
+                                            {{ form.icon_color.errors.0 }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+
+                                <!-- Z-Index -->
+                                <div>
+                                    <label for="{{ form.z_index.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                        <i class="fas fa-sort-numeric-up mr-2"></i>
+                                        Z-Index
+                                    </label>
+                                    {{ form.z_index }}
+                                    <p class="mt-1 text-sm text-gray-500">Urutan layer emblem</p>
+                                    {% if form.z_index.errors %}
+                                        <div class="mt-1 text-sm text-red-600">
+                                            {{ form.z_index.errors.0 }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <!-- Opacity -->
+                            <div>
+                                <label for="{{ form.opacity.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                    <i class="fas fa-adjust mr-2"></i>
+                                    Opacity
+                                </label>
+                                <div class="flex items-center space-x-4">
+                                    {{ form.opacity }}
+                                    <span class="text-sm text-gray-600" x-text="(opacity || 1) * 100 + '%'"></span>
+                                </div>
+                                <p class="mt-1 text-sm text-gray-500">Tingkat transparansi (0.0 - 1.0)</p>
+                                {% if form.opacity.errors %}
+                                    <div class="mt-1 text-sm text-red-600">
+                                        {{ form.opacity.errors.0 }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Custom Properties -->
+                    <div class="bg-white shadow rounded-lg">
+                        <div class="px-6 py-4 border-b border-gray-200">
+                            <h2 class="text-lg font-medium text-gray-900">
+                                <i class="fas fa-code mr-2 text-green-600"></i>
+                                Properti Kustom
+                            </h2>
+                        </div>
+                        <div class="p-6">
+                            <div>
+                                <label for="{{ form.custom_properties.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                    <i class="fas fa-code mr-2"></i>
+                                    Properti Kustom (JSON)
+                                </label>
+                                {{ form.custom_properties }}
+                                <div class="mt-1 flex justify-between">
+                                    <p class="text-sm text-gray-500">Properti tambahan dalam format JSON</p>
+                                    <span class="text-sm text-gray-400" x-text="customPropertiesCount + '/2000'"></span>
+                                </div>
+                                {% if form.custom_properties.errors %}
+                                    <div class="mt-1 text-sm text-red-600">
+                                        {{ form.custom_properties.errors.0 }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Status Settings -->
+                    <div class="bg-white shadow rounded-lg">
+                        <div class="px-6 py-4 border-b border-gray-200">
+                            <h2 class="text-lg font-medium text-gray-900">
+                                <i class="fas fa-cog mr-2 text-green-600"></i>
+                                Pengaturan Status
+                            </h2>
+                        </div>
+                        <div class="p-6 space-y-6">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <!-- Is Active -->
+                                <div class="flex items-center">
+                                    <div class="flex items-center h-5">
+                                        {{ form.is_active }}
+                                    </div>
+                                    <div class="ml-3 text-sm">
+                                        <label for="{{ form.is_active.id_for_label }}" class="font-medium text-gray-700">
+                                            <i class="fas fa-toggle-on mr-2 text-green-600"></i>
+                                            Aktif
+                                        </label>
+                                        <p class="text-gray-500">Emblem akan ditampilkan di peta</p>
+                                    </div>
+                                </div>
+
+                                <!-- Is Visible -->
+                                <div class="flex items-center">
+                                    <div class="flex items-center h-5">
+                                        {{ form.is_visible }}
+                                    </div>
+                                    <div class="ml-3 text-sm">
+                                        <label for="{{ form.is_visible.id_for_label }}" class="font-medium text-gray-700">
+                                            <i class="fas fa-eye mr-2 text-blue-600"></i>
+                                            Terlihat
+                                        </label>
+                                        <p class="text-gray-500">Emblem terlihat oleh pengguna</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Form Actions -->
+                    <div class="bg-white shadow rounded-lg p-6">
+                        <div class="flex flex-col sm:flex-row gap-4 justify-end">
+                            <a href="{% url 'village_profile:emblem_list' %}" class="inline-flex items-center justify-center px-6 py-3 border border-gray-300 text-base font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                                <i class="fas fa-times mr-2"></i>
+                                Batal
+                            </a>
+                            <button type="submit" class="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                                <i class="fas fa-save mr-2"></i>
+                                {% if emblem %}Update Emblem{% else %}Simpan Emblem{% endif %}
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </main>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        function emblemForm() {
+            return {
+                nameCount: 0,
+                descriptionCount: 0,
+                addressCount: 0,
+                customPropertiesCount: 0,
+                imagePreview: null,
+                latitude: '',
+                longitude: '',
+                iconColor: '#000000',
+                opacity: 1,
+                
+                init() {
+                    this.updateCounts();
+                    this.setupEventListeners();
+                    
+                    // Load existing image if editing
+                    {% if emblem and emblem.icon_image %}
+                        this.imagePreview = '{{ emblem.icon_image.url }}';
+                    {% endif %}
+                    
+                    // Load existing values
+                    {% if emblem %}
+                        this.latitude = '{{ emblem.latitude|default:"" }}';
+                        this.longitude = '{{ emblem.longitude|default:"" }}';
+                        this.iconColor = '{{ emblem.icon_color|default:"#000000" }}';
+                        this.opacity = {{ emblem.opacity|default:1 }};
+                    {% endif %}
+                },
+                
+                updateCounts() {
+                    const nameField = document.querySelector('#id_name');
+                    const descriptionField = document.querySelector('#id_description');
+                    const addressField = document.querySelector('#id_address');
+                    const customPropertiesField = document.querySelector('#id_custom_properties');
+                    
+                    if (nameField) this.nameCount = nameField.value.length;
+                    if (descriptionField) this.descriptionCount = descriptionField.value.length;
+                    if (addressField) this.addressCount = addressField.value.length;
+                    if (customPropertiesField) this.customPropertiesCount = customPropertiesField.value.length;
+                },
+                
+                setupEventListeners() {
+                    // Character counters
+                    ['name', 'description', 'address', 'custom_properties'].forEach(field => {
+                        const element = document.querySelector(`#id_${field}`);
+                        if (element) {
+                            element.addEventListener('input', () => {
+                                this.updateCounts();
+                                if (field === 'latitude') this.latitude = element.value;
+                                if (field === 'longitude') this.longitude = element.value;
+                            });
+                        }
+                    });
+                    
+                    // Coordinate fields
+                    const latField = document.querySelector('#id_latitude');
+                    const lngField = document.querySelector('#id_longitude');
+                    const colorField = document.querySelector('#id_icon_color');
+                    const opacityField = document.querySelector('#id_opacity');
+                    
+                    if (latField) {
+                        latField.addEventListener('input', (e) => {
+                            this.latitude = e.target.value;
+                        });
+                    }
+                    
+                    if (lngField) {
+                        lngField.addEventListener('input', (e) => {
+                            this.longitude = e.target.value;
+                        });
+                    }
+                    
+                    if (colorField) {
+                        colorField.addEventListener('input', (e) => {
+                            this.iconColor = e.target.value;
+                        });
+                    }
+                    
+                    if (opacityField) {
+                        opacityField.addEventListener('input', (e) => {
+                            this.opacity = parseFloat(e.target.value) || 1;
+                        });
+                    }
+                    
+                    // Image upload
+                    const imageField = document.querySelector('#id_icon_image');
+                    if (imageField) {
+                        imageField.addEventListener('change', (e) => {
+                            this.handleImageUpload(e.target.files[0]);
+                        });
+                    }
+                },
+                
+                handleFileDrop(event) {
+                    const files = event.dataTransfer.files;
+                    if (files.length > 0) {
+                        this.handleImageUpload(files[0]);
+                        const imageField = document.querySelector('#id_icon_image');
+                        if (imageField) {
+                            imageField.files = files;
+                        }
+                    }
+                },
+                
+                handleImageUpload(file) {
+                    if (file && file.type.startsWith('image/')) {
+                        const reader = new FileReader();
+                        reader.onload = (e) => {
+                            this.imagePreview = e.target.result;
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                },
+                
+                removeImage() {
+                    this.imagePreview = null;
+                    const imageField = document.querySelector('#id_icon_image');
+                    if (imageField) {
+                        imageField.value = '';
+                    }
+                },
+                
+                saveForm() {
+                    document.getElementById('emblemForm').submit();
+                }
+            }
+        }
+        
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            // Ctrl+S to save
+            if (e.ctrlKey && e.key === 's') {
+                e.preventDefault();
+                document.getElementById('emblemForm').submit();
+            }
+            // Escape to cancel
+            if (e.key === 'Escape') {
+                window.location.href = "{% url 'village_profile:emblem_list' %}";
+            }
+        });
+        
+        // Form validation
+        document.getElementById('emblemForm').addEventListener('submit', function(e) {
+            const requiredFields = ['name', 'emblem_type', 'category', 'latitude', 'longitude'];
+            let isValid = true;
+            
+            requiredFields.forEach(field => {
+                const element = document.querySelector(`#id_${field}`);
+                if (element && !element.value.trim()) {
+                    isValid = false;
+                    element.classList.add('border-red-500');
+                } else if (element) {
+                    element.classList.remove('border-red-500');
+                }
+            });
+            
+            if (!isValid) {
+                e.preventDefault();
+                alert('Mohon lengkapi semua field yang wajib diisi.');
+            }
+        });
+    </script>
+
+    <!-- Custom Styles -->
+    <style>
+        .form-input, .form-select, .form-textarea {
+            @apply mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500;
+        }
+        
+        .form-checkbox {
+            @apply h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded;
+        }
+        
+        input[type="color"] {
+            @apply h-10 w-20 border border-gray-300 rounded cursor-pointer;
+        }
+        
+        input[type="range"] {
+            @apply w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            @apply appearance-none w-4 h-4 bg-green-600 rounded-full cursor-pointer;
+        }
+        
+        input[type="range"]::-moz-range-thumb {
+            @apply w-4 h-4 bg-green-600 rounded-full cursor-pointer border-0;
+        }
+    </style>
+</body>
+</html>

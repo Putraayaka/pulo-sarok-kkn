@@ -30,7 +30,7 @@ urlpatterns = [
     path('api/village_profile/', include('village_profile.urls')),
     path('api/posyandu/', include('posyandu.urls')),
     path('api/organization/', include('organization.urls')),
-    # path('api/news/', include('news.urls')),  # Temporarily commented out due to form error
+    path('api/news/', include('news.urls')),
     path('api/letters/', include('letters.urls')),
     path('api/documents/', include('documents.urls')),
     path('api/business/', include('business.urls')),

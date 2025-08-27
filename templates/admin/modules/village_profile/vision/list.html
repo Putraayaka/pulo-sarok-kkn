@@ -1,0 +1,285 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="id" class="h-full bg-gray-50">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daftar Visi & Misi Desa</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="h-full">
+    <div class="min-h-full">
+        <!-- Navigation -->
+        <nav class="bg-white shadow-sm border-b border-gray-200">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between h-16">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <a href="{% url 'village_profile:dashboard' %}" class="text-xl font-bold text-gray-900 hover:text-blue-600">
+                                <i class="fas fa-arrow-left mr-2"></i>
+                                Kembali ke Dashboard
+                            </a>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <a href="{% url 'village_profile:vision_add' %}" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700">
+                            <i class="fas fa-plus mr-2"></i>
+                            Tambah Visi Misi
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+            <!-- Page Header -->
+            <div class="px-4 py-6 sm:px-0">
+                <div class="border-4 border-dashed border-gray-200 rounded-lg p-6 bg-white">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h1 class="text-3xl font-bold text-gray-900">
+                                <i class="fas fa-eye text-blue-600 mr-3"></i>
+                                Visi & Misi Desa
+                            </h1>
+                            <p class="mt-2 text-sm text-gray-600">Kelola visi dan misi desa untuk masa depan yang lebih baik</p>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <div class="bg-blue-50 px-4 py-2 rounded-lg">
+                                <span class="text-sm font-medium text-blue-800">Total: {{ visions|length }} visi misi</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Search and Filter -->
+            <div class="px-4 py-6 sm:px-0">
+                <div class="bg-white shadow rounded-lg p-6">
+                    <form method="GET" class="flex flex-col sm:flex-row gap-4">
+                        <div class="flex-1">
+                            <label for="search" class="sr-only">Pencarian</label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="fas fa-search text-gray-400"></i>
+                                </div>
+                                <input type="text" name="search" id="search" value="{{ request.GET.search }}" 
+                                       class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500" 
+                                       placeholder="Cari visi, misi, atau judul...">
+                            </div>
+                        </div>
+                        <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700">
+                            <i class="fas fa-search mr-2"></i>
+                            Cari
+                        </button>
+                        {% if request.GET.search %}
+                            <a href="{% url 'village_profile:vision_list' %}" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                                <i class="fas fa-times mr-2"></i>
+                                Reset
+                            </a>
+                        {% endif %}
+                    </form>
+                </div>
+            </div>
+
+            <!-- Vision List -->
+            <div class="px-4 py-6 sm:px-0">
+                {% if visions %}
+                    <div class="grid gap-6">
+                        {% for vision in visions %}
+                            <div class="bg-white shadow rounded-lg overflow-hidden hover:shadow-lg transition-shadow duration-200">
+                                <div class="p-6">
+                                    <div class="flex items-start justify-between">
+                                        <div class="flex-1">
+                                            <div class="flex items-center space-x-3 mb-3">
+                                                <h3 class="text-xl font-semibold text-gray-900">
+                                                    {{ vision.title }}
+                                                </h3>
+                                                {% if vision.is_active %}
+                                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                        <i class="fas fa-check-circle mr-1"></i>
+                                                        Aktif
+                                                    </span>
+                                                {% else %}
+                                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                                        <i class="fas fa-pause-circle mr-1"></i>
+                                                        Tidak Aktif
+                                                    </span>
+                                                {% endif %}
+                                            </div>
+                                            
+                                            <div class="grid md:grid-cols-2 gap-6">
+                                                <!-- Vision Section -->
+                                                <div>
+                                                    <h4 class="text-sm font-medium text-blue-600 mb-2">
+                                                        <i class="fas fa-eye mr-1"></i>
+                                                        VISI
+                                                    </h4>
+                                                    <div class="bg-blue-50 p-4 rounded-lg">
+                                                        <p class="text-sm text-gray-700 leading-relaxed">
+                                                            {{ vision.vision_text|truncatewords:30 }}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                                
+                                                <!-- Mission Section -->
+                                                <div>
+                                                    <h4 class="text-sm font-medium text-green-600 mb-2">
+                                                        <i class="fas fa-bullseye mr-1"></i>
+                                                        MISI
+                                                    </h4>
+                                                    <div class="bg-green-50 p-4 rounded-lg">
+                                                        <p class="text-sm text-gray-700 leading-relaxed">
+                                                            {{ vision.mission_text|truncatewords:30 }}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="mt-4 flex items-center text-sm text-gray-500">
+                                                <i class="fas fa-calendar mr-2"></i>
+                                                <span>Berlaku sejak: {{ vision.effective_date|date:"d F Y" }}</span>
+                                                {% if vision.end_date %}
+                                                    <span class="mx-2">•</span>
+                                                    <span>Berakhir: {{ vision.end_date|date:"d F Y" }}</span>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Action Buttons -->
+                                        <div class="flex flex-col space-y-2 ml-4">
+                                            <a href="{% url 'village_profile:vision_detail' vision.pk %}" 
+                                               class="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                                <i class="fas fa-eye mr-2"></i>
+                                                Detail
+                                            </a>
+                                            <a href="{% url 'village_profile:vision_edit' vision.pk %}" 
+                                               class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                                <i class="fas fa-edit mr-2"></i>
+                                                Edit
+                                            </a>
+                                            <a href="{% url 'village_profile:vision_delete' vision.pk %}" 
+                                               class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                                               onclick="return confirm('Apakah Anda yakin ingin menghapus visi misi ini?')">
+                                                <i class="fas fa-trash mr-2"></i>
+                                                Hapus
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <!-- Pagination -->
+                    {% if is_paginated %}
+                        <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6 mt-6 rounded-lg shadow">
+                            <div class="flex-1 flex justify-between sm:hidden">
+                                {% if page_obj.has_previous %}
+                                    <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}" 
+                                       class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                                        Sebelumnya
+                                    </a>
+                                {% endif %}
+                                {% if page_obj.has_next %}
+                                    <a href="?page={{ page_obj.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}" 
+                                       class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                                        Selanjutnya
+                                    </a>
+                                {% endif %}
+                            </div>
+                            <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                                <div>
+                                    <p class="text-sm text-gray-700">
+                                        Menampilkan
+                                        <span class="font-medium">{{ page_obj.start_index }}</span>
+                                        sampai
+                                        <span class="font-medium">{{ page_obj.end_index }}</span>
+                                        dari
+                                        <span class="font-medium">{{ page_obj.paginator.count }}</span>
+                                        hasil
+                                    </p>
+                                </div>
+                                <div>
+                                    <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                                        {% if page_obj.has_previous %}
+                                            <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}" 
+                                               class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                                <i class="fas fa-chevron-left"></i>
+                                            </a>
+                                        {% endif %}
+                                        
+                                        {% for num in page_obj.paginator.page_range %}
+                                            {% if page_obj.number == num %}
+                                                <span class="relative inline-flex items-center px-4 py-2 border border-blue-500 bg-blue-50 text-sm font-medium text-blue-600">
+                                                    {{ num }}
+                                                </span>
+                                            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                                <a href="?page={{ num }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}" 
+                                                   class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
+                                                    {{ num }}
+                                                </a>
+                                            {% endif %}
+                                        {% endfor %}
+                                        
+                                        {% if page_obj.has_next %}
+                                            <a href="?page={{ page_obj.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}" 
+                                               class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                                <i class="fas fa-chevron-right"></i>
+                                            </a>
+                                        {% endif %}
+                                    </nav>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                {% else %}
+                    <!-- Empty State -->
+                    <div class="text-center py-12">
+                        <div class="bg-white rounded-lg shadow p-8">
+                            <i class="fas fa-eye text-6xl text-gray-300 mb-4"></i>
+                            <h3 class="text-lg font-medium text-gray-900 mb-2">Belum Ada Visi & Misi</h3>
+                            {% if request.GET.search %}
+                                <p class="text-gray-500 mb-4">Tidak ditemukan visi misi dengan kata kunci "{{ request.GET.search }}"</p>
+                                <div class="space-x-3">
+                                    <a href="{% url 'village_profile:vision_list' %}" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                                        <i class="fas fa-times mr-2"></i>
+                                        Reset Pencarian
+                                    </a>
+                                    <a href="{% url 'village_profile:vision_add' %}" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700">
+                                        <i class="fas fa-plus mr-2"></i>
+                                        Tambah Visi Misi
+                                    </a>
+                                </div>
+                            {% else %}
+                                <p class="text-gray-500 mb-4">Mulai dengan membuat visi dan misi pertama untuk desa Anda</p>
+                                <a href="{% url 'village_profile:vision_add' %}" class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700">
+                                    <i class="fas fa-plus mr-2"></i>
+                                    Buat Visi Misi Pertama
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </main>
+    </div>
+
+    <!-- JavaScript for enhanced functionality -->
+    <script>
+        // Auto-submit search form on Enter
+        document.getElementById('search').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                this.form.submit();
+            }
+        });
+
+        // Smooth scroll to top after pagination
+        if (window.location.search.includes('page=')) {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>

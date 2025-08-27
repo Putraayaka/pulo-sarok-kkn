@@ -13,8 +13,8 @@ import io
 from openpyxl import Workbook
 from openpyxl.utils.dataframe import dataframe_to_rows
 
-from .models import Penduduk, Dusun, Lorong, DisabilitasType, DisabilitasData, ReligionReference
-from .forms import PendudukForm, DusunForm, LorongForm, DisabilitasTypeForm, DisabilitasDataForm
+from .models import Penduduk, Dusun, Lorong, DisabilitasType, DisabilitasData, ReligionReference, Family
+from .forms import PendudukForm, DusunForm, LorongForm, DisabilitasTypeForm, DisabilitasDataForm, FamilyForm
 
 def is_admin(user):
     """Check if user is admin"""
@@ -131,11 +131,81 @@ def disabilitas_admin(request):
 def references_stats_api(request):
     """API for references statistics"""
     try:
+        from django.db.models import Count, Q
+        from datetime import datetime, timedelta
+        
+        # Basic stats
+        total_penduduk = Penduduk.objects.count()
+        total_dusun = Dusun.objects.count()
+        total_lorong = Lorong.objects.count()
+        total_disabilitas = DisabilitasData.objects.count()
+        
+        # Demographics
+        male_count = Penduduk.objects.filter(gender='L').count()
+        female_count = Penduduk.objects.filter(gender='P').count()
+        
+        # Age groups calculation
+        from datetime import date
+        today = date.today()
+        
+        anak_count = 0
+        dewasa_count = 0
+        lansia_count = 0
+        
+        for penduduk in Penduduk.objects.all():
+            age = today.year - penduduk.birth_date.year - ((today.month, today.day) < (penduduk.birth_date.month, penduduk.birth_date.day))
+            if age < 18:
+                anak_count += 1
+            elif age < 60:
+                dewasa_count += 1
+            else:
+                lansia_count += 1
+        
+        # Recent activity (last 30 days)
+        thirty_days_ago = timezone.now() - timedelta(days=30)
+        new_penduduk = Penduduk.objects.filter(created_at__gte=thirty_days_ago).count()
+        new_disabilitas = DisabilitasData.objects.filter(created_at__gte=thirty_days_ago).count()
+        
+        # Population by dusun
+        population_by_dusun = list(Penduduk.objects.values('dusun__name').annotate(count=Count('id')).order_by('-count'))
+        
+        # Disability by type
+        disability_by_type = list(DisabilitasData.objects.values('disability_type__name').annotate(count=Count('id')).order_by('-count'))
+        
+        # Religion distribution
+        religion_distribution = list(Penduduk.objects.values('religion').annotate(count=Count('id')).order_by('-count'))
+        
+        # Education distribution
+        education_distribution = list(Penduduk.objects.values('education').annotate(count=Count('id')).order_by('-count'))
+        
         stats = {
-            'total_penduduk': Penduduk.objects.count(),
-            'total_dusun': Dusun.objects.count(),
-            'total_lorong': Lorong.objects.count(),
-            'total_disabilitas': DisabilitasData.objects.count()
+            'basic_stats': {
+                'total_penduduk': total_penduduk,
+                'total_dusun': total_dusun,
+                'total_lorong': total_lorong,
+                'total_disabilitas': total_disabilitas
+            },
+            'demographics': {
+                'male_count': male_count,
+                'female_count': female_count,
+                'age_groups': {
+                    'anak': anak_count,
+                    'dewasa': dewasa_count,
+                    'lansia': lansia_count
+                }
+            },
+            'recent_activity': {
+                'new_penduduk': new_penduduk,
+                'new_disabilitas': new_disabilitas
+            },
+            'population_by_dusun': population_by_dusun,
+            'disability': {
+                'by_type': disability_by_type
+            },
+            'distributions': {
+                'religion': religion_distribution,
+                'education': education_distribution
+            }
         }
         return JsonResponse(stats)
     except Exception as e:
@@ -163,12 +233,11 @@ def penduduk_create_api(request):
         # Return form data for modal
         dusun_list = [{'id': d.id, 'name': d.name} for d in Dusun.objects.all()]
         lorong_list = [{'id': l.id, 'name': l.name} for l in Lorong.objects.all()]
-        agama_list = [{'id': r.id, 'name': r.name} for r in ReligionReference.objects.all()]
         
         return JsonResponse({
             'dusun_choices': dusun_list,
             'lorong_choices': lorong_list,
-            'agama_choices': agama_list,
+            'religion_choices': [{'value': k, 'label': v} for k, v in Penduduk.RELIGION_CHOICES],
             'gender_choices': [{'value': k, 'label': v} for k, v in Penduduk.GENDER_CHOICES],
             'marital_status_choices': [{'value': k, 'label': v} for k, v in Penduduk.MARITAL_STATUS_CHOICES]
         })
@@ -252,8 +321,10 @@ def penduduk_detail_api(request, pk):
 @login_required
 @user_passes_test(is_admin)
 def dusun_list_api(request):
-    """API endpoint for dusun list"""
+    """API endpoint for dusun list with pagination and search"""
     try:
+        page = int(request.GET.get('page', 1))
+        per_page = int(request.GET.get('per_page', 10))
         search = request.GET.get('search', '').strip()
         
         queryset = Dusun.objects.all()
@@ -263,6 +334,9 @@ def dusun_list_api(request):
         
         queryset = queryset.order_by('name')
         
+        paginator = Paginator(queryset, per_page)
+        page_obj = paginator.get_page(page)
+        
         data = {
             'results': [
                 {
@@ -271,9 +345,17 @@ def dusun_list_api(request):
                     'code': d.code,
                     'population_count': d.population_count,
                     'area_size': float(d.area_size) if d.area_size else 0,
-                    'total_residents': d.residents.count()
-                } for d in queryset
-            ]
+                    'total_residents': d.residents.count(),
+                    'is_active': d.is_active
+                } for d in page_obj
+            ],
+            'pagination': {
+                'current_page': page_obj.number,
+                'total_pages': paginator.num_pages,
+                'total_items': paginator.count,
+                'has_next': page_obj.has_next(),
+                'has_previous': page_obj.has_previous()
+            }
         }
         
         return JsonResponse(data)
@@ -322,7 +404,8 @@ def dusun_detail_api(request, pk):
                 'code': dusun.code,
                 'description': dusun.description,
                 'area_size': float(dusun.area_size) if dusun.area_size else 0,
-                'population_count': dusun.population_count
+                'population_count': dusun.population_count,
+                'is_active': dusun.is_active
             }
             return JsonResponse(data)
         
@@ -363,8 +446,10 @@ def dusun_detail_api(request, pk):
 @login_required
 @user_passes_test(is_admin)
 def lorong_list_api(request):
-    """API endpoint for lorong list"""
+    """API endpoint for lorong list with pagination and search"""
     try:
+        page = int(request.GET.get('page', 1))
+        per_page = int(request.GET.get('per_page', 10))
         search = request.GET.get('search', '').strip()
         dusun_id = request.GET.get('dusun_id')
         
@@ -378,6 +463,9 @@ def lorong_list_api(request):
         
         queryset = queryset.select_related('dusun').order_by('dusun__name', 'name')
         
+        paginator = Paginator(queryset, per_page)
+        page_obj = paginator.get_page(page)
+        
         data = {
             'results': [
                 {
@@ -388,9 +476,17 @@ def lorong_list_api(request):
                     'dusun_id': l.dusun.id if l.dusun else None,
                     'length': float(l.length) if l.length else 0,
                     'house_count': l.house_count,
-                    'total_residents': l.residents.count()
-                } for l in queryset
-            ]
+                    'total_residents': l.residents.count(),
+                    'is_active': l.is_active
+                } for l in page_obj
+            ],
+            'pagination': {
+                'current_page': page_obj.number,
+                'total_pages': paginator.num_pages,
+                'total_items': paginator.count,
+                'has_next': page_obj.has_next(),
+                'has_previous': page_obj.has_previous()
+            }
         }
         
         return JsonResponse(data)
@@ -445,7 +541,8 @@ def lorong_detail_api(request, pk):
                 'description': lorong.description,
                 'length': float(lorong.length) if lorong.length else 0,
                 'house_count': lorong.house_count,
-                'dusun_id': lorong.dusun.id if lorong.dusun else None
+                'dusun_id': lorong.dusun.id if lorong.dusun else None,
+                'is_active': lorong.is_active
             }
             return JsonResponse(data)
         
@@ -1142,5 +1239,172 @@ def dashboard_summary_api(request):
         
         return JsonResponse(stats)
         
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+# Family Views
+@login_required
+@user_passes_test(is_admin)
+def family_list_api(request):
+    """API endpoint for family list with pagination and search"""
+    try:
+        page = int(request.GET.get('page', 1))
+        per_page = int(request.GET.get('per_page', 10))
+        search = request.GET.get('search', '').strip()
+        
+        families = Family.objects.filter(is_active=True)
+        
+        if search:
+            families = families.filter(
+                Q(kk_number__icontains=search) |
+                Q(head__name__icontains=search) |
+                Q(head__nik__icontains=search) |
+                Q(address__icontains=search)
+            )
+        
+        # Calculate total before pagination
+        total_count = families.count()
+        
+        # Apply pagination
+        start = (page - 1) * per_page
+        end = start + per_page
+        families = families[start:end]
+        
+        # Serialize data
+        family_data = []
+        for family in families:
+            family_data.append({
+                'id': family.id,
+                'kk_number': family.kk_number,
+                'head_name': family.head.name,
+                'head_nik': family.head.nik,
+                'family_status': family.family_status,
+                'total_members': family.total_members,
+                'total_income': float(family.total_income) if family.total_income else None,
+                'dusun': family.dusun.name,
+                'lorong': family.lorong.name if family.lorong else None,
+                'address': family.address,
+                'phone_number': family.phone_number,
+                'is_active': family.is_active,
+                'created_at': family.created_at.strftime('%Y-%m-%d %H:%M:%S') if family.created_at else None,
+            })
+        
+        # Calculate pagination info
+        total_pages = (total_count + per_page - 1) // per_page
+        has_previous = page > 1
+        has_next = page < total_pages
+        
+        response_data = {
+            'results': family_data,
+            'pagination': {
+                'current_page': page,
+                'per_page': per_page,
+                'total_items': total_count,
+                'total_pages': total_pages,
+                'has_previous': has_previous,
+                'has_next': has_next,
+            }
+        }
+        
+        return JsonResponse(response_data)
+        
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+@login_required
+@user_passes_test(is_admin)
+@require_http_methods(["GET", "POST"])
+def family_create_api(request):
+    """API endpoint for creating family"""
+    if request.method == 'GET':
+        # Return form data for modal
+        dusun_list = [{'id': d.id, 'name': d.name} for d in Dusun.objects.all()]
+        lorong_list = [{'id': l.id, 'name': l.name} for l in Lorong.objects.all()]
+        head_choices = [{'id': p.id, 'name': f"{p.name} ({p.nik})"} for p in Penduduk.objects.filter(is_active=True).order_by('name')]
+        
+        return JsonResponse({
+            'dusun_choices': dusun_list,
+            'lorong_choices': lorong_list,
+            'head_choices': head_choices,
+            'family_status_choices': [{'value': k, 'label': v} for k, v in Family.FAMILY_STATUS_CHOICES],
+        })
+    
+    try:
+        data = json.loads(request.body)
+        form = FamilyForm(data)
+        
+        if form.is_valid():
+            family = form.save()
+            return JsonResponse({
+                'success': True,
+                'message': 'Data keluarga berhasil ditambahkan',
+                'data': {
+                    'id': family.id,
+                    'kk_number': family.kk_number,
+                    'head_name': family.head.name
+                }
+            })
+        else:
+            return JsonResponse({
+                'success': False,
+                'errors': form.errors
+            }, status=400)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+@login_required
+@user_passes_test(is_admin)
+@require_http_methods(["GET", "PUT", "DELETE"])
+def family_detail_api(request, pk):
+    """API endpoint for family detail, update, and delete"""
+    try:
+        family = get_object_or_404(Family, pk=pk)
+        
+        if request.method == 'GET':
+            data = {
+                'id': family.id,
+                'kk_number': family.kk_number,
+                'head_id': family.head.id if family.head else None,
+                'family_status': family.family_status,
+                'total_members': family.total_members,
+                'total_income': float(family.total_income) if family.total_income else None,
+                'address': family.address,
+                'dusun_id': family.dusun.id if family.dusun else None,
+                'lorong_id': family.lorong.id if family.lorong else None,
+                'rt_number': family.rt_number,
+                'rw_number': family.rw_number,
+                'house_number': family.house_number,
+                'postal_code': family.postal_code,
+                'phone_number': family.phone_number,
+                'is_active': family.is_active,
+            }
+            return JsonResponse(data)
+        
+        elif request.method == 'PUT':
+            data = json.loads(request.body)
+            form = FamilyForm(data, instance=family)
+            
+            if form.is_valid():
+                family = form.save()
+                return JsonResponse({
+                    'success': True,
+                    'message': 'Data keluarga berhasil diperbarui'
+                })
+            else:
+                return JsonResponse({
+                    'success': False,
+                    'errors': form.errors
+                }, status=400)
+        
+        elif request.method == 'DELETE':
+            family.delete()
+            return JsonResponse({
+                'success': True,
+                'message': 'Data keluarga berhasil dihapus'
+            })
+            
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)

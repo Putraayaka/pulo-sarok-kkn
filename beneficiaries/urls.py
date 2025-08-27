@@ -76,19 +76,31 @@ urlpatterns = [
     # Dokumen Gampong APIs
     path('api/dokumen-gampong/', views.dokumen_gampong_list, name='dokumen_gampong_list'),
     path('api/dokumen-gampong/create/', views.dokumen_gampong_create, name='dokumen_gampong_create'),
+    path('api/dokumen-gampong/<int:dokumen_id>/', views.dokumen_gampong_detail, name='dokumen_gampong_detail'),
+    path('api/dokumen-gampong/<int:dokumen_id>/update/', views.dokumen_gampong_update, name='dokumen_gampong_update'),
+    path('api/dokumen-gampong/<int:dokumen_id>/delete/', views.dokumen_gampong_delete, name='dokumen_gampong_delete'),
     
     # Berita APIs
     path('api/berita/', views.berita_list, name='berita_list'),
     path('api/berita/create/', views.berita_create, name='berita_create'),
     path('api/berita/<int:berita_id>/', views.berita_detail, name='berita_detail'),
+    path('api/berita/<int:berita_id>/update/', views.berita_update, name='berita_update'),
+    path('api/berita/<int:berita_id>/delete/', views.berita_delete, name='berita_delete'),
     
     # Surat APIs
     path('api/surat/', views.surat_list, name='surat_list'),
     path('api/surat/create/', views.surat_create, name='surat_create'),
     path('api/surat/<int:surat_id>/', views.surat_detail, name='surat_detail'),
+    path('api/surat/<int:surat_id>/update/', views.surat_update, name='surat_update'),
+    path('api/surat/<int:surat_id>/delete/', views.surat_delete, name='surat_delete'),
     
     # Letter Template APIs
     path('api/letter-templates/', views.letter_template_list, name='letter_template_list'),
+    
+    # Export APIs
+    path('export/taraf-kehidupan/csv/', views.export_taraf_kehidupan_csv, name='export_taraf_kehidupan_csv'),
+    path('export/data-bantuan/csv/', views.export_data_bantuan_csv, name='export_data_bantuan_csv'),
+    path('export/beneficiaries/csv/', views.export_beneficiaries_csv, name='export_beneficiaries_csv'),
     
     # Dashboard Statistics
     path('api/dashboard-statistics/', views.dashboard_statistics, name='dashboard_statistics'),

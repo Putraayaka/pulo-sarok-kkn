@@ -240,15 +240,17 @@
                 </div>
 
                 <!-- Pagination for Data -->
-                <div id="data-pagination" class="flex items-center justify-between mt-6">
-                    <div class="flex items-center text-sm text-gray-700">
+                <div id="data-pagination" class="flex flex-col sm:flex-row items-center justify-between space-y-4 sm:space-y-0 mt-6">
+                    <div class="flex flex-col sm:flex-row items-center text-sm text-gray-700 space-y-2 sm:space-y-0 sm:space-x-4">
                         <span id="data-pagination-info">Menampilkan 0 dari 0 data</span>
+                        <span id="data-total-info" class="text-primary-600 font-medium">Total Data: 0 (Tahun 2025)</span>
                     </div>
-                    <div class="flex space-x-2">
+                    <div class="flex items-center space-x-2">
                         <button id="data-prev-btn" onclick="previousDataPage()" 
                                 class="px-3 py-2 text-sm bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50" disabled>
                             <i class="fas fa-chevron-left"></i>
                         </button>
+                        <div id="data-page-numbers" class="flex space-x-1"></div>
                         <button id="data-next-btn" onclick="nextDataPage()" 
                                 class="px-3 py-2 text-sm bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50" disabled>
                             <i class="fas fa-chevron-right"></i>
@@ -472,6 +474,8 @@ let typeSelectedItems = new Set();
 let dataSelectedItems = new Set();
 let disabilityTypes = [];
 let pendudukList = [];
+let totalDataItems = 0;
+const itemsPerPage = 10;
 
 // Initialize the page
 document.addEventListener('DOMContentLoaded', function() {
@@ -647,12 +651,14 @@ function loadDisabilitasData() {
         .then(response => response.json())
         .then(data => {
             hideDataLoading();
+            totalDataItems = data.pagination ? data.pagination.total_items : (data.count || 0);
             if (data.results && data.results.length > 0) {
                 renderDataData(data.results);
                 updateDataPagination(data.pagination || {});
                 hideDataEmptyState();
             } else {
                 showDataEmptyState();
+                updateDataPagination({ total_items: 0, current_page: 1, has_previous: false, has_next: false });
             }
         })
         .catch(error => {
@@ -1321,17 +1327,56 @@ function nextDataPage() {
 
 function updateDataPagination(pagination) {
     const info = document.getElementById('data-pagination-info');
+    const totalInfo = document.getElementById('data-total-info');
     const prevBtn = document.getElementById('data-prev-btn');
     const nextBtn = document.getElementById('data-next-btn');
+    const pageNumbers = document.getElementById('data-page-numbers');
+    
+    totalDataItems = pagination.total_items || 0;
+    const totalPages = Math.ceil(totalDataItems / itemsPerPage);
     
     if (pagination.total_items) {
-        const start = ((pagination.current_page - 1) * 10) + 1;
-        const end = Math.min(pagination.current_page * 10, pagination.total_items);
+        const start = ((pagination.current_page - 1) * itemsPerPage) + 1;
+        const end = Math.min(pagination.current_page * itemsPerPage, pagination.total_items);
         info.textContent = `Menampilkan ${start}-${end} dari ${pagination.total_items} data`;
+        totalInfo.textContent = `Total Data: ${pagination.total_items} (Tahun 2025)`;
+    } else {
+        info.textContent = 'Menampilkan 0 dari 0 data';
+        totalInfo.textContent = 'Total Data: 0 (Tahun 2025)';
     }
     
     prevBtn.disabled = !pagination.has_previous;
     nextBtn.disabled = !pagination.has_next;
+    
+    // Generate page numbers
+    pageNumbers.innerHTML = '';
+    
+    if (totalPages > 1) {
+        const maxVisiblePages = 5;
+        let startPage = Math.max(1, currentDataPage - Math.floor(maxVisiblePages / 2));
+        let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+        
+        if (endPage - startPage + 1 < maxVisiblePages) {
+            startPage = Math.max(1, endPage - maxVisiblePages + 1);
+        }
+        
+        for (let i = startPage; i <= endPage; i++) {
+            const pageBtn = document.createElement('button');
+            pageBtn.textContent = i;
+            pageBtn.className = `px-3 py-2 text-sm border rounded-md ${
+                i === currentDataPage 
+                    ? 'bg-primary-600 text-white border-primary-600' 
+                    : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+            }`;
+            pageBtn.onclick = () => goToDataPage(i);
+            pageNumbers.appendChild(pageBtn);
+        }
+    }
+}
+
+function goToDataPage(page) {
+    currentDataPage = page;
+    loadDisabilitasData();
 }
 
 function debounce(func, wait) {

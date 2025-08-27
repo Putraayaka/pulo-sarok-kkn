@@ -1,0 +1,345 @@
+{% extends 'admin/base.html' %}
+{% load static %}
+
+{% block title %}{{ package.name }} - Paket Wisata{% endblock %}
+{% block page_title %}{{ package.name }}{% endblock %}
+
+{% block content %}
+<div class="p-6">
+    <!-- Breadcrumb -->
+    <nav class="flex mb-6" aria-label="Breadcrumb">
+        <ol class="inline-flex items-center space-x-1 md:space-x-3">
+            <li class="inline-flex items-center">
+                <a href="{% url 'tourism:dashboard' %}" class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-blue-600">
+                    <i class="fas fa-home mr-2"></i>
+                    Wisata
+                </a>
+            </li>
+            <li>
+                <div class="flex items-center">
+                    <i class="fas fa-chevron-right text-gray-400 mx-2"></i>
+                    <a href="{% url 'tourism:package_list' %}" class="text-sm font-medium text-gray-700 hover:text-blue-600">
+                        Paket Wisata
+                    </a>
+                </div>
+            </li>
+            <li aria-current="page">
+                <div class="flex items-center">
+                    <i class="fas fa-chevron-right text-gray-400 mx-2"></i>
+                    <span class="text-sm font-medium text-gray-500">{{ package.name }}</span>
+                </div>
+            </li>
+        </ol>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Left Column - Main Content -->
+        <div class="lg:col-span-2">
+            <!-- Header Section -->
+            <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+                <div class="flex flex-col md:flex-row md:items-start md:justify-between mb-4">
+                    <div class="flex-1">
+                        <div class="flex items-center space-x-2 mb-2">
+                            <span class="bg-green-600 text-white text-xs px-2 py-1 rounded-full">
+                                {{ package.duration }} Hari
+                            </span>
+                            {% if package.is_active %}
+                                <span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">
+                                    Aktif
+                                </span>
+                            {% else %}
+                                <span class="bg-red-100 text-red-800 text-xs px-2 py-1 rounded-full">
+                                    Tidak Aktif
+                                </span>
+                            {% endif %}
+                        </div>
+                        
+                        <h1 class="text-3xl font-bold text-gray-900 mb-2">{{ package.name }}</h1>
+                        <p class="text-gray-600 text-lg mb-4">{{ package.description }}</p>
+                        
+                        <!-- Price Section -->
+                        <div class="flex items-center space-x-4 mb-4">
+                            <div class="text-3xl font-bold text-green-600">
+                                Rp {{ package.price|floatformat:0 }}
+                            </div>
+                            <div class="text-sm text-gray-500">
+                                per orang
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Action Buttons -->
+                    <div class="flex flex-col space-y-2 mt-4 md:mt-0">
+                        <button onclick="sharePackage()" 
+                                class="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 transition-colors duration-200">
+                            <i class="fas fa-share mr-2"></i>
+                            Bagikan
+                        </button>
+                        <button onclick="addToFavorites()" 
+                                class="inline-flex items-center px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-md hover:bg-red-700 transition-colors duration-200">
+                            <i class="fas fa-heart mr-2"></i>
+                            Favorit
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Package Info -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div class="flex items-center text-gray-600">
+                        <i class="fas fa-map-marker-alt text-red-500 mr-3 text-lg"></i>
+                        <div>
+                            <p class="font-medium text-gray-900">Destinasi</p>
+                            <p class="text-sm">{{ package.destination }}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center text-gray-600">
+                        <i class="fas fa-calendar text-blue-500 mr-3 text-lg"></i>
+                        <div>
+                            <p class="font-medium text-gray-900">Durasi</p>
+                            <p class="text-sm">{{ package.duration }} Hari</p>
+                        </div>
+                    </div>
+                    
+                    {% if package.departure_time %}
+                    <div class="flex items-center text-gray-600">
+                        <i class="fas fa-clock text-green-500 mr-3 text-lg"></i>
+                        <div>
+                            <p class="font-medium text-gray-900">Waktu Berangkat</p>
+                            <p class="text-sm">{{ package.departure_time }}</p>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    {% if package.max_participants %}
+                    <div class="flex items-center text-gray-600">
+                        <i class="fas fa-users text-purple-500 mr-3 text-lg"></i>
+                        <div>
+                            <p class="font-medium text-gray-900">Maksimal Peserta</p>
+                            <p class="text-sm">{{ package.max_participants }} orang</p>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Package Image -->
+            {% if package.image %}
+            <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+                <h2 class="text-xl font-semibold text-gray-900 mb-4">📸 Gambar Paket</h2>
+                <div class="relative">
+                    <img src="{{ package.image.url }}" 
+                         alt="{{ package.name }}" 
+                         class="w-full h-64 object-cover rounded-lg">
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Detailed Description -->
+            <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+                <h2 class="text-xl font-semibold text-gray-900 mb-4">📖 Deskripsi Lengkap</h2>
+                <div class="prose max-w-none text-gray-700">
+                    {{ package.detailed_description|linebreaks|default:package.description|linebreaks }}
+                </div>
+            </div>
+
+            <!-- Included Services -->
+            {% if package.included_services %}
+            <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+                <h2 class="text-xl font-semibold text-gray-900 mb-4">✅ Layanan Termasuk</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {% for service in package.included_services %}
+                        <div class="flex items-center text-gray-600">
+                            <i class="fas fa-check text-green-500 mr-2"></i>
+                            <span>{{ service }}</span>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Excluded Services -->
+            {% if package.excluded_services %}
+            <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+                <h2 class="text-xl font-semibold text-gray-900 mb-4">❌ Layanan Tidak Termasuk</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {% for service in package.excluded_services %}
+                        <div class="flex items-center text-gray-600">
+                            <i class="fas fa-times text-red-500 mr-2"></i>
+                            <span>{{ service }}</span>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Itinerary -->
+            {% if package.itinerary %}
+            <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+                <h2 class="text-xl font-semibold text-gray-900 mb-4">🗓️ Itinerary Perjalanan</h2>
+                <div class="space-y-4">
+                    {% for day, activities in package.itinerary.items %}
+                    <div class="border border-gray-200 rounded-lg p-4">
+                        <h3 class="font-semibold text-gray-900 mb-2">Hari {{ day }}</h3>
+                        <div class="space-y-2">
+                            {% for activity in activities %}
+                                <div class="flex items-start">
+                                    <i class="fas fa-circle text-blue-500 text-xs mt-2 mr-2"></i>
+                                    <span class="text-gray-700">{{ activity }}</span>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Terms and Conditions -->
+            {% if package.terms_conditions %}
+            <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+                <h2 class="text-xl font-semibold text-gray-900 mb-4">📋 Syarat & Ketentuan</h2>
+                <div class="prose max-w-none text-gray-700">
+                    {{ package.terms_conditions|linebreaks }}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Right Column - Sidebar -->
+        <div class="lg:col-span-1">
+            <!-- Booking Section -->
+            <div class="bg-white rounded-lg shadow-md p-6 mb-6 sticky top-6">
+                <h2 class="text-xl font-semibold text-gray-900 mb-4">📅 Pesan Sekarang</h2>
+                
+                <div class="space-y-4">
+                    <div class="text-center">
+                        <div class="text-3xl font-bold text-green-600 mb-2">
+                            Rp {{ package.price|floatformat:0 }}
+                        </div>
+                        <div class="text-sm text-gray-500">per orang</div>
+                    </div>
+                    
+                    <div class="border-t border-gray-200 pt-4">
+                        <div class="flex justify-between text-sm mb-2">
+                            <span>Durasi</span>
+                            <span class="font-medium">{{ package.duration }} Hari</span>
+                        </div>
+                        <div class="flex justify-between text-sm mb-2">
+                            <span>Destinasi</span>
+                            <span class="font-medium">{{ package.destination }}</span>
+                        </div>
+                        {% if package.max_participants %}
+                        <div class="flex justify-between text-sm mb-2">
+                            <span>Maksimal</span>
+                            <span class="font-medium">{{ package.max_participants }} orang</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <button onclick="bookPackage()" 
+                            class="w-full bg-green-600 text-white py-3 px-4 rounded-md font-medium hover:bg-green-700 transition-colors duration-200">
+                        <i class="fas fa-calendar-check mr-2"></i>
+                        Pesan Paket
+                    </button>
+                    
+                    <div class="text-center">
+                        <a href="tel:+6281234567890" 
+                           class="inline-flex items-center text-sm text-blue-600 hover:text-blue-800">
+                            <i class="fas fa-phone mr-2"></i>
+                            Hubungi Kami
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Related Packages -->
+            {% if related_packages %}
+            <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+                <h2 class="text-xl font-semibold text-gray-900 mb-4">🎒 Paket Terkait</h2>
+                <div class="space-y-3">
+                    {% for related in related_packages %}
+                    <div class="border border-gray-200 rounded-lg p-3">
+                        <h4 class="font-medium text-gray-900 text-sm mb-1">{{ related.name }}</h4>
+                        <p class="text-xs text-gray-600 mb-2">{{ related.duration }} Hari</p>
+                        <p class="text-sm font-semibold text-green-600">Rp {{ related.price|floatformat:0 }}</p>
+                        <a href="{% url 'tourism:package_detail' related.id %}" 
+                           class="text-xs text-blue-600 hover:text-blue-800">
+                            Lihat Detail <i class="fas fa-arrow-right ml-1"></i>
+                        </a>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Contact Information -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-xl font-semibold text-gray-900 mb-4">📞 Informasi Kontak</h2>
+                <div class="space-y-3">
+                    <div class="flex items-center text-gray-600">
+                        <i class="fas fa-phone text-green-500 mr-3"></i>
+                        <span>+62 812-3456-7890</span>
+                    </div>
+                    <div class="flex items-center text-gray-600">
+                        <i class="fas fa-envelope text-blue-500 mr-3"></i>
+                        <span>info@desapulosarok.com</span>
+                    </div>
+                    <div class="flex items-center text-gray-600">
+                        <i class="fas fa-map-marker-alt text-red-500 mr-3"></i>
+                        <span>Desa Pulosarok, Jawa Timur</span>
+                    </div>
+                    <div class="flex items-center text-gray-600">
+                        <i class="fas fa-clock text-purple-500 mr-3"></i>
+                        <span>Senin - Jumat: 08:00 - 17:00</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript for interactivity -->
+<script>
+function sharePackage() {
+    if (navigator.share) {
+        navigator.share({
+            title: '{{ package.name }}',
+            text: '{{ package.description|truncatechars:100 }}',
+            url: window.location.href
+        });
+    } else {
+        // Fallback: copy to clipboard
+        navigator.clipboard.writeText(window.location.href).then(() => {
+            alert('Link berhasil disalin ke clipboard!');
+        });
+    }
+}
+
+function addToFavorites() {
+    // Toggle favorite state
+    const button = event.target.closest('button');
+    const icon = button.querySelector('i');
+    
+    if (icon.classList.contains('text-red-600')) {
+        icon.classList.remove('text-red-600');
+        icon.classList.add('text-white');
+        button.classList.remove('bg-red-600', 'hover:bg-red-700');
+        button.classList.add('bg-gray-600', 'hover:bg-gray-700');
+        button.innerHTML = '<i class="fas fa-heart mr-2"></i>Favorit';
+    } else {
+        icon.classList.remove('text-white');
+        icon.classList.add('text-red-600');
+        button.classList.remove('bg-gray-600', 'hover:bg-gray-700');
+        button.classList.add('bg-red-600', 'hover:bg-red-700');
+        button.innerHTML = '<i class="fas fa-heart mr-2"></i>Dihapus dari Favorit';
+    }
+}
+
+function bookPackage() {
+    // Show booking form or redirect to booking page
+    alert('Fitur pemesanan akan segera tersedia! Silakan hubungi kami untuk informasi lebih lanjut.');
+}
+</script>
+{% endblock %}

@@ -1,0 +1,539 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="id" class="h-full bg-gray-50">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ geography.name }} - Detail Geografi</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="h-full">
+    <div class="min-h-full">
+        <!-- Navigation -->
+        <nav class="bg-white shadow-sm border-b border-gray-200">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between h-16">
+                    <div class="flex items-center space-x-4">
+                        <a href="{% url 'village_profile:geography_list' %}" class="text-sm font-medium text-gray-600 hover:text-green-600">
+                            <i class="fas fa-arrow-left mr-2"></i>
+                            Kembali ke Daftar
+                        </a>
+                        <div class="h-6 border-l border-gray-300"></div>
+                        <a href="{% url 'village_profile:dashboard' %}" class="text-sm font-medium text-gray-600 hover:text-green-600">
+                            <i class="fas fa-home mr-2"></i>
+                            Dashboard
+                        </a>
+                    </div>
+                    <div class="flex items-center space-x-3">
+                        <a href="{% url 'village_profile:geography_edit' geography.pk %}" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700">
+                            <i class="fas fa-edit mr-2"></i>
+                            Edit
+                        </a>
+                        <a href="{% url 'village_profile:geography_delete' geography.pk %}" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700" onclick="return confirm('Apakah Anda yakin ingin menghapus data geografi ini?')">
+                            <i class="fas fa-trash mr-2"></i>
+                            Hapus
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+            <!-- Page Header -->
+            <div class="px-4 py-6 sm:px-0">
+                <div class="bg-white shadow rounded-lg p-6">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-4">
+                            <div class="flex-shrink-0">
+                                <div class="w-16 h-16 bg-green-100 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-mountain text-green-600 text-2xl"></i>
+                                </div>
+                            </div>
+                            <div>
+                                <h1 class="text-3xl font-bold text-gray-900">{{ geography.name }}</h1>
+                                <p class="text-lg text-gray-600 mt-1">{{ geography.get_geography_type_display }}</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            {% if geography.is_active %}
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                                    <i class="fas fa-check-circle mr-2"></i>
+                                    Aktif
+                                </span>
+                            {% else %}
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">
+                                    <i class="fas fa-times-circle mr-2"></i>
+                                    Tidak Aktif
+                                </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Geography Image -->
+            {% if geography.image %}
+                <div class="px-4 py-6 sm:px-0">
+                    <div class="bg-white shadow rounded-lg overflow-hidden">
+                        <div class="px-6 py-4 border-b border-gray-200">
+                            <h2 class="text-xl font-semibold text-gray-900">
+                                <i class="fas fa-image mr-2 text-green-600"></i>
+                                Gambar Geografi
+                            </h2>
+                        </div>
+                        <div class="p-6">
+                            <div class="relative">
+                                <img src="{{ geography.image.url }}" alt="{{ geography.name }}" class="w-full h-auto rounded-lg shadow-lg">
+                                <div class="absolute top-4 right-4">
+                                    <button onclick="openImageModal()" class="bg-black bg-opacity-50 text-white px-3 py-2 rounded-lg hover:bg-opacity-70 transition-opacity">
+                                        <i class="fas fa-expand mr-2"></i>
+                                        Perbesar
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+
+            <!-- Geography Description -->
+            <div class="px-4 py-6 sm:px-0">
+                <div class="bg-white shadow rounded-lg">
+                    <div class="px-6 py-4 border-b border-gray-200">
+                        <h2 class="text-xl font-semibold text-gray-900">
+                            <i class="fas fa-file-alt mr-2 text-green-600"></i>
+                            Deskripsi Geografi
+                        </h2>
+                    </div>
+                    <div class="p-6">
+                        <div class="prose prose-green max-w-none">
+                            <div class="text-gray-700 leading-relaxed text-lg">
+                                {{ geography.description|linebreaks }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Location and Coordinates -->
+            <div class="px-4 py-6 sm:px-0">
+                <div class="bg-white shadow rounded-lg">
+                    <div class="px-6 py-4 border-b border-gray-200">
+                        <h2 class="text-xl font-semibold text-gray-900">
+                            <i class="fas fa-map-marker-alt mr-2 text-green-600"></i>
+                            Lokasi dan Koordinat
+                        </h2>
+                    </div>
+                    <div class="p-6">
+                        <dl class="grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-2">
+                            {% if geography.location %}
+                            <div>
+                                <dt class="text-sm font-medium text-gray-500 flex items-center">
+                                    <i class="fas fa-map-marker-alt mr-2"></i>
+                                    Lokasi
+                                </dt>
+                                <dd class="mt-1 text-sm text-gray-900">{{ geography.location }}</dd>
+                            </div>
+                            {% endif %}
+                            
+                            {% if geography.latitude %}
+                            <div>
+                                <dt class="text-sm font-medium text-gray-500 flex items-center">
+                                    <i class="fas fa-crosshairs mr-2"></i>
+                                    Latitude
+                                </dt>
+                                <dd class="mt-1 text-sm text-gray-900">{{ geography.latitude }}°</dd>
+                            </div>
+                            {% endif %}
+                            
+                            {% if geography.longitude %}
+                            <div>
+                                <dt class="text-sm font-medium text-gray-500 flex items-center">
+                                    <i class="fas fa-crosshairs mr-2"></i>
+                                    Longitude
+                                </dt>
+                                <dd class="mt-1 text-sm text-gray-900">{{ geography.longitude }}°</dd>
+                            </div>
+                            {% endif %}
+                            
+                            {% if geography.altitude %}
+                            <div>
+                                <dt class="text-sm font-medium text-gray-500 flex items-center">
+                                    <i class="fas fa-mountain mr-2"></i>
+                                    Ketinggian
+                                </dt>
+                                <dd class="mt-1 text-sm text-gray-900">{{ geography.altitude }} mdpl</dd>
+                            </div>
+                            {% endif %}
+                        </dl>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Physical Characteristics -->
+            <div class="px-4 py-6 sm:px-0">
+                <div class="bg-white shadow rounded-lg">
+                    <div class="px-6 py-4 border-b border-gray-200">
+                        <h2 class="text-xl font-semibold text-gray-900">
+                            <i class="fas fa-chart-area mr-2 text-green-600"></i>
+                            Karakteristik Fisik
+                        </h2>
+                    </div>
+                    <div class="p-6">
+                        <dl class="grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-2 lg:grid-cols-3">
+                            {% if geography.area %}
+                            <div>
+                                <dt class="text-sm font-medium text-gray-500 flex items-center">
+                                    <i class="fas fa-expand-arrows-alt mr-2"></i>
+                                    Luas Area
+                                </dt>
+                                <dd class="mt-1">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                                        {{ geography.area }} km²
+                                    </span>
+                                </dd>
+                            </div>
+                            {% endif %}
+                            
+                            {% if geography.slope %}
+                            <div>
+                                <dt class="text-sm font-medium text-gray-500 flex items-center">
+                                    <i class="fas fa-angle-up mr-2"></i>
+                                    Kemiringan
+                                </dt>
+                                <dd class="mt-1 text-sm text-gray-900">{{ geography.slope }}°</dd>
+                            </div>
+                            {% endif %}
+                            
+                            {% if geography.soil_type %}
+                            <div>
+                                <dt class="text-sm font-medium text-gray-500 flex items-center">
+                                    <i class="fas fa-seedling mr-2"></i>
+                                    Jenis Tanah
+                                </dt>
+                                <dd class="mt-1 text-sm text-gray-900">{{ geography.soil_type }}</dd>
+                            </div>
+                            {% endif %}
+                            
+                            {% if geography.vegetation %}
+                            <div>
+                                <dt class="text-sm font-medium text-gray-500 flex items-center">
+                                    <i class="fas fa-tree mr-2"></i>
+                                    Vegetasi
+                                </dt>
+                                <dd class="mt-1 text-sm text-gray-900">{{ geography.vegetation }}</dd>
+                            </div>
+                            {% endif %}
+                            
+                            {% if geography.water_source %}
+                            <div>
+                                <dt class="text-sm font-medium text-gray-500 flex items-center">
+                                    <i class="fas fa-tint mr-2"></i>
+                                    Sumber Air
+                                </dt>
+                                <dd class="mt-1 text-sm text-gray-900">{{ geography.water_source }}</dd>
+                            </div>
+                            {% endif %}
+                            
+                            {% if geography.climate %}
+                            <div>
+                                <dt class="text-sm font-medium text-gray-500 flex items-center">
+                                    <i class="fas fa-cloud-sun mr-2"></i>
+                                    Iklim
+                                </dt>
+                                <dd class="mt-1 text-sm text-gray-900">{{ geography.climate }}</dd>
+                            </div>
+                            {% endif %}
+                        </dl>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Natural Resources -->
+            {% if geography.natural_resources %}
+                <div class="px-4 py-6 sm:px-0">
+                    <div class="bg-white shadow rounded-lg">
+                        <div class="px-6 py-4 border-b border-gray-200">
+                            <h2 class="text-xl font-semibold text-gray-900">
+                                <i class="fas fa-gem mr-2 text-green-600"></i>
+                                Sumber Daya Alam
+                            </h2>
+                        </div>
+                        <div class="p-6">
+                            <div class="prose prose-green max-w-none">
+                                <div class="text-gray-700 leading-relaxed">
+                                    {{ geography.natural_resources|linebreaks }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+
+            <!-- Potential and Challenges -->
+            <div class="px-4 py-6 sm:px-0">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Potential -->
+                    {% if geography.potential %}
+                        <div class="bg-white shadow rounded-lg">
+                            <div class="px-6 py-4 border-b border-gray-200">
+                                <h3 class="text-lg font-medium text-gray-900">
+                                    <i class="fas fa-star mr-2 text-yellow-500"></i>
+                                    Potensi
+                                </h3>
+                            </div>
+                            <div class="p-6">
+                                <div class="text-gray-700 leading-relaxed">
+                                    {{ geography.potential|linebreaks }}
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                    
+                    <!-- Challenges -->
+                    {% if geography.challenges %}
+                        <div class="bg-white shadow rounded-lg">
+                            <div class="px-6 py-4 border-b border-gray-200">
+                                <h3 class="text-lg font-medium text-gray-900">
+                                    <i class="fas fa-exclamation-triangle mr-2 text-orange-500"></i>
+                                    Tantangan
+                                </h3>
+                            </div>
+                            <div class="p-6">
+                                <div class="text-gray-700 leading-relaxed">
+                                    {{ geography.challenges|linebreaks }}
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Additional Information -->
+            <div class="px-4 py-6 sm:px-0">
+                <div class="bg-white shadow rounded-lg">
+                    <div class="px-6 py-4 border-b border-gray-200">
+                        <h3 class="text-lg font-medium text-gray-900">
+                            <i class="fas fa-info-circle mr-2 text-green-600"></i>
+                            Informasi Detail
+                        </h3>
+                    </div>
+                    <div class="p-6">
+                        <dl class="grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-2">
+                            <div>
+                                <dt class="text-sm font-medium text-gray-500 flex items-center">
+                                    <i class="fas fa-layer-group mr-2"></i>
+                                    Jenis Geografi
+                                </dt>
+                                <dd class="mt-1">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                                        {{ geography.get_geography_type_display }}
+                                    </span>
+                                </dd>
+                            </div>
+                            
+                            <div>
+                                <dt class="text-sm font-medium text-gray-500 flex items-center">
+                                    <i class="fas fa-toggle-on mr-2"></i>
+                                    Status
+                                </dt>
+                                <dd class="mt-1">
+                                    {% if geography.is_active %}
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                            Aktif
+                                        </span>
+                                    {% else %}
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                            Tidak Aktif
+                                        </span>
+                                    {% endif %}
+                                </dd>
+                            </div>
+                            
+                            <div>
+                                <dt class="text-sm font-medium text-gray-500 flex items-center">
+                                    <i class="fas fa-clock mr-2"></i>
+                                    Dibuat
+                                </dt>
+                                <dd class="mt-1 text-sm text-gray-900">{{ geography.created_at|date:"d F Y H:i" }}</dd>
+                            </div>
+                            
+                            {% if geography.updated_at != geography.created_at %}
+                            <div>
+                                <dt class="text-sm font-medium text-gray-500 flex items-center">
+                                    <i class="fas fa-edit mr-2"></i>
+                                    Terakhir Diperbarui
+                                </dt>
+                                <dd class="mt-1 text-sm text-gray-900">{{ geography.updated_at|date:"d F Y H:i" }}</dd>
+                            </div>
+                            {% endif %}
+                        </dl>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="px-4 py-6 sm:px-0">
+                <div class="bg-white shadow rounded-lg p-6">
+                    <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                        <a href="{% url 'village_profile:geography_edit' geography.pk %}" class="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                            <i class="fas fa-edit mr-2"></i>
+                            Edit Geografi
+                        </a>
+                        <a href="{% url 'village_profile:geography_list' %}" class="inline-flex items-center justify-center px-6 py-3 border border-gray-300 text-base font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                            <i class="fas fa-list mr-2"></i>
+                            Lihat Semua Geografi
+                        </a>
+                        <a href="{% url 'village_profile:geography_add' %}" class="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                            <i class="fas fa-plus mr-2"></i>
+                            Tambah Geografi Baru
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Print Section -->
+            <div class="px-4 py-6 sm:px-0">
+                <div class="bg-white shadow rounded-lg p-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h3 class="text-lg font-medium text-gray-900">
+                                <i class="fas fa-print mr-2 text-gray-600"></i>
+                                Cetak Dokumen
+                            </h3>
+                            <p class="text-sm text-gray-600">Cetak informasi geografi untuk keperluan dokumentasi</p>
+                        </div>
+                        <button onclick="window.print()" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                            <i class="fas fa-print mr-2"></i>
+                            Cetak
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Navigation to Other Geography -->
+            <div class="px-4 py-6 sm:px-0">
+                <div class="bg-white shadow rounded-lg p-6">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">
+                        <i class="fas fa-mountain mr-2 text-green-600"></i>
+                        Geografi Lainnya
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {% if previous_geography %}
+                            <a href="{% url 'village_profile:geography_detail' previous_geography.pk %}" class="block p-4 border border-gray-200 rounded-lg hover:border-green-300 hover:bg-green-50 transition-colors">
+                                <div class="flex items-center space-x-3">
+                                    <i class="fas fa-chevron-left text-green-600"></i>
+                                    <div>
+                                        <p class="text-sm font-medium text-gray-900">Sebelumnya</p>
+                                        <p class="text-sm text-gray-600">{{ previous_geography.name|truncatewords:5 }}</p>
+                                    </div>
+                                </div>
+                            </a>
+                        {% endif %}
+                        
+                        {% if next_geography %}
+                            <a href="{% url 'village_profile:geography_detail' next_geography.pk %}" class="block p-4 border border-gray-200 rounded-lg hover:border-green-300 hover:bg-green-50 transition-colors">
+                                <div class="flex items-center justify-end space-x-3">
+                                    <div class="text-right">
+                                        <p class="text-sm font-medium text-gray-900">Selanjutnya</p>
+                                        <p class="text-sm text-gray-600">{{ next_geography.name|truncatewords:5 }}</p>
+                                    </div>
+                                    <i class="fas fa-chevron-right text-green-600"></i>
+                                </div>
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Image Modal -->
+    {% if geography.image %}
+        <div id="imageModal" class="fixed inset-0 bg-black bg-opacity-75 z-50 hidden flex items-center justify-center p-4">
+            <div class="relative max-w-full max-h-full">
+                <img src="{{ geography.image.url }}" alt="{{ geography.name }}" class="max-w-full max-h-full object-contain">
+                <button onclick="closeImageModal()" class="absolute top-4 right-4 text-white bg-black bg-opacity-50 rounded-full p-2 hover:bg-opacity-70">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Print Styles -->
+    <style media="print">
+        @page {
+            margin: 1in;
+        }
+        
+        nav, .no-print {
+            display: none !important;
+        }
+        
+        .print-title {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .print-section {
+            page-break-inside: avoid;
+            margin-bottom: 2rem;
+        }
+        
+        body {
+            font-size: 12pt;
+            line-height: 1.5;
+        }
+        
+        h1, h2, h3 {
+            color: black !important;
+        }
+    </style>
+
+    <!-- JavaScript -->
+    <script>
+        // Image modal functions
+        function openImageModal() {
+            document.getElementById('imageModal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+        
+        function closeImageModal() {
+            document.getElementById('imageModal').classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        }
+        
+        // Close modal on escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeImageModal();
+            }
+            // Ctrl+P for print
+            if (e.ctrlKey && e.key === 'p') {
+                e.preventDefault();
+                window.print();
+            }
+            // Ctrl+E for edit
+            if (e.ctrlKey && e.key === 'e') {
+                e.preventDefault();
+                window.location.href = "{% url 'village_profile:geography_edit' geography.pk %}";
+            }
+        });
+        
+        // Close modal on click outside
+        document.getElementById('imageModal')?.addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeImageModal();
+            }
+        });
+        
+        // Add print-specific content
+        window.addEventListener('beforeprint', function() {
+            document.title = 'Geografi - {{ geography.name }}';
+        });
+    </script>
+</body>
+</html>

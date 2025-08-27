@@ -24,17 +24,15 @@ from .models import (
 from references.models import Penduduk
 
 
-@login_required
 def organization_admin_view(request):
     """Main organization admin view"""
     context = {
         'page_title': 'Manajemen Organisasi',
         'page_subtitle': 'Kelola data organisasi, anggota, dan kegiatan'
     }
-    return render(request, 'admin/modules/organization.html', context)
+    return render(request, 'admin/modules/organization/index.html', context)
 
 
-@login_required
 def struktur_organisasi_view(request):
     """Struktur Organisasi view"""
     context = {
@@ -44,7 +42,6 @@ def struktur_organisasi_view(request):
     return render(request, 'admin/modules/organization/struktur_organisasi.html', context)
 
 
-@login_required
 def data_anggota_view(request):
     """Data Anggota view"""
     context = {
@@ -54,7 +51,6 @@ def data_anggota_view(request):
     return render(request, 'admin/modules/organization/data_anggota.html', context)
 
 
-@login_required
 def data_jabatan_view(request):
     """Data Jabatan view"""
     context = {
@@ -64,7 +60,6 @@ def data_jabatan_view(request):
     return render(request, 'admin/modules/organization/data_jabatan.html', context)
 
 
-@login_required
 def periode_kepengurusan_view(request):
     """Periode Kepengurusan view"""
     context = {
@@ -74,7 +69,6 @@ def periode_kepengurusan_view(request):
     return render(request, 'admin/modules/organization/periode_kepengurusan.html', context)
 
 
-@login_required
 def galeri_kegiatan_view(request):
     """Galeri Kegiatan view"""
     context = {
@@ -82,6 +76,15 @@ def galeri_kegiatan_view(request):
         'page_subtitle': 'Kelola galeri foto kegiatan organisasi'
     }
     return render(request, 'admin/modules/organization/galeri_kegiatan.html', context)
+
+
+def kategori_organisasi_view(request):
+    """Kategori Organisasi view"""
+    context = {
+        'page_title': 'Kategori Organisasi',
+        'page_subtitle': 'Kelola kategori dan jenis organisasi'
+    }
+    return render(request, 'admin/modules/organization/kategori_organisasi.html', context)
 
 
 # Organization Type API Views
@@ -112,7 +115,7 @@ def organization_types_api(request):
                 'id': item.id,
                 'name': item.name,
                 'description': item.description,
-                'is_active': item.is_active,
+                'status': item.status,
                 'created_at': item.created_at.strftime('%Y-%m-%d %H:%M'),
                 'organizations_count': item.organization_set.count()
             }
@@ -131,7 +134,6 @@ def organization_types_api(request):
 
 
 # Jabatan API Views
-@login_required
 @require_http_methods(["GET"])
 def jabatan_api(request):
     """API for jabatan list"""
@@ -143,11 +145,11 @@ def jabatan_api(request):
     
     if search:
         queryset = queryset.filter(
-            Q(nama__icontains=search) |
+            Q(nama_jabatan__icontains=search) |
             Q(deskripsi__icontains=search)
         )
     
-    queryset = queryset.order_by('level', 'nama')
+    queryset = queryset.order_by('level_hierarki', 'nama_jabatan')
     
     paginator = Paginator(queryset, per_page)
     page_obj = paginator.get_page(page)
@@ -156,9 +158,9 @@ def jabatan_api(request):
         'results': [
             {
                 'id': item.id,
-                'nama': item.nama,
+                'nama': item.nama_jabatan,
                 'deskripsi': item.deskripsi,
-                'level': item.level,
+                'level': item.level_hierarki,
                 'is_active': item.is_active,
                 'created_at': item.created_at.strftime('%Y-%m-%d %H:%M')
             }
@@ -176,6 +178,34 @@ def jabatan_api(request):
     return JsonResponse(data)
 
 
+@require_http_methods(["GET"])
+def jabatan_detail_api(request, jabatan_id):
+    """API for jabatan detail"""
+    try:
+        jabatan = get_object_or_404(Jabatan, id=jabatan_id)
+        
+        data = {
+            'id': jabatan.id,
+            'nama': jabatan.nama_jabatan,
+            'deskripsi': jabatan.deskripsi or '',
+            'level': jabatan.level_hierarki,
+            'is_active': jabatan.is_active
+        }
+        
+        return JsonResponse(data)
+        
+    except Jabatan.DoesNotExist:
+        return JsonResponse({
+            'success': False,
+            'message': 'Jabatan tidak ditemukan'
+        }, status=404)
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f'Error loading jabatan: {str(e)}'
+        }, status=400)
+
+
 @login_required
 @csrf_exempt
 @require_http_methods(["POST"])
@@ -185,9 +215,9 @@ def jabatan_create_api(request):
         data = json.loads(request.body)
         
         jabatan = Jabatan.objects.create(
-            nama=data['nama'],
+            nama_jabatan=data['nama'],
             deskripsi=data.get('deskripsi', ''),
-            level=data.get('level', 1),
+            level_hierarki=data.get('level', 1),
             is_active=data.get('is_active', True)
         )
         
@@ -196,7 +226,7 @@ def jabatan_create_api(request):
             'message': 'Jabatan berhasil ditambahkan',
             'data': {
                 'id': jabatan.id,
-                'nama': jabatan.nama
+                'nama': jabatan.nama_jabatan
             }
         })
         
@@ -216,9 +246,9 @@ def jabatan_update_api(request, jabatan_id):
         jabatan = get_object_or_404(Jabatan, id=jabatan_id)
         data = json.loads(request.body)
         
-        jabatan.nama = data.get('nama', jabatan.nama)
+        jabatan.nama_jabatan = data.get('nama', jabatan.nama_jabatan)
         jabatan.deskripsi = data.get('deskripsi', jabatan.deskripsi)
-        jabatan.level = data.get('level', jabatan.level)
+        jabatan.level_hierarki = data.get('level', jabatan.level_hierarki)
         jabatan.is_active = data.get('is_active', jabatan.is_active)
         jabatan.save()
         
@@ -255,15 +285,14 @@ def jabatan_delete_api(request, jabatan_id):
         }, status=400)
 
 
-@login_required
 @require_http_methods(["GET"])
 def jabatan_statistics_api(request):
     """API for jabatan statistics"""
     try:
         total_jabatan = Jabatan.objects.count()
-        jabatan_eksekutif = Jabatan.objects.filter(level__lte=2).count()
-        jabatan_struktural = Jabatan.objects.filter(level__range=(3, 5)).count()
-        jabatan_anggota = Jabatan.objects.filter(level__gte=6).count()
+        jabatan_eksekutif = Jabatan.objects.filter(level_hierarki__lte=2).count()
+        jabatan_struktural = Jabatan.objects.filter(level_hierarki__range=(3, 5)).count()
+        jabatan_anggota = Jabatan.objects.filter(level_hierarki__gte=6).count()
         
         return JsonResponse({
             'total_jabatan': total_jabatan,
@@ -280,7 +309,6 @@ def jabatan_statistics_api(request):
 
 
 # Periode Kepengurusan API Views
-@login_required
 @require_http_methods(["GET"])
 def periode_kepengurusan_api(request):
     """API for periode kepengurusan list"""
@@ -292,7 +320,7 @@ def periode_kepengurusan_api(request):
     
     if search:
         queryset = queryset.filter(
-            Q(nama__icontains=search) |
+            Q(nama_periode__icontains=search) |
             Q(deskripsi__icontains=search)
         )
     
@@ -305,7 +333,7 @@ def periode_kepengurusan_api(request):
         'results': [
             {
                 'id': item.id,
-                'nama': item.nama,
+                'nama': item.nama_periode,
                 'deskripsi': item.deskripsi,
                 'tanggal_mulai': item.tanggal_mulai.strftime('%Y-%m-%d'),
                 'tanggal_selesai': item.tanggal_selesai.strftime('%Y-%m-%d'),
@@ -324,6 +352,31 @@ def periode_kepengurusan_api(request):
     }
     
     return JsonResponse(data)
+
+
+@require_http_methods(["GET"])
+def periode_kepengurusan_statistics_api(request):
+    """API for periode kepengurusan statistics"""
+    try:
+        total_periode = PeriodeKepengurusan.objects.count()
+        periode_aktif = PeriodeKepengurusan.objects.filter(is_active=True).count()
+        periode_selesai = PeriodeKepengurusan.objects.filter(is_active=False).count()
+        total_organisasi = Organization.objects.count()
+        
+        data = {
+            'total_periode': total_periode,
+            'periode_aktif': periode_aktif,
+            'periode_selesai': periode_selesai,
+            'total_organisasi': total_organisasi
+        }
+        
+        return JsonResponse(data)
+        
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f'Error loading statistics: {str(e)}'
+        }, status=400)
 
 
 @login_required
@@ -347,7 +400,7 @@ def periode_kepengurusan_create_api(request):
             'message': 'Periode kepengurusan berhasil ditambahkan',
             'data': {
                 'id': periode.id,
-                'nama': periode.nama
+                'nama': periode.nama_periode
             }
         })
         
@@ -367,7 +420,7 @@ def periode_kepengurusan_update_api(request, periode_id):
         periode = get_object_or_404(PeriodeKepengurusan, id=periode_id)
         data = json.loads(request.body)
         
-        periode.nama = data.get('nama', periode.nama)
+        periode.nama_periode = data.get('nama', periode.nama_periode)
         periode.deskripsi = data.get('deskripsi', periode.deskripsi)
         periode.tanggal_mulai = parse_date(data['tanggal_mulai']) if data.get('tanggal_mulai') else periode.tanggal_mulai
         periode.tanggal_selesai = parse_date(data['tanggal_selesai']) if data.get('tanggal_selesai') else periode.tanggal_selesai
@@ -408,7 +461,6 @@ def periode_kepengurusan_delete_api(request, periode_id):
 
 
 # Anggota Organisasi API Views
-@login_required
 @require_http_methods(["GET"])
 def anggota_organisasi_api(request):
     """API for anggota organisasi list"""
@@ -423,7 +475,7 @@ def anggota_organisasi_api(request):
     
     if search:
         queryset = queryset.filter(
-            Q(penduduk__nama__icontains=search) |
+            Q(penduduk__name__icontains=search) |
             Q(penduduk__nik__icontains=search) |
             Q(organization__name__icontains=search)
         )
@@ -446,15 +498,15 @@ def anggota_organisasi_api(request):
         'results': [
             {
                 'id': item.id,
-                'penduduk_nama': item.penduduk.nama,
+                'penduduk_nama': item.penduduk.name,
                 'penduduk_nik': item.penduduk.nik,
                 'organization_name': item.organization.name,
-                'jabatan_nama': item.jabatan.nama,
-                'periode_nama': item.periode.nama,
+                'jabatan_nama': item.jabatan.nama_jabatan,
+                'periode_nama': item.periode.nama_periode,
                 'tanggal_bergabung': item.tanggal_bergabung.strftime('%Y-%m-%d'),
                 'tanggal_keluar': item.tanggal_keluar.strftime('%Y-%m-%d') if item.tanggal_keluar else None,
                 'foto_profil': item.foto_profil.url if item.foto_profil else None,
-                'is_active': item.is_active,
+                'status': item.status,
                 'created_at': item.created_at.strftime('%Y-%m-%d %H:%M')
             }
             for item in page_obj
@@ -471,7 +523,65 @@ def anggota_organisasi_api(request):
     return JsonResponse(data)
 
 
-@login_required
+@require_http_methods(["GET"])
+def anggota_organisasi_statistics_api(request):
+    """API for anggota organisasi statistics"""
+    try:
+        total_anggota = AnggotaOrganisasi.objects.count()
+        anggota_aktif = AnggotaOrganisasi.objects.filter(status='aktif').count()
+        total_organisasi = Organization.objects.count()
+        total_jabatan = Jabatan.objects.count()
+        
+        data = {
+            'total_anggota': total_anggota,
+            'anggota_aktif': anggota_aktif,
+            'total_organisasi': total_organisasi,
+            'total_jabatan': total_jabatan
+        }
+        
+        return JsonResponse(data)
+        
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f'Error loading statistics: {str(e)}'
+        }, status=400)
+
+
+@require_http_methods(["GET"])
+def anggota_organisasi_detail_api(request, anggota_id):
+    """API for anggota organisasi detail"""
+    try:
+        anggota = get_object_or_404(AnggotaOrganisasi.objects.select_related('penduduk', 'organization', 'jabatan', 'periode'), id=anggota_id)
+        
+        data = {
+            'id': anggota.id,
+            'penduduk_nama': anggota.penduduk.name,
+            'penduduk_nik': anggota.penduduk.nik,
+            'penduduk_id': anggota.penduduk.id,
+            'organization_name': anggota.organization.name,
+            'organization_id': anggota.organization.id,
+            'jabatan_nama': anggota.jabatan.nama_jabatan,
+            'jabatan_id': anggota.jabatan.id,
+            'periode_nama': anggota.periode.nama_periode,
+            'periode_id': anggota.periode.id,
+            'tanggal_bergabung': anggota.tanggal_bergabung.strftime('%Y-%m-%d') if anggota.tanggal_bergabung else None,
+            'tanggal_keluar': anggota.tanggal_keluar.strftime('%Y-%m-%d') if anggota.tanggal_keluar else None,
+            'foto_profil': anggota.foto_profil.url if anggota.foto_profil else None,
+            'status': anggota.status,
+            'created_at': anggota.created_at.strftime('%Y-%m-%d %H:%M'),
+            'updated_at': anggota.updated_at.strftime('%Y-%m-%d %H:%M')
+        }
+        
+        return JsonResponse(data)
+        
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f'Error loading anggota organisasi: {str(e)}'
+        }, status=400)
+
+
 @csrf_exempt
 @require_http_methods(["POST"])
 def anggota_organisasi_create_api(request):
@@ -484,7 +594,7 @@ def anggota_organisasi_create_api(request):
         tanggal_bergabung = request.POST.get('tanggal_bergabung')
         tanggal_keluar = request.POST.get('tanggal_keluar')
         foto_profil = request.FILES.get('foto_profil')
-        is_active = request.POST.get('is_active', 'true').lower() == 'true'
+        status = request.POST.get('status', 'aktif')
         
         anggota = AnggotaOrganisasi.objects.create(
             penduduk_id=penduduk_id,
@@ -494,7 +604,7 @@ def anggota_organisasi_create_api(request):
             tanggal_bergabung=parse_date(tanggal_bergabung),
             tanggal_keluar=parse_date(tanggal_keluar) if tanggal_keluar else None,
             foto_profil=foto_profil,
-            is_active=is_active
+            status=status
         )
         
         return JsonResponse({
@@ -502,7 +612,7 @@ def anggota_organisasi_create_api(request):
             'message': 'Anggota organisasi berhasil ditambahkan',
             'data': {
                 'id': anggota.id,
-                'nama': anggota.penduduk.nama
+                'nama': anggota.penduduk.name
             }
         })
         
@@ -513,8 +623,75 @@ def anggota_organisasi_create_api(request):
         }, status=400)
 
 
+@csrf_exempt
+@require_http_methods(["PUT"])
+def anggota_organisasi_update_api(request, anggota_id):
+    """API for updating anggota organisasi"""
+    try:
+        anggota = get_object_or_404(AnggotaOrganisasi, id=anggota_id)
+        
+        penduduk_id = request.POST.get('penduduk_id')
+        organization_id = request.POST.get('organization_id')
+        jabatan_id = request.POST.get('jabatan_id')
+        periode_id = request.POST.get('periode_id')
+        tanggal_bergabung = request.POST.get('tanggal_bergabung')
+        tanggal_keluar = request.POST.get('tanggal_keluar')
+        foto_profil = request.FILES.get('foto_profil')
+        status = request.POST.get('status', 'aktif')
+        
+        if penduduk_id:
+            anggota.penduduk_id = penduduk_id
+        if organization_id:
+            anggota.organization_id = organization_id
+        if jabatan_id:
+            anggota.jabatan_id = jabatan_id
+        if periode_id:
+            anggota.periode_id = periode_id
+        if tanggal_bergabung:
+            anggota.tanggal_bergabung = parse_date(tanggal_bergabung)
+        if tanggal_keluar:
+            anggota.tanggal_keluar = parse_date(tanggal_keluar)
+        elif tanggal_keluar == '':
+            anggota.tanggal_keluar = None
+        if foto_profil:
+            anggota.foto_profil = foto_profil
+        
+        anggota.status = status
+        anggota.save()
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Anggota organisasi berhasil diperbarui'
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f'Gagal memperbarui anggota organisasi: {str(e)}'
+        }, status=400)
+
+
+@csrf_exempt
+@require_http_methods(["DELETE"])
+def anggota_organisasi_delete_api(request, anggota_id):
+    """API for deleting anggota organisasi"""
+    try:
+        anggota = get_object_or_404(AnggotaOrganisasi, id=anggota_id)
+        anggota.delete()
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Anggota organisasi berhasil dihapus'
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f'Gagal menghapus anggota organisasi: {str(e)}'
+        }, status=400)
+
+
 # Galeri Kegiatan API Views
-@login_required
 @require_http_methods(["GET"])
 def galeri_kegiatan_api(request):
     """API for galeri kegiatan list"""
@@ -543,7 +720,7 @@ def galeri_kegiatan_api(request):
                 'deskripsi': item.deskripsi,
                 'tanggal_kegiatan': item.tanggal_kegiatan.strftime('%Y-%m-%d'),
                 'foto': item.foto.url if item.foto else None,
-                'is_active': item.is_active,
+                'is_featured': item.is_featured,
                 'created_at': item.created_at.strftime('%Y-%m-%d %H:%M')
             }
             for item in page_obj
@@ -570,14 +747,14 @@ def galeri_kegiatan_create_api(request):
         deskripsi = request.POST.get('deskripsi', '')
         tanggal_kegiatan = request.POST.get('tanggal_kegiatan')
         foto = request.FILES.get('foto')
-        is_active = request.POST.get('is_active', 'true').lower() == 'true'
+        is_featured = request.POST.get('is_featured', 'false').lower() == 'true'
         
         galeri = GaleriKegiatan.objects.create(
             judul=judul,
             deskripsi=deskripsi,
             tanggal_kegiatan=parse_date(tanggal_kegiatan),
             foto=foto,
-            is_active=is_active
+            is_featured=is_featured
         )
         
         return JsonResponse({
@@ -597,31 +774,6 @@ def galeri_kegiatan_create_api(request):
 
 
 @login_required
-@require_http_methods(["GET"])
-def galeri_kegiatan_detail_api(request, galeri_id):
-    """API for galeri kegiatan detail"""
-    galeri = get_object_or_404(GaleriKegiatan.objects.select_related('organization'), id=galeri_id)
-    
-    data = {
-        'id': galeri.id,
-        'judul': galeri.judul,
-        'deskripsi': galeri.deskripsi,
-        'organization_name': galeri.organization.name if galeri.organization else None,
-        'organization_id': galeri.organization.id if galeri.organization else None,
-        'tanggal_kegiatan': galeri.tanggal_kegiatan.strftime('%Y-%m-%d'),
-        'lokasi': galeri.lokasi,
-        'fotografer': galeri.fotografer,
-        'tags': galeri.tags,
-        'foto': galeri.foto.url if galeri.foto else None,
-        'is_active': galeri.is_active,
-        'created_at': galeri.created_at.strftime('%Y-%m-%d %H:%M'),
-        'updated_at': galeri.updated_at.strftime('%Y-%m-%d %H:%M')
-    }
-    
-    return JsonResponse(data)
-
-
-@login_required
 @csrf_exempt
 @require_http_methods(["PUT"])
 def galeri_kegiatan_update_api(request, galeri_id):
@@ -638,7 +790,7 @@ def galeri_kegiatan_update_api(request, galeri_id):
         if request.FILES.get('foto'):
             galeri.foto = request.FILES.get('foto')
         
-        galeri.is_active = request.POST.get('is_active', str(galeri.is_active)).lower() == 'true'
+        galeri.is_featured = request.POST.get('is_featured', str(galeri.is_featured)).lower() == 'true'
         galeri.save()
         
         return JsonResponse({
@@ -674,8 +826,34 @@ def galeri_kegiatan_delete_api(request, galeri_id):
         }, status=400)
 
 
+@require_http_methods(["GET"])
+def galeri_kegiatan_detail_api(request, galeri_id):
+    """API for galeri kegiatan detail"""
+    galeri = get_object_or_404(GaleriKegiatan.objects.select_related('organization', 'uploaded_by'), id=galeri_id)
+    
+    data = {
+        'id': galeri.id,
+        'judul': galeri.judul,
+        'deskripsi': galeri.deskripsi,
+        'organization_name': galeri.organization.name if galeri.organization else None,
+        'organization_id': galeri.organization.id if galeri.organization else None,
+        'tanggal_kegiatan': galeri.tanggal_kegiatan.strftime('%Y-%m-%d'),
+        'lokasi': galeri.lokasi,
+        'fotografer': galeri.fotografer,
+        'tags': galeri.tags,
+        'foto': galeri.foto.url if galeri.foto else None,
+        'is_featured': galeri.is_featured,
+        'is_featured': galeri.is_featured,
+        'view_count': galeri.view_count,
+        'uploaded_by': galeri.uploaded_by.username if galeri.uploaded_by else None,
+        'created_at': galeri.created_at.strftime('%Y-%m-%d %H:%M'),
+        'updated_at': galeri.updated_at.strftime('%Y-%m-%d %H:%M')
+    }
+    
+    return JsonResponse(data)
+
+
 # Struktur Organisasi API Views
-@login_required
 @require_http_methods(["GET"])
 def struktur_organisasi_api(request):
     """API for struktur organisasi list"""
@@ -683,15 +861,15 @@ def struktur_organisasi_api(request):
     per_page = int(request.GET.get('per_page', 10))
     search = request.GET.get('search', '')
     
-    queryset = StrukturOrganisasi.objects.select_related('organization', 'periode')
+    queryset = StrukturOrganisasi.objects.select_related('organization', 'periode', 'anggota__penduduk', 'anggota__jabatan')
     
     if search:
         queryset = queryset.filter(
-            Q(nama__icontains=search) |
+            Q(anggota__penduduk__name__icontains=search) |
             Q(organization__name__icontains=search)
         )
     
-    queryset = queryset.order_by('-created_at')
+    queryset = queryset.order_by('urutan', 'anggota__jabatan__level_hierarki')
     
     paginator = Paginator(queryset, per_page)
     page_obj = paginator.get_page(page)
@@ -700,11 +878,14 @@ def struktur_organisasi_api(request):
         'results': [
             {
                 'id': item.id,
-                'nama': item.nama,
+                'anggota_nama': item.anggota.penduduk.name,
+                'jabatan_nama': item.anggota.jabatan.nama_jabatan,
                 'organization_name': item.organization.name,
-                'periode_nama': item.periode.nama,
-                'diagram': item.diagram.url if item.diagram else None,
-                'is_active': item.is_active,
+                'periode_nama': item.periode.nama_periode,
+                'posisi_x': item.posisi_x,
+                'posisi_y': item.posisi_y,
+                'urutan': item.urutan,
+                'is_visible': item.is_visible,
                 'created_at': item.created_at.strftime('%Y-%m-%d %H:%M')
             }
             for item in page_obj
@@ -719,6 +900,124 @@ def struktur_organisasi_api(request):
     }
     
     return JsonResponse(data)
+
+
+@require_http_methods(["GET"])
+def struktur_organisasi_statistics_api(request):
+    """API for struktur organisasi statistics"""
+    try:
+        total_struktur = StrukturOrganisasi.objects.count()
+        total_anggota = AnggotaOrganisasi.objects.count()
+        total_jabatan = Jabatan.objects.count()
+        periode_aktif = PeriodeKepengurusan.objects.filter(is_active=True).count()
+        
+        data = {
+            'total_struktur': total_struktur,
+            'total_anggota': total_anggota,
+            'total_jabatan': total_jabatan,
+            'periode_aktif': periode_aktif
+        }
+        
+        return JsonResponse(data)
+        
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f'Error loading statistics: {str(e)}'
+        }, status=400)
+
+
+@require_http_methods(["GET"])
+def struktur_organisasi_detail_api(request, struktur_id):
+    """API for struktur organisasi detail"""
+    try:
+        struktur = StrukturOrganisasi.objects.select_related('organization', 'periode').get(id=struktur_id)
+        
+        data = {
+            'id': struktur.id,
+            'nama': struktur.nama,
+            'organisasi': struktur.organization.id,
+            'periode': struktur.periode.id,
+            'deskripsi': struktur.deskripsi or '',
+            'is_active': struktur.is_active,
+            'diagram': struktur.diagram.url if struktur.diagram else None
+        }
+        
+        return JsonResponse(data)
+        
+    except StrukturOrganisasi.DoesNotExist:
+        return JsonResponse({
+            'success': False,
+            'message': 'Struktur organisasi tidak ditemukan'
+        }, status=404)
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f'Error loading struktur: {str(e)}'
+        }, status=400)
+
+
+@login_required
+@csrf_exempt
+@require_http_methods(["PUT"])
+def struktur_organisasi_update_api(request, struktur_id):
+    """API for updating struktur organisasi"""
+    try:
+        struktur = StrukturOrganisasi.objects.get(id=struktur_id)
+        data = json.loads(request.body)
+        
+        struktur.nama = data.get('nama', struktur.nama)
+        struktur.organization_id = data.get('organisasi', struktur.organization_id)
+        struktur.periode_id = data.get('periode', struktur.periode_id)
+        struktur.deskripsi = data.get('deskripsi', struktur.deskripsi)
+        struktur.is_active = data.get('is_active', struktur.is_active)
+        struktur.save()
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Struktur organisasi berhasil diperbarui',
+            'data': {
+                'id': struktur.id,
+                'nama': struktur.nama
+            }
+        })
+        
+    except StrukturOrganisasi.DoesNotExist:
+        return JsonResponse({
+            'success': False,
+            'message': 'Struktur organisasi tidak ditemukan'
+        }, status=404)
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f'Gagal memperbarui struktur organisasi: {str(e)}'
+        }, status=400)
+
+
+@login_required
+@csrf_exempt
+@require_http_methods(["DELETE"])
+def struktur_organisasi_delete_api(request, struktur_id):
+    """API for deleting struktur organisasi"""
+    try:
+        struktur = StrukturOrganisasi.objects.get(id=struktur_id)
+        struktur.delete()
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Struktur organisasi berhasil dihapus'
+        })
+        
+    except StrukturOrganisasi.DoesNotExist:
+        return JsonResponse({
+            'success': False,
+            'message': 'Struktur organisasi tidak ditemukan'
+        }, status=404)
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f'Gagal menghapus struktur organisasi: {str(e)}'
+        }, status=400)
 
 
 @login_required
@@ -909,7 +1208,6 @@ def organization_type_delete_api(request, type_id):
 
 
 # Organization API Views
-@login_required
 @require_http_methods(["GET"])
 def organizations_api(request):
     """API for organizations list"""
@@ -925,7 +1223,7 @@ def organizations_api(request):
         queryset = queryset.filter(
             Q(name__icontains=search) |
             Q(description__icontains=search) |
-            Q(leader__nama__icontains=search)
+            Q(leader__name__icontains=search)
         )
     
     if org_type_id:
@@ -948,13 +1246,13 @@ def organizations_api(request):
                 'organization_type_id': item.organization_type.id,
                 'description': item.description,
                 'established_date': item.established_date.strftime('%Y-%m-%d') if item.established_date else None,
-                'leader_name': item.leader.nama if item.leader else None,
+                'leader_name': item.leader.name if item.leader else None,
                 'leader_id': item.leader.id if item.leader else None,
                 'contact_phone': item.contact_phone,
                 'contact_email': item.contact_email,
                 'address': item.address,
                 'is_active': item.is_active,
-                'members_count': item.members.filter(is_active=True).count(),
+                'members_count': item.anggota_detail.filter(status='aktif').count(),
                 'events_count': item.events.count(),
                 'created_at': item.created_at.strftime('%Y-%m-%d %H:%M')
             }
@@ -985,13 +1283,13 @@ def organization_detail_api(request, org_id):
         'organization_type_id': organization.organization_type.id,
         'description': organization.description,
         'established_date': organization.established_date.strftime('%Y-%m-%d') if organization.established_date else None,
-        'leader_name': organization.leader.nama if organization.leader else None,
+        'leader_name': organization.leader.name if organization.leader else None,
         'leader_id': organization.leader.id if organization.leader else None,
         'contact_phone': organization.contact_phone,
         'contact_email': organization.contact_email,
         'address': organization.address,
         'is_active': organization.is_active,
-        'members_count': organization.members.filter(is_active=True).count(),
+        'members_count': organization.anggota_detail.filter(status='aktif').count(),
         'events_count': organization.events.count(),
         'documents_count': organization.documents.count(),
         'created_at': organization.created_at.strftime('%Y-%m-%d %H:%M'),
@@ -1131,7 +1429,7 @@ def organization_members_api(request):
                 'id': item.id,
                 'organization_name': item.organization.name,
                 'organization_id': item.organization.id,
-                'member_name': item.member.nama,
+                'member_name': item.member.name,
                 'member_id': item.member.id,
                 'member_nik': item.member.nik,
                 'position': item.position,
@@ -1166,7 +1464,7 @@ def organization_member_detail_api(request, member_id):
         'id': member.id,
         'organization_name': member.organization.name,
         'organization_id': member.organization.id,
-        'member_name': member.member.nama,
+        'member_name': member.member.name,
         'member_id': member.member.id,
         'member_nik': member.member.nik,
         'position': member.position,
@@ -1205,7 +1503,7 @@ def organization_member_create_api(request):
             'message': 'Anggota organisasi berhasil ditambahkan',
             'data': {
                 'id': member.id,
-                'member_name': member.member.nama,
+                'member_name': member.member.name,
                 'organization_name': member.organization.name
             }
         })
@@ -1501,7 +1799,7 @@ def residents_dropdown_api(request):
         'residents': [
             {
                 'id': resident.id,
-                'name': resident.nama,
+                'name': resident.name,
                 'nik': resident.nik
             }
             for resident in residents
@@ -1517,11 +1815,11 @@ def organization_statistics_api(request):
     """API for organization statistics"""
     total_organizations = Organization.objects.count()
     active_organizations = Organization.objects.filter(is_active=True).count()
-    total_members = OrganizationMember.objects.filter(is_active=True).count()
+    total_members = AnggotaOrganisasi.objects.filter(status='aktif').count()
     total_events = OrganizationEvent.objects.count()
     completed_events = OrganizationEvent.objects.filter(is_completed=True).count()
     total_galeri = GaleriKegiatan.objects.count()
-    active_galeri = GaleriKegiatan.objects.filter(is_active=True).count()
+    featured_galeri = GaleriKegiatan.objects.filter(is_featured=True).count()
     
     # Organization types distribution
     org_types_stats = OrganizationType.objects.annotate(
@@ -1535,7 +1833,7 @@ def organization_statistics_api(request):
         'total_events': total_events,
         'completed_events': completed_events,
         'total_galeri': total_galeri,
-        'active_galeri': active_galeri,
+        'featured_galeri': featured_galeri,
         'organization_types': list(org_types_stats)
     }
     
@@ -1548,17 +1846,178 @@ def galeri_kegiatan_statistics_api(request):
     """API for galeri kegiatan statistics"""
     total_kegiatan = GaleriKegiatan.objects.count()
     total_foto = GaleriKegiatan.objects.exclude(foto='').count()
-    kegiatan_aktif = GaleriKegiatan.objects.filter(is_active=True).count()
+    kegiatan_featured = GaleriKegiatan.objects.filter(is_featured=True).count()
     total_views = 0  # This would need a views tracking system
     
     data = {
         'total_kegiatan': total_kegiatan,
         'total_foto': total_foto,
-        'kegiatan_aktif': kegiatan_aktif,
+        'kegiatan_featured': kegiatan_featured,
         'total_views': total_views
     }
     
     return JsonResponse(data)
+
+
+# Kategori Organisasi API Views
+@login_required
+@require_http_methods(["GET"])
+def kategori_organisasi_api(request):
+    """API for kategori organisasi list"""
+    page = int(request.GET.get('page', 1))
+    per_page = int(request.GET.get('per_page', 10))
+    search = request.GET.get('search', '')
+    
+    queryset = OrganizationType.objects.annotate(
+        organization_count=Count('organization')
+    )
+    
+    if search:
+        queryset = queryset.filter(
+            Q(name__icontains=search) |
+            Q(description__icontains=search)
+        )
+    
+    queryset = queryset.order_by('-created_at')
+    
+    paginator = Paginator(queryset, per_page)
+    page_obj = paginator.get_page(page)
+    
+    data = {
+        'results': [
+            {
+                'id': item.id,
+                'name': item.name,
+                'description': item.description,
+                'organization_count': item.organization_count,
+                'is_active': item.is_active,
+                'created_at': item.created_at.strftime('%Y-%m-%d %H:%M')
+            }
+            for item in page_obj
+        ],
+        'pagination': {
+            'current_page': page_obj.number,
+            'total_pages': paginator.num_pages,
+            'total_items': paginator.count,
+            'has_previous': page_obj.has_previous(),
+            'has_next': page_obj.has_next(),
+        }
+    }
+    
+    return JsonResponse(data)
+
+
+@login_required
+@require_http_methods(["GET"])
+def kategori_organisasi_statistics_api(request):
+    """API for kategori organisasi statistics"""
+    try:
+        total_kategori = OrganizationType.objects.count()
+        kategori_aktif = OrganizationType.objects.filter(is_active=True).count()
+        total_organisasi = Organization.objects.count()
+        kategori_dengan_organisasi = OrganizationType.objects.annotate(
+            org_count=Count('organization')
+        ).filter(org_count__gt=0).count()
+        
+        data = {
+            'total_kategori': total_kategori,
+            'kategori_aktif': kategori_aktif,
+            'total_organisasi': total_organisasi,
+            'kategori_dengan_organisasi': kategori_dengan_organisasi
+        }
+        
+        return JsonResponse(data)
+        
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f'Error loading statistics: {str(e)}'
+        }, status=400)
+
+
+@login_required
+@csrf_exempt
+@require_http_methods(["POST"])
+def kategori_organisasi_create_api(request):
+    """API for creating kategori organisasi"""
+    try:
+        data = json.loads(request.body)
+        
+        kategori = OrganizationType.objects.create(
+            name=data['name'],
+            description=data.get('description', ''),
+            is_active=data.get('is_active', True)
+        )
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Kategori organisasi berhasil ditambahkan',
+            'data': {
+                'id': kategori.id,
+                'name': kategori.name
+            }
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f'Gagal menambahkan kategori organisasi: {str(e)}'
+        }, status=400)
+
+
+@login_required
+@csrf_exempt
+@require_http_methods(["PUT"])
+def kategori_organisasi_update_api(request, kategori_id):
+    """API for updating kategori organisasi"""
+    try:
+        kategori = get_object_or_404(OrganizationType, id=kategori_id)
+        data = json.loads(request.body)
+        
+        kategori.name = data.get('name', kategori.name)
+        kategori.description = data.get('description', kategori.description)
+        kategori.is_active = data.get('is_active', kategori.is_active)
+        kategori.save()
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Kategori organisasi berhasil diperbarui'
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f'Gagal memperbarui kategori organisasi: {str(e)}'
+        }, status=400)
+
+
+@login_required
+@csrf_exempt
+@require_http_methods(["DELETE"])
+def kategori_organisasi_delete_api(request, kategori_id):
+    """API for deleting kategori organisasi"""
+    try:
+        kategori = get_object_or_404(OrganizationType, id=kategori_id)
+        
+        # Check if kategori has organizations
+        if kategori.organization_set.exists():
+            return JsonResponse({
+                'success': False,
+                'message': 'Tidak dapat menghapus kategori yang masih memiliki organisasi'
+            }, status=400)
+        
+        kategori.delete()
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Kategori organisasi berhasil dihapus'
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f'Gagal menghapus kategori organisasi: {str(e)}'
+        }, status=400)
 
 
 @login_required
@@ -1629,245 +2088,29 @@ def galeri_kegiatan_export_api(request):
         }, status=400)
 
 
-@login_required
 @require_http_methods(["GET"])
-def anggota_organisasi_statistics_api(request):
-    """API for anggota organisasi statistics"""
-    total_anggota = AnggotaOrganisasi.objects.count()
-    anggota_aktif = AnggotaOrganisasi.objects.filter(is_active=True).count()
-    anggota_baru_bulan_ini = AnggotaOrganisasi.objects.filter(
-        created_at__month=datetime.now().month,
-        created_at__year=datetime.now().year
-    ).count()
-    
-    # Count by organization
-    org_stats = AnggotaOrganisasi.objects.values('organisasi__nama').annotate(
-        count=Count('id')
-    ).order_by('-count')[:5]
-    
-    data = {
-        'total_anggota': total_anggota,
-        'anggota_aktif': anggota_aktif,
-        'anggota_baru': anggota_baru_bulan_ini,
-        'top_organizations': list(org_stats)
-    }
-    
-    return JsonResponse(data)
-
-
-@login_required
-@require_http_methods(["GET"])
-def jabatan_statistics_api(request):
-    """API for jabatan statistics"""
-    total_jabatan = Jabatan.objects.count()
-    jabatan_aktif = Jabatan.objects.filter(is_active=True).count()
-    jabatan_struktural = Jabatan.objects.filter(tipe='struktural').count()
-    jabatan_fungsional = Jabatan.objects.filter(tipe='fungsional').count()
-    
-    data = {
-        'total_jabatan': total_jabatan,
-        'jabatan_aktif': jabatan_aktif,
-        'jabatan_struktural': jabatan_struktural,
-        'jabatan_fungsional': jabatan_fungsional
-    }
-    
-    return JsonResponse(data)
-
-
-@login_required
-@require_http_methods(["GET"])
-def periode_kepengurusan_statistics_api(request):
-    """API for periode kepengurusan statistics"""
-    total_periode = PeriodeKepengurusan.objects.count()
-    periode_aktif = PeriodeKepengurusan.objects.filter(is_active=True).count()
-    periode_tahun_ini = PeriodeKepengurusan.objects.filter(
-        tanggal_mulai__year=datetime.now().year
-    ).count()
-    
-    data = {
-        'total_periode': total_periode,
-        'periode_aktif': periode_aktif,
-        'periode_tahun_ini': periode_tahun_ini,
-        'rata_durasi': 24  # Average duration in months
-    }
-    
-    return JsonResponse(data)
-
-
-@login_required
-@require_http_methods(["GET"])
-def struktur_organisasi_statistics_api(request):
-    """API for struktur organisasi statistics"""
-    total_struktur = StrukturOrganisasi.objects.count()
-    struktur_aktif = StrukturOrganisasi.objects.filter(is_visible=True).count()
-    total_organisasi = StrukturOrganisasi.objects.values('organization').distinct().count()
-    
-    data = {
-        'total_struktur': total_struktur,
-        'struktur_aktif': struktur_aktif,
-        'total_organisasi': total_organisasi,
-        'avg_members_per_org': round(total_struktur / max(total_organisasi, 1), 1)
-    }
-    
-    return JsonResponse(data)
-
-
-# Missing API endpoints for CRUD operations
-
-@login_required
-@require_http_methods(["POST"])
-def anggota_organisasi_update_api(request, anggota_id):
-    """API for updating anggota organisasi"""
+def organizations_chart_data_api(request):
+    """API for organization chart data"""
     try:
-        anggota = get_object_or_404(AnggotaOrganisasi, id=anggota_id)
-        data = json.loads(request.body)
+        # Get organization types with counts
+        org_types = OrganizationType.objects.annotate(
+            count=Count('organization')
+        ).filter(count__gt=0)
         
-        # Update fields
-        if 'organization_id' in data:
-            anggota.organization_id = data['organization_id']
-        if 'penduduk_id' in data:
-            anggota.penduduk_id = data['penduduk_id']
-        if 'jabatan_id' in data:
-            anggota.jabatan_id = data['jabatan_id']
-        if 'periode_id' in data:
-            anggota.periode_id = data['periode_id']
-        if 'status' in data:
-            anggota.status = data['status']
-        if 'bio' in data:
-            anggota.bio = data['bio']
+        chart_data = []
+        for org_type in org_types:
+            chart_data.append({
+                'name': org_type.name,
+                'value': org_type.count,
+                'color': f'hsl({hash(org_type.name) % 360}, 70%, 50%)'
+            })
         
-        anggota.save()
-        
-        return JsonResponse({
-            'success': True,
-            'message': 'Anggota organisasi berhasil diperbarui'
-        })
+        return JsonResponse(chart_data, safe=False)
         
     except Exception as e:
         return JsonResponse({
             'success': False,
-            'message': f'Gagal memperbarui anggota: {str(e)}'
-        }, status=400)
-
-
-@login_required
-@require_http_methods(["DELETE"])
-def anggota_organisasi_delete_api(request, anggota_id):
-    """API for deleting anggota organisasi"""
-    try:
-        anggota = get_object_or_404(AnggotaOrganisasi, id=anggota_id)
-        anggota.delete()
-        
-        return JsonResponse({
-            'success': True,
-            'message': 'Anggota organisasi berhasil dihapus'
-        })
-        
-    except Exception as e:
-        return JsonResponse({
-            'success': False,
-            'message': f'Gagal menghapus anggota: {str(e)}'
-        }, status=400)
-
-
-@login_required
-@require_http_methods(["GET"])
-def anggota_organisasi_export_api(request):
-    """API for exporting anggota organisasi to Excel"""
-    try:
-        wb = openpyxl.Workbook()
-        ws = wb.active
-        ws.title = "Anggota Organisasi"
-        
-        headers = ['No', 'Nama', 'Organisasi', 'Jabatan', 'Periode', 'Status', 'Tanggal Bergabung']
-        
-        for col, header in enumerate(headers, 1):
-            cell = ws.cell(row=1, column=col, value=header)
-            cell.font = Font(bold=True)
-            cell.alignment = Alignment(horizontal='center')
-        
-        anggota_list = AnggotaOrganisasi.objects.select_related(
-            'penduduk', 'organization', 'jabatan', 'periode'
-        ).all().order_by('-created_at')
-        
-        for row, anggota in enumerate(anggota_list, 2):
-            ws.cell(row=row, column=1, value=row-1)
-            ws.cell(row=row, column=2, value=anggota.penduduk.name)
-            ws.cell(row=row, column=3, value=anggota.organization.name)
-            ws.cell(row=row, column=4, value=anggota.jabatan.nama_jabatan)
-            ws.cell(row=row, column=5, value=anggota.periode.nama_periode)
-            ws.cell(row=row, column=6, value=anggota.status.title())
-            ws.cell(row=row, column=7, value=anggota.tanggal_bergabung.strftime('%Y-%m-%d'))
-        
-        output = BytesIO()
-        wb.save(output)
-        output.seek(0)
-        
-        response = HttpResponse(
-            output.getvalue(),
-            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-        )
-        response['Content-Disposition'] = 'attachment; filename="anggota_organisasi.xlsx"'
-        
-        return response
-        
-    except Exception as e:
-        return JsonResponse({
-            'success': False,
-            'message': f'Gagal mengekspor data: {str(e)}'
-        }, status=400)
-
-
-@login_required
-@require_http_methods(["POST"])
-def jabatan_update_api(request, jabatan_id):
-    """API for updating jabatan"""
-    try:
-        jabatan = get_object_or_404(Jabatan, id=jabatan_id)
-        data = json.loads(request.body)
-        
-        if 'nama_jabatan' in data:
-            jabatan.nama_jabatan = data['nama_jabatan']
-        if 'deskripsi' in data:
-            jabatan.deskripsi = data['deskripsi']
-        if 'level_hierarki' in data:
-            jabatan.level_hierarki = data['level_hierarki']
-        if 'warna_badge' in data:
-            jabatan.warna_badge = data['warna_badge']
-        if 'is_active' in data:
-            jabatan.is_active = data['is_active']
-        
-        jabatan.save()
-        
-        return JsonResponse({
-            'success': True,
-            'message': 'Jabatan berhasil diperbarui'
-        })
-        
-    except Exception as e:
-        return JsonResponse({
-            'success': False,
-            'message': f'Gagal memperbarui jabatan: {str(e)}'
-        }, status=400)
-
-
-@login_required
-@require_http_methods(["DELETE"])
-def jabatan_delete_api(request, jabatan_id):
-    """API for deleting jabatan"""
-    try:
-        jabatan = get_object_or_404(Jabatan, id=jabatan_id)
-        jabatan.delete()
-        
-        return JsonResponse({
-            'success': True,
-            'message': 'Jabatan berhasil dihapus'
-        })
-        
-    except Exception as e:
-        return JsonResponse({
-            'success': False,
-            'message': f'Gagal menghapus jabatan: {str(e)}'
+            'message': f'Error loading chart data: {str(e)}'
         }, status=400)
 
 
@@ -1876,30 +2119,54 @@ def jabatan_delete_api(request, jabatan_id):
 def jabatan_export_api(request):
     """API for exporting jabatan to Excel"""
     try:
+        # Create workbook and worksheet
         wb = openpyxl.Workbook()
         ws = wb.active
         ws.title = "Jabatan"
         
-        headers = ['No', 'Nama Jabatan', 'Deskripsi', 'Level Hierarki', 'Status']
+        # Headers
+        headers = [
+            'No', 'Nama Jabatan', 'Deskripsi', 'Level', 
+            'Status', 'Tanggal Dibuat'
+        ]
         
+        # Write headers
         for col, header in enumerate(headers, 1):
             cell = ws.cell(row=1, column=col, value=header)
             cell.font = Font(bold=True)
             cell.alignment = Alignment(horizontal='center')
         
-        jabatan_list = Jabatan.objects.all().order_by('level_hierarki')
+        # Get data
+        jabatan_list = Jabatan.objects.all().order_by('level_hierarki', 'nama_jabatan')
         
+        # Write data
         for row, jabatan in enumerate(jabatan_list, 2):
             ws.cell(row=row, column=1, value=row-1)
             ws.cell(row=row, column=2, value=jabatan.nama_jabatan)
-            ws.cell(row=row, column=3, value=jabatan.deskripsi)
+            ws.cell(row=row, column=3, value=jabatan.deskripsi or '-')
             ws.cell(row=row, column=4, value=jabatan.level_hierarki)
             ws.cell(row=row, column=5, value='Aktif' if jabatan.is_active else 'Tidak Aktif')
+            ws.cell(row=row, column=6, value=jabatan.created_at.strftime('%Y-%m-%d %H:%M'))
         
+        # Auto-adjust column widths
+        for column in ws.columns:
+            max_length = 0
+            column_letter = column[0].column_letter
+            for cell in column:
+                try:
+                    if len(str(cell.value)) > max_length:
+                        max_length = len(str(cell.value))
+                except:
+                    pass
+            adjusted_width = min(max_length + 2, 50)
+            ws.column_dimensions[column_letter].width = adjusted_width
+        
+        # Save to BytesIO
         output = BytesIO()
         wb.save(output)
         output.seek(0)
         
+        # Create response
         response = HttpResponse(
             output.getvalue(),
             content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
@@ -1916,88 +2183,59 @@ def jabatan_export_api(request):
 
 
 @login_required
-@require_http_methods(["POST"])
-def periode_kepengurusan_update_api(request, periode_id):
-    """API for updating periode kepengurusan"""
-    try:
-        periode = get_object_or_404(PeriodeKepengurusan, id=periode_id)
-        data = json.loads(request.body)
-        
-        if 'nama_periode' in data:
-            periode.nama_periode = data['nama_periode']
-        if 'tanggal_mulai' in data:
-            periode.tanggal_mulai = data['tanggal_mulai']
-        if 'tanggal_selesai' in data:
-            periode.tanggal_selesai = data['tanggal_selesai']
-        if 'deskripsi' in data:
-            periode.deskripsi = data['deskripsi']
-        if 'is_active' in data:
-            periode.is_active = data['is_active']
-        
-        periode.save()
-        
-        return JsonResponse({
-            'success': True,
-            'message': 'Periode kepengurusan berhasil diperbarui'
-        })
-        
-    except Exception as e:
-        return JsonResponse({
-            'success': False,
-            'message': f'Gagal memperbarui periode: {str(e)}'
-        }, status=400)
-
-
-@login_required
-@require_http_methods(["DELETE"])
-def periode_kepengurusan_delete_api(request, periode_id):
-    """API for deleting periode kepengurusan"""
-    try:
-        periode = get_object_or_404(PeriodeKepengurusan, id=periode_id)
-        periode.delete()
-        
-        return JsonResponse({
-            'success': True,
-            'message': 'Periode kepengurusan berhasil dihapus'
-        })
-        
-    except Exception as e:
-        return JsonResponse({
-            'success': False,
-            'message': f'Gagal menghapus periode: {str(e)}'
-        }, status=400)
-
-
-@login_required
 @require_http_methods(["GET"])
 def periode_kepengurusan_export_api(request):
     """API for exporting periode kepengurusan to Excel"""
     try:
+        # Create workbook and worksheet
         wb = openpyxl.Workbook()
         ws = wb.active
         ws.title = "Periode Kepengurusan"
         
-        headers = ['No', 'Nama Periode', 'Organisasi', 'Tanggal Mulai', 'Tanggal Selesai', 'Status']
+        # Headers
+        headers = [
+            'No', 'Nama Periode', 'Tanggal Mulai', 'Tanggal Selesai', 
+            'Status', 'Deskripsi', 'Tanggal Dibuat'
+        ]
         
+        # Write headers
         for col, header in enumerate(headers, 1):
             cell = ws.cell(row=1, column=col, value=header)
             cell.font = Font(bold=True)
             cell.alignment = Alignment(horizontal='center')
         
-        periode_list = PeriodeKepengurusan.objects.select_related('organization').all().order_by('-tanggal_mulai')
+        # Get data
+        periode_list = PeriodeKepengurusan.objects.all().order_by('-tanggal_mulai')
         
+        # Write data
         for row, periode in enumerate(periode_list, 2):
             ws.cell(row=row, column=1, value=row-1)
             ws.cell(row=row, column=2, value=periode.nama_periode)
-            ws.cell(row=row, column=3, value=periode.organization.name)
-            ws.cell(row=row, column=4, value=periode.tanggal_mulai.strftime('%Y-%m-%d'))
-            ws.cell(row=row, column=5, value=periode.tanggal_selesai.strftime('%Y-%m-%d'))
-            ws.cell(row=row, column=6, value='Aktif' if periode.is_active else 'Tidak Aktif')
+            ws.cell(row=row, column=3, value=periode.tanggal_mulai.strftime('%Y-%m-%d'))
+            ws.cell(row=row, column=4, value=periode.tanggal_selesai.strftime('%Y-%m-%d') if periode.tanggal_selesai else '-')
+            ws.cell(row=row, column=5, value='Aktif' if periode.is_active else 'Tidak Aktif')
+            ws.cell(row=row, column=6, value=periode.deskripsi or '-')
+            ws.cell(row=row, column=7, value=periode.created_at.strftime('%Y-%m-%d %H:%M'))
         
+        # Auto-adjust column widths
+        for column in ws.columns:
+            max_length = 0
+            column_letter = column[0].column_letter
+            for cell in column:
+                try:
+                    if len(str(cell.value)) > max_length:
+                        max_length = len(str(cell.value))
+                except:
+                    pass
+            adjusted_width = min(max_length + 2, 50)
+            ws.column_dimensions[column_letter].width = adjusted_width
+        
+        # Save to BytesIO
         output = BytesIO()
         wb.save(output)
         output.seek(0)
         
+        # Create response
         response = HttpResponse(
             output.getvalue(),
             content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
@@ -2014,53 +2252,75 @@ def periode_kepengurusan_export_api(request):
 
 
 @login_required
-@require_http_methods(["POST"])
-def struktur_organisasi_update_api(request, struktur_id):
-    """API for updating struktur organisasi"""
+@require_http_methods(["GET"])
+def anggota_organisasi_export_api(request):
+    """API for exporting anggota organisasi to Excel"""
     try:
-        struktur = get_object_or_404(StrukturOrganisasi, id=struktur_id)
-        data = json.loads(request.body)
+        # Create workbook and worksheet
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = "Anggota Organisasi"
         
-        if 'posisi_x' in data:
-            struktur.posisi_x = data['posisi_x']
-        if 'posisi_y' in data:
-            struktur.posisi_y = data['posisi_y']
-        if 'urutan' in data:
-            struktur.urutan = data['urutan']
-        if 'is_visible' in data:
-            struktur.is_visible = data['is_visible']
+        # Headers
+        headers = [
+            'No', 'Nama', 'NIK', 'Organisasi', 'Jabatan', 
+            'Periode', 'Tanggal Bergabung', 'Tanggal Keluar', 'Status'
+        ]
         
-        struktur.save()
+        # Write headers
+        for col, header in enumerate(headers, 1):
+            cell = ws.cell(row=1, column=col, value=header)
+            cell.font = Font(bold=True)
+            cell.alignment = Alignment(horizontal='center')
         
-        return JsonResponse({
-            'success': True,
-            'message': 'Struktur organisasi berhasil diperbarui'
-        })
+        # Get data
+        anggota_list = AnggotaOrganisasi.objects.select_related(
+            'penduduk', 'organization', 'jabatan', 'periode'
+        ).all().order_by('organization__name', 'jabatan__level')
+        
+        # Write data
+        for row, anggota in enumerate(anggota_list, 2):
+            ws.cell(row=row, column=1, value=row-1)
+            ws.cell(row=row, column=2, value=anggota.penduduk.name)
+            ws.cell(row=row, column=3, value=anggota.penduduk.nik)
+            ws.cell(row=row, column=4, value=anggota.organization.name)
+            ws.cell(row=row, column=5, value=anggota.jabatan.nama_jabatan)
+            ws.cell(row=row, column=6, value=anggota.periode.nama_periode)
+            ws.cell(row=row, column=7, value=anggota.tanggal_bergabung.strftime('%Y-%m-%d'))
+            ws.cell(row=row, column=8, value=anggota.tanggal_keluar.strftime('%Y-%m-%d') if anggota.tanggal_keluar else '-')
+            ws.cell(row=row, column=9, value='Aktif' if anggota.is_active else 'Tidak Aktif')
+        
+        # Auto-adjust column widths
+        for column in ws.columns:
+            max_length = 0
+            column_letter = column[0].column_letter
+            for cell in column:
+                try:
+                    if len(str(cell.value)) > max_length:
+                        max_length = len(str(cell.value))
+                except:
+                    pass
+            adjusted_width = min(max_length + 2, 50)
+            ws.column_dimensions[column_letter].width = adjusted_width
+        
+        # Save to BytesIO
+        output = BytesIO()
+        wb.save(output)
+        output.seek(0)
+        
+        # Create response
+        response = HttpResponse(
+            output.getvalue(),
+            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
+        response['Content-Disposition'] = 'attachment; filename="anggota_organisasi.xlsx"'
+        
+        return response
         
     except Exception as e:
         return JsonResponse({
             'success': False,
-            'message': f'Gagal memperbarui struktur: {str(e)}'
-        }, status=400)
-
-
-@login_required
-@require_http_methods(["DELETE"])
-def struktur_organisasi_delete_api(request, struktur_id):
-    """API for deleting struktur organisasi"""
-    try:
-        struktur = get_object_or_404(StrukturOrganisasi, id=struktur_id)
-        struktur.delete()
-        
-        return JsonResponse({
-            'success': True,
-            'message': 'Struktur organisasi berhasil dihapus'
-        })
-        
-    except Exception as e:
-        return JsonResponse({
-            'success': False,
-            'message': f'Gagal menghapus struktur: {str(e)}'
+            'message': f'Gagal mengekspor data: {str(e)}'
         }, status=400)
 
 
@@ -2069,34 +2329,58 @@ def struktur_organisasi_delete_api(request, struktur_id):
 def struktur_organisasi_export_api(request):
     """API for exporting struktur organisasi to Excel"""
     try:
+        # Create workbook and worksheet
         wb = openpyxl.Workbook()
         ws = wb.active
         ws.title = "Struktur Organisasi"
         
-        headers = ['No', 'Organisasi', 'Nama', 'Jabatan', 'Periode', 'Urutan', 'Status']
+        # Headers
+        headers = [
+            'No', 'Organisasi', 'Nama', 'NIK', 'Jabatan', 
+            'Level', 'Periode', 'Status'
+        ]
         
+        # Write headers
         for col, header in enumerate(headers, 1):
             cell = ws.cell(row=1, column=col, value=header)
             cell.font = Font(bold=True)
             cell.alignment = Alignment(horizontal='center')
         
+        # Get data
         struktur_list = StrukturOrganisasi.objects.select_related(
-            'organization', 'anggota__penduduk', 'anggota__jabatan', 'periode'
-        ).all().order_by('organization', 'urutan')
+            'organization', 'anggota__penduduk', 'anggota__jabatan', 'anggota__periode'
+        ).all().order_by('organization__name', 'anggota__jabatan__level')
         
+        # Write data
         for row, struktur in enumerate(struktur_list, 2):
             ws.cell(row=row, column=1, value=row-1)
             ws.cell(row=row, column=2, value=struktur.organization.name)
             ws.cell(row=row, column=3, value=struktur.anggota.penduduk.name)
-            ws.cell(row=row, column=4, value=struktur.anggota.jabatan.nama_jabatan)
-            ws.cell(row=row, column=5, value=struktur.periode.nama_periode if struktur.periode else '-')
-            ws.cell(row=row, column=6, value=struktur.urutan)
-            ws.cell(row=row, column=7, value='Terlihat' if struktur.is_visible else 'Tersembunyi')
+            ws.cell(row=row, column=4, value=struktur.anggota.penduduk.nik)
+            ws.cell(row=row, column=5, value=struktur.anggota.jabatan.nama_jabatan)
+            ws.cell(row=row, column=6, value=struktur.anggota.jabatan.level_hierarki)
+            ws.cell(row=row, column=7, value=struktur.anggota.periode.nama_periode)
+            ws.cell(row=row, column=8, value='Aktif' if struktur.is_active else 'Tidak Aktif')
         
+        # Auto-adjust column widths
+        for column in ws.columns:
+            max_length = 0
+            column_letter = column[0].column_letter
+            for cell in column:
+                try:
+                    if len(str(cell.value)) > max_length:
+                        max_length = len(str(cell.value))
+                except:
+                    pass
+            adjusted_width = min(max_length + 2, 50)
+            ws.column_dimensions[column_letter].width = adjusted_width
+        
+        # Save to BytesIO
         output = BytesIO()
         wb.save(output)
         output.seek(0)
         
+        # Create response
         response = HttpResponse(
             output.getvalue(),
             content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'

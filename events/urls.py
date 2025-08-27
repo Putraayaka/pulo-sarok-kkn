@@ -36,3 +36,4 @@ urlpatterns = [
     path('api/export/excel/', views.export_events_excel, name='export_events_excel'),
     path('api/export/pdf/', views.export_events_pdf, name='export_events_pdf'),
 ]
+

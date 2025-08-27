@@ -142,7 +142,7 @@ def letter_list(request):
         'type_filter': type_filter,
     }
     
-    return render(request, 'admin/modules/letters/index.html', context)
+    return render(request, 'admin/modules/letters/list.html', context)
 
 @login_required
 def letter_detail(request, letter_id):

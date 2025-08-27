@@ -8,6 +8,7 @@ urlpatterns = [
     path('', views.posyandu_dashboard, name='posyandu_dashboard'),
     
     # Submenu Views
+    path('pengaturan/', views.pengaturan_admin, name='pengaturan_admin'),
     path('kader/', views.kader_admin, name='kader_admin'),
     path('ibu-hamil/', views.ibu_hamil_admin, name='ibu_hamil_admin'),
     path('balita/', views.view_balita, name='view_balita'),
@@ -34,6 +35,11 @@ urlpatterns = [
     # Helper APIs
     path('api/locations-dropdown/', views.get_posyandu_locations, name='get_posyandu_locations'),
     path('api/residents/', views.get_residents_for_posyandu, name='get_residents_for_posyandu'),
+    path('api/ibu-hamil/dropdown/', views.get_ibu_hamil_dropdown, name='get_ibu_hamil_dropdown'),
+    
+    # Template compatibility URLs
+    path('get-posyandu-locations/', views.get_posyandu_locations, name='get_posyandu_locations_compat'),
+    path('get-residents-for-posyandu/', views.get_residents_for_posyandu, name='get_residents_for_posyandu_compat'),
     
     # Kader APIs
     path('api/kader/', views.kader_list_api, name='kader_list_api'),
@@ -52,12 +58,29 @@ urlpatterns = [
     # Pemeriksaan Ibu Hamil APIs
     path('api/pemeriksaan-ibu-hamil/', views.pemeriksaan_ibu_hamil_list_api, name='pemeriksaan_ibu_hamil_list_api'),
     path('api/pemeriksaan-ibu-hamil/create/', views.pemeriksaan_ibu_hamil_create_api, name='pemeriksaan_ibu_hamil_create_api'),
+    path('api/pemeriksaan-ibu-hamil/<int:pemeriksaan_id>/update/', views.pemeriksaan_ibu_hamil_update_api, name='pemeriksaan_ibu_hamil_update_api'),
+    path('api/pemeriksaan-ibu-hamil/<int:pemeriksaan_id>/delete/', views.pemeriksaan_ibu_hamil_delete_api, name='pemeriksaan_ibu_hamil_delete_api'),
     
     # Balita APIs (using existing nutrition data)
     path('api/balita/', views.balita_list_api, name='balita_list_api'),
+    path('api/balita/<int:balita_id>/', views.balita_detail_api, name='balita_detail_api'),
+    path('api/balita/create/', views.balita_create_api, name='balita_create_api'),
+    path('api/balita/<int:balita_id>/update/', views.balita_update_api, name='balita_update_api'),
+    path('api/balita/<int:balita_id>/delete/', views.balita_delete_api, name='balita_delete_api'),
     
     # Lansia APIs (using health records)
     path('api/lansia/', views.lansia_list_api, name='lansia_list_api'),
+    path('api/lansia/<int:lansia_id>/', views.lansia_detail_api, name='lansia_detail_api'),
+    path('api/lansia/create/', views.lansia_create_api, name='lansia_create_api'),
+    path('api/lansia/<int:lansia_id>/update/', views.lansia_update_api, name='lansia_update_api'),
+    path('api/lansia/<int:lansia_id>/delete/', views.lansia_delete_api, name='lansia_delete_api'),
+    
+    # Statistics APIs
+    path('api/balita/stats/', views.balita_stats_api, name='balita_stats_api'),
+    path('api/kader/stats/', views.kader_stats_api, name='kader_stats_api'),
+    path('api/ibu-hamil/stats/', views.ibu_hamil_stats_api, name='ibu_hamil_stats_api'),
+    path('api/stunting/stats/', views.stunting_stats_api, name='stunting_stats_api'),
+    path('api/lansia/stats/', views.lansia_stats_api, name='lansia_stats_api'),
     
     # Stunting APIs
     path('api/stunting/', views.stunting_list_api, name='stunting_list_api'),
