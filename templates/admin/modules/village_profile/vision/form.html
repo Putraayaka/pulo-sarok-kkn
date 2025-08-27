@@ -1,0 +1,393 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="id" class="h-full bg-gray-50">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% if vision %}Edit{% else %}Tambah{% endif %} Visi & Misi Desa</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="h-full">
+    <div class="min-h-full">
+        <!-- Navigation -->
+        <nav class="bg-white shadow-sm border-b border-gray-200">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between h-16">
+                    <div class="flex items-center space-x-4">
+                        <a href="{% url 'village_profile:vision_list' %}" class="text-sm font-medium text-gray-600 hover:text-blue-600">
+                            <i class="fas fa-arrow-left mr-2"></i>
+                            Kembali ke Daftar
+                        </a>
+                        <div class="h-6 border-l border-gray-300"></div>
+                        <a href="{% url 'village_profile:dashboard' %}" class="text-sm font-medium text-gray-600 hover:text-blue-600">
+                            <i class="fas fa-home mr-2"></i>
+                            Dashboard
+                        </a>
+                    </div>
+                    <div class="flex items-center">
+                        <span class="text-sm text-gray-500">
+                            {% if vision %}Edit Visi & Misi{% else %}Tambah Visi & Misi Baru{% endif %}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="max-w-4xl mx-auto py-6 sm:px-6 lg:px-8">
+            <!-- Page Header -->
+            <div class="px-4 py-6 sm:px-0">
+                <div class="bg-white shadow rounded-lg p-6">
+                    <div class="flex items-center space-x-4">
+                        <div class="flex-shrink-0">
+                            <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-eye text-blue-600 text-xl"></i>
+                            </div>
+                        </div>
+                        <div>
+                            <h1 class="text-2xl font-bold text-gray-900">
+                                {% if vision %}Edit Visi & Misi{% else %}Tambah Visi & Misi Baru{% endif %}
+                            </h1>
+                            <p class="text-sm text-gray-600">
+                                {% if vision %}Perbarui visi dan misi desa{% else %}Buat visi dan misi baru untuk desa{% endif %}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form -->
+            <div class="px-4 py-6 sm:px-0">
+                <form method="post" class="space-y-6" x-data="visionForm()">
+                    {% csrf_token %}
+                    
+                    <!-- Basic Information -->
+                    <div class="bg-white shadow rounded-lg">
+                        <div class="px-6 py-4 border-b border-gray-200">
+                            <h3 class="text-lg font-medium text-gray-900">
+                                <i class="fas fa-info-circle mr-2 text-blue-600"></i>
+                                Informasi Dasar
+                            </h3>
+                        </div>
+                        <div class="p-6 space-y-6">
+                            <!-- Title -->
+                            <div>
+                                <label for="{{ form.title.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                    <i class="fas fa-heading mr-2"></i>
+                                    {{ form.title.label }}
+                                </label>
+                                {{ form.title }}
+                                {% if form.title.errors %}
+                                    <div class="mt-2 text-sm text-red-600">
+                                        {% for error in form.title.errors %}
+                                            <p><i class="fas fa-exclamation-circle mr-1"></i>{{ error }}</p>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                                <p class="mt-2 text-sm text-gray-500">Berikan judul yang jelas dan deskriptif untuk visi misi ini</p>
+                            </div>
+
+                            <!-- Description -->
+                            <div>
+                                <label for="{{ form.description.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                    <i class="fas fa-file-alt mr-2"></i>
+                                    {{ form.description.label }}
+                                </label>
+                                {{ form.description }}
+                                {% if form.description.errors %}
+                                    <div class="mt-2 text-sm text-red-600">
+                                        {% for error in form.description.errors %}
+                                            <p><i class="fas fa-exclamation-circle mr-1"></i>{{ error }}</p>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                                <p class="mt-2 text-sm text-gray-500">Deskripsi singkat tentang visi misi ini (opsional)</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Vision Section -->
+                    <div class="bg-white shadow rounded-lg">
+                        <div class="px-6 py-4 border-b border-blue-100 bg-blue-50">
+                            <h3 class="text-lg font-medium text-blue-900">
+                                <i class="fas fa-eye mr-2"></i>
+                                VISI DESA
+                            </h3>
+                            <p class="text-sm text-blue-700 mt-1">Gambaran masa depan yang ingin dicapai desa</p>
+                        </div>
+                        <div class="p-6">
+                            <div>
+                                <label for="{{ form.vision_text.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                    <i class="fas fa-eye mr-2"></i>
+                                    {{ form.vision_text.label }}
+                                </label>
+                                {{ form.vision_text }}
+                                {% if form.vision_text.errors %}
+                                    <div class="mt-2 text-sm text-red-600">
+                                        {% for error in form.vision_text.errors %}
+                                            <p><i class="fas fa-exclamation-circle mr-1"></i>{{ error }}</p>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                                <div class="mt-2 flex justify-between">
+                                    <p class="text-sm text-gray-500">Tuliskan visi desa dengan jelas dan inspiratif</p>
+                                    <span class="text-sm text-gray-400" x-text="visionLength + '/1000 karakter'"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Mission Section -->
+                    <div class="bg-white shadow rounded-lg">
+                        <div class="px-6 py-4 border-b border-green-100 bg-green-50">
+                            <h3 class="text-lg font-medium text-green-900">
+                                <i class="fas fa-bullseye mr-2"></i>
+                                MISI DESA
+                            </h3>
+                            <p class="text-sm text-green-700 mt-1">Langkah-langkah konkret untuk mencapai visi</p>
+                        </div>
+                        <div class="p-6">
+                            <div>
+                                <label for="{{ form.mission_text.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                    <i class="fas fa-bullseye mr-2"></i>
+                                    {{ form.mission_text.label }}
+                                </label>
+                                {{ form.mission_text }}
+                                {% if form.mission_text.errors %}
+                                    <div class="mt-2 text-sm text-red-600">
+                                        {% for error in form.mission_text.errors %}
+                                            <p><i class="fas fa-exclamation-circle mr-1"></i>{{ error }}</p>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                                <div class="mt-2 flex justify-between">
+                                    <p class="text-sm text-gray-500">Tuliskan misi desa dalam bentuk poin-poin yang terukur</p>
+                                    <span class="text-sm text-gray-400" x-text="missionLength + '/2000 karakter'"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Date and Status Settings -->
+                    <div class="bg-white shadow rounded-lg">
+                        <div class="px-6 py-4 border-b border-gray-200">
+                            <h3 class="text-lg font-medium text-gray-900">
+                                <i class="fas fa-cog mr-2 text-gray-600"></i>
+                                Pengaturan
+                            </h3>
+                        </div>
+                        <div class="p-6 space-y-6">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <!-- Effective Date -->
+                                <div>
+                                    <label for="{{ form.effective_date.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                        <i class="fas fa-calendar-alt mr-2"></i>
+                                        {{ form.effective_date.label }}
+                                    </label>
+                                    {{ form.effective_date }}
+                                    {% if form.effective_date.errors %}
+                                        <div class="mt-2 text-sm text-red-600">
+                                            {% for error in form.effective_date.errors %}
+                                                <p><i class="fas fa-exclamation-circle mr-1"></i>{{ error }}</p>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    <p class="mt-2 text-sm text-gray-500">Tanggal mulai berlakunya visi misi ini</p>
+                                </div>
+
+                                <!-- End Date -->
+                                <div>
+                                    <label for="{{ form.end_date.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                        <i class="fas fa-calendar-times mr-2"></i>
+                                        {{ form.end_date.label }}
+                                    </label>
+                                    {{ form.end_date }}
+                                    {% if form.end_date.errors %}
+                                        <div class="mt-2 text-sm text-red-600">
+                                            {% for error in form.end_date.errors %}
+                                                <p><i class="fas fa-exclamation-circle mr-1"></i>{{ error }}</p>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    <p class="mt-2 text-sm text-gray-500">Tanggal berakhir (opsional)</p>
+                                </div>
+                            </div>
+
+                            <!-- Is Active -->
+                            <div>
+                                <div class="flex items-center">
+                                    {{ form.is_active }}
+                                    <label for="{{ form.is_active.id_for_label }}" class="ml-3 text-sm font-medium text-gray-700">
+                                        <i class="fas fa-toggle-on mr-2"></i>
+                                        {{ form.is_active.label }}
+                                    </label>
+                                </div>
+                                {% if form.is_active.errors %}
+                                    <div class="mt-2 text-sm text-red-600">
+                                        {% for error in form.is_active.errors %}
+                                            <p><i class="fas fa-exclamation-circle mr-1"></i>{{ error }}</p>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                                <p class="mt-2 text-sm text-gray-500">Centang untuk mengaktifkan visi misi ini</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Form Actions -->
+                    <div class="bg-white shadow rounded-lg p-6">
+                        <div class="flex flex-col sm:flex-row gap-4 justify-end">
+                            <a href="{% url 'village_profile:vision_list' %}" class="inline-flex items-center justify-center px-6 py-3 border border-gray-300 text-base font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                <i class="fas fa-times mr-2"></i>
+                                Batal
+                            </a>
+                            <button type="button" onclick="saveDraft()" class="inline-flex items-center justify-center px-6 py-3 border border-gray-300 text-base font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
+                                <i class="fas fa-save mr-2"></i>
+                                Simpan Draft
+                            </button>
+                            <button type="submit" class="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                <i class="fas fa-check mr-2"></i>
+                                {% if vision %}Perbarui{% else %}Simpan{% endif %} Visi & Misi
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Help Section -->
+            <div class="px-4 py-6 sm:px-0">
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-6">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-lightbulb text-blue-400 text-xl"></i>
+                        </div>
+                        <div class="ml-3">
+                            <h3 class="text-sm font-medium text-blue-800">Tips Menulis Visi & Misi</h3>
+                            <div class="mt-2 text-sm text-blue-700">
+                                <ul class="list-disc list-inside space-y-1">
+                                    <li><strong>Visi:</strong> Harus inspiratif, jelas, dan menggambarkan masa depan yang diinginkan</li>
+                                    <li><strong>Misi:</strong> Berupa langkah-langkah konkret dan terukur untuk mencapai visi</li>
+                                    <li>Gunakan bahasa yang mudah dipahami oleh masyarakat</li>
+                                    <li>Pastikan visi dan misi selaras dengan kondisi dan potensi desa</li>
+                                    <li>Libatkan masyarakat dalam proses penyusunan untuk mendapat dukungan</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        function visionForm() {
+            return {
+                visionLength: 0,
+                missionLength: 0,
+                
+                init() {
+                    this.updateVisionLength();
+                    this.updateMissionLength();
+                    
+                    // Watch for changes
+                    this.$watch('visionLength', () => this.updateVisionLength());
+                    this.$watch('missionLength', () => this.updateMissionLength());
+                },
+                
+                updateVisionLength() {
+                    const visionTextarea = document.getElementById('{{ form.vision_text.id_for_label }}');
+                    if (visionTextarea) {
+                        this.visionLength = visionTextarea.value.length;
+                        visionTextarea.addEventListener('input', () => {
+                            this.visionLength = visionTextarea.value.length;
+                        });
+                    }
+                },
+                
+                updateMissionLength() {
+                    const missionTextarea = document.getElementById('{{ form.mission_text.id_for_label }}');
+                    if (missionTextarea) {
+                        this.missionLength = missionTextarea.value.length;
+                        missionTextarea.addEventListener('input', () => {
+                            this.missionLength = missionTextarea.value.length;
+                        });
+                    }
+                }
+            }
+        }
+
+        // Save draft functionality
+        function saveDraft() {
+            const formData = new FormData(document.querySelector('form'));
+            formData.append('save_draft', 'true');
+            
+            // You can implement AJAX save here
+            alert('Fitur simpan draft akan segera tersedia!');
+        }
+
+        // Auto-save functionality
+        let autoSaveTimer;
+        function autoSave() {
+            clearTimeout(autoSaveTimer);
+            autoSaveTimer = setTimeout(() => {
+                // Implement auto-save logic here
+                console.log('Auto-saving...');
+            }, 30000); // Auto-save every 30 seconds
+        }
+
+        // Form validation
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.querySelector('form');
+            const visionTextarea = document.getElementById('{{ form.vision_text.id_for_label }}');
+            const missionTextarea = document.getElementById('{{ form.mission_text.id_for_label }}');
+            
+            // Add input listeners for auto-save
+            [visionTextarea, missionTextarea].forEach(textarea => {
+                if (textarea) {
+                    textarea.addEventListener('input', autoSave);
+                }
+            });
+            
+            // Form submission validation
+            form.addEventListener('submit', function(e) {
+                let isValid = true;
+                const errors = [];
+                
+                // Check vision text
+                if (visionTextarea && visionTextarea.value.trim().length < 10) {
+                    errors.push('Visi harus minimal 10 karakter');
+                    isValid = false;
+                }
+                
+                // Check mission text
+                if (missionTextarea && missionTextarea.value.trim().length < 10) {
+                    errors.push('Misi harus minimal 10 karakter');
+                    isValid = false;
+                }
+                
+                if (!isValid) {
+                    e.preventDefault();
+                    alert('Terdapat kesalahan:\n' + errors.join('\n'));
+                }
+            });
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            // Ctrl+S for save
+            if (e.ctrlKey && e.key === 's') {
+                e.preventDefault();
+                document.querySelector('form').submit();
+            }
+            // Ctrl+D for draft
+            if (e.ctrlKey && e.key === 'd') {
+                e.preventDefault();
+                saveDraft();
+            }
+        });
+    </script>
+</body>
+</html>

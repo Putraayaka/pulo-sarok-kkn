@@ -1,0 +1,597 @@
+{% extends 'admin/base.html' %}
+{% load static %}
+
+{% block title %}{{ location.title }} - Wisata Desa{% endblock %}
+{% block page_title %}{{ location.title }}{% endblock %}
+
+{% block content %}
+<div class="p-6">
+    <!-- Breadcrumb -->
+    <nav class="flex mb-6" aria-label="Breadcrumb">
+        <ol class="inline-flex items-center space-x-1 md:space-x-3">
+            <li class="inline-flex items-center">
+                <a href="{% url 'tourism:dashboard' %}" class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-blue-600">
+                    <i class="fas fa-home mr-2"></i>
+                    Wisata
+                </a>
+            </li>
+            <li>
+                <div class="flex items-center">
+                    <i class="fas fa-chevron-right text-gray-400 mx-2"></i>
+                    <a href="{% url 'tourism:location_list' %}" class="text-sm font-medium text-gray-700 hover:text-blue-600">
+                        Lokasi Wisata
+                    </a>
+                </div>
+            </li>
+            <li aria-current="page">
+                <div class="flex items-center">
+                    <i class="fas fa-chevron-right text-gray-400 mx-2"></i>
+                    <span class="text-sm font-medium text-gray-500">{{ location.title }}</span>
+                </div>
+            </li>
+        </ol>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Left Column - Main Content -->
+        <div class="lg:col-span-2">
+            <!-- Header Section -->
+            <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+                <div class="flex flex-col md:flex-row md:items-start md:justify-between mb-4">
+                    <div class="flex-1">
+                        <div class="flex items-center space-x-2 mb-2">
+                            {% if location.featured %}
+                                <span class="bg-yellow-500 text-white text-xs px-2 py-1 rounded-full">
+                                    <i class="fas fa-star mr-1"></i>Unggulan
+                                </span>
+                            {% endif %}
+                            <span class="bg-blue-600 text-white text-xs px-2 py-1 rounded-full">
+                                {{ location.get_location_type_display }}
+                            </span>
+                            <span class="bg-green-600 text-white text-xs px-2 py-1 rounded-full">
+                                {{ location.category.name }}
+                            </span>
+                        </div>
+                        
+                        <h1 class="text-3xl font-bold text-gray-900 mb-2">{{ location.title }}</h1>
+                        <p class="text-gray-600 text-lg mb-4">{{ location.short_description }}</p>
+                        
+                        <!-- Rating Section -->
+                        <div class="flex items-center space-x-4 mb-4">
+                            <div class="flex items-center">
+                                {% if location.average_rating > 0 %}
+                                    <div class="flex items-center">
+                                        <span class="text-yellow-500 text-2xl mr-2">★</span>
+                                        <span class="text-2xl font-bold text-gray-900">{{ location.average_rating|floatformat:1 }}</span>
+                                        <span class="text-gray-500 ml-2">({{ location.total_reviews }} review)</span>
+                                    </div>
+                                {% else %}
+                                    <span class="text-gray-400 text-lg">Belum ada rating</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Action Buttons -->
+                    <div class="flex flex-col space-y-2 mt-4 md:mt-0">
+                        {% if user.is_authenticated %}
+                            <a href="{% url 'tourism:admin_location_edit' location.id %}" 
+                               class="inline-flex items-center px-4 py-2 bg-gray-600 text-white text-sm font-medium rounded-md hover:bg-gray-700 transition-colors duration-200">
+                                <i class="fas fa-edit mr-2"></i>
+                                Edit
+                            </a>
+                        {% endif %}
+                        <button onclick="shareLocation()" 
+                                class="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 transition-colors duration-200">
+                            <i class="fas fa-share mr-2"></i>
+                            Bagikan
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Location Info -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div class="flex items-center text-gray-600">
+                        <i class="fas fa-map-marker-alt text-red-500 mr-3 text-lg"></i>
+                        <div>
+                            <p class="font-medium text-gray-900">Alamat</p>
+                            <p class="text-sm">{{ location.address }}</p>
+                        </div>
+                    </div>
+                    
+                    {% if location.opening_hours %}
+                    <div class="flex items-center text-gray-600">
+                        <i class="fas fa-clock text-blue-500 mr-3 text-lg"></i>
+                        <div>
+                            <p class="font-medium text-gray-900">Jam Buka</p>
+                            <p class="text-sm">{{ location.opening_hours }}</p>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    {% if location.entry_fee %}
+                    <div class="flex items-center text-gray-600">
+                        <i class="fas fa-ticket-alt text-green-500 mr-3 text-lg"></i>
+                        <div>
+                            <p class="font-medium text-gray-900">Biaya Masuk</p>
+                            <p class="text-sm font-semibold text-green-600">Rp {{ location.entry_fee|floatformat:0 }}</p>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    {% if location.contact_phone %}
+                    <div class="flex items-center text-gray-600">
+                        <i class="fas fa-phone text-purple-500 mr-3 text-lg"></i>
+                        <div>
+                            <p class="font-medium text-gray-900">Kontak</p>
+                            <p class="text-sm">{{ location.contact_phone }}</p>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Contact Links -->
+                {% if location.contact_email or location.website %}
+                <div class="flex flex-wrap gap-2 pt-4 border-t border-gray-200">
+                    {% if location.contact_email %}
+                        <a href="mailto:{{ location.contact_email }}" 
+                           class="inline-flex items-center px-3 py-2 bg-gray-100 text-gray-700 text-sm rounded-md hover:bg-gray-200 transition-colors duration-200">
+                            <i class="fas fa-envelope mr-2"></i>
+                            Email
+                        </a>
+                    {% endif %}
+                    {% if location.website %}
+                        <a href="{{ location.website }}" target="_blank" rel="noopener noreferrer"
+                           class="inline-flex items-center px-3 py-2 bg-gray-100 text-gray-700 text-sm rounded-md hover:bg-gray-200 transition-colors duration-200">
+                            <i class="fas fa-globe mr-2"></i>
+                            Website
+                        </a>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Gallery Section -->
+            {% if location.gallery.all %}
+            <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+                <h2 class="text-xl font-semibold text-gray-900 mb-4">📸 Galeri Wisata</h2>
+                
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    {% for item in gallery %}
+                    <div class="relative group cursor-pointer" onclick="openGalleryModal({{ forloop.counter0 }})">
+                        {% if item.media_type == 'image' %}
+                            <div class="aspect-square bg-gray-200 rounded-lg overflow-hidden">
+                                <img src="{{ item.image.url }}" 
+                                     alt="{{ item.title }}" 
+                                     class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200">
+                            </div>
+                        {% elif item.media_type == 'video' %}
+                            <div class="aspect-square bg-gray-200 rounded-lg overflow-hidden relative">
+                                {% if item.video_url %}
+                                    <div class="w-full h-full bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center">
+                                        <i class="fas fa-play text-white text-3xl"></i>
+                                    </div>
+                                {% else %}
+                                    <div class="w-full h-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
+                                        <i class="fas fa-video text-white text-3xl"></i>
+                                    </div>
+                                {% endif %}
+                                <div class="absolute inset-0 bg-black bg-opacity-20 group-hover:bg-opacity-0 transition-all duration-200"></div>
+                            </div>
+                        {% elif item.media_type == '360' %}
+                            <div class="aspect-square bg-gray-200 rounded-lg overflow-hidden relative">
+                                <div class="w-full h-full bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center">
+                                    <i class="fas fa-cube text-white text-3xl"></i>
+                                </div>
+                                <div class="absolute inset-0 bg-black bg-opacity-20 group-hover:bg-opacity-0 transition-all duration-200"></div>
+                            </div>
+                        {% endif %}
+                        
+                        {% if item.caption %}
+                            <p class="text-xs text-gray-600 mt-1 text-center">{{ item.caption }}</p>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                {% if gallery|length > 6 %}
+                <div class="text-center mt-4">
+                    <button onclick="openGalleryModal(0)" 
+                            class="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 transition-colors duration-200">
+                        <i class="fas fa-images mr-2"></i>
+                        Lihat Semua Foto
+                    </button>
+                </div>
+                {% endif %}
+            </div>
+            {% endif %}
+
+            <!-- Description Section -->
+            <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+                <h2 class="text-xl font-semibold text-gray-900 mb-4">📖 Deskripsi Lengkap</h2>
+                <div class="prose max-w-none text-gray-700">
+                    {{ location.full_description|linebreaks }}
+                </div>
+            </div>
+
+            <!-- Facilities & Activities -->
+            {% if location.facilities or location.activities %}
+            <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+                <h2 class="text-xl font-semibold text-gray-900 mb-4">🏗️ Fasilitas & Aktivitas</h2>
+                
+                {% if location.facilities %}
+                <div class="mb-6">
+                    <h3 class="text-lg font-medium text-gray-900 mb-3">Fasilitas yang Tersedia</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                        {% for facility in location.facilities %}
+                            <div class="flex items-center text-gray-600">
+                                <i class="fas fa-check text-green-500 mr-2"></i>
+                                <span>{{ facility }}</span>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+                
+                {% if location.activities %}
+                <div>
+                    <h3 class="text-lg font-medium text-gray-900 mb-3">Aktivitas yang Tersedia</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                        {% for activity in location.activities %}
+                            <div class="flex items-center text-gray-600">
+                                <i class="fas fa-star text-blue-500 mr-2"></i>
+                                <span>{{ activity }}</span>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            {% endif %}
+
+            <!-- Reviews Section -->
+            <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-xl font-semibold text-gray-900">💬 Review & Rating</h2>
+                    {% if user.is_authenticated %}
+                        <button onclick="toggleReviewForm()" 
+                                class="inline-flex items-center px-3 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 transition-colors duration-200">
+                            <i class="fas fa-plus mr-2"></i>
+                            Tulis Review
+                        </button>
+                    {% endif %}
+                </div>
+                
+                <!-- Review Form (Hidden by default) -->
+                {% if user.is_authenticated %}
+                <div id="reviewForm" class="hidden mb-6 p-4 bg-gray-50 rounded-lg">
+                    <form method="POST" action="{% url 'tourism:submit_review' location.id %}">
+                        {% csrf_token %}
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Rating</label>
+                                <select name="rating" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <option value="">Pilih rating</option>
+                                    <option value="5">5 - Sangat Bagus</option>
+                                    <option value="4">4 - Bagus</option>
+                                    <option value="3">3 - Cukup</option>
+                                    <option value="2">2 - Kurang</option>
+                                    <option value="1">1 - Sangat Kurang</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Jenis Kunjungan</label>
+                                <select name="visit_type" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <option value="">Pilih jenis</option>
+                                    <option value="personal">Pribadi</option>
+                                    <option value="family">Keluarga</option>
+                                    <option value="group">Grup</option>
+                                    <option value="business">Bisnis</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Judul Review</label>
+                            <input type="text" name="title" required 
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                   placeholder="Judul review Anda">
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Komentar</label>
+                            <textarea name="comment" required rows="4"
+                                      class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                      placeholder="Bagikan pengalaman Anda mengunjungi tempat ini..."></textarea>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Kunjungan</label>
+                            <input type="date" name="visit_date" 
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        
+                        <div class="flex justify-end space-x-2">
+                            <button type="button" onclick="toggleReviewForm()" 
+                                    class="px-4 py-2 bg-gray-600 text-white text-sm font-medium rounded-md hover:bg-gray-700 transition-colors duration-200">
+                                Batal
+                            </button>
+                            <button type="submit" 
+                                    class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 transition-colors duration-200">
+                                Kirim Review
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                {% endif %}
+                
+                <!-- Reviews List -->
+                {% if reviews %}
+                    <div class="space-y-4">
+                        {% for review in reviews %}
+                        <div class="border border-gray-200 rounded-lg p-4">
+                            <div class="flex items-start justify-between mb-2">
+                                <div class="flex items-center">
+                                    <div class="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center mr-3">
+                                        <i class="fas fa-user text-gray-600"></i>
+                                    </div>
+                                    <div>
+                                        <p class="font-medium text-gray-900">{{ review.user.username }}</p>
+                                        <div class="flex items-center">
+                                            <span class="text-yellow-500 text-sm mr-1">★</span>
+                                            <span class="text-sm text-gray-700">{{ review.rating }}/5</span>
+                                            {% if review.visit_date %}
+                                                <span class="text-xs text-gray-500 ml-2">{{ review.visit_date|date:"d M Y" }}</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                                <span class="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
+                                    {{ review.get_visit_type_display }}
+                                </span>
+                            </div>
+                            
+                            <h4 class="font-medium text-gray-900 mb-2">{{ review.title }}</h4>
+                            <p class="text-gray-600 text-sm">{{ review.comment }}</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-8 text-gray-500">
+                        <i class="fas fa-comments text-4xl mb-4"></i>
+                        <p>Belum ada review untuk wisata ini.</p>
+                        {% if user.is_authenticated %}
+                            <p class="text-sm">Jadilah yang pertama memberikan review!</p>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Right Column - Sidebar -->
+        <div class="lg:col-span-1">
+            <!-- Map Section -->
+            {% if location.latitude and location.longitude %}
+            <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+                <h2 class="text-xl font-semibold text-gray-900 mb-4">🗺️ Lokasi</h2>
+                <div class="bg-gray-200 rounded-lg h-48 flex items-center justify-center">
+                    <div class="text-center text-gray-500">
+                        <i class="fas fa-map text-3xl mb-2"></i>
+                        <p class="text-sm">Peta akan ditampilkan di sini</p>
+                        <p class="text-xs">Lat: {{ location.latitude }}, Long: {{ location.longitude }}</p>
+                    </div>
+                </div>
+                <div class="mt-3">
+                    <a href="https://maps.google.com/?q={{ location.latitude }},{{ location.longitude }}" 
+                       target="_blank" rel="noopener noreferrer"
+                       class="inline-flex items-center w-full justify-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 transition-colors duration-200">
+                        <i class="fas fa-external-link-alt mr-2"></i>
+                        Buka di Google Maps
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Related Events -->
+            {% if events %}
+            <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+                <h2 class="text-xl font-semibold text-gray-900 mb-4">📅 Event Terkait</h2>
+                <div class="space-y-3">
+                    {% for event in events %}
+                    <div class="border border-gray-200 rounded-lg p-3">
+                        <h4 class="font-medium text-gray-900 text-sm mb-1">{{ event.title }}</h4>
+                        <p class="text-xs text-gray-600 mb-2">{{ event.start_date|date:"d M Y H:i" }}</p>
+                        <a href="{% url 'tourism:event_detail' event.id %}" 
+                           class="text-xs text-blue-600 hover:text-blue-800">
+                            Lihat Detail <i class="fas fa-arrow-right ml-1"></i>
+                        </a>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Related Packages -->
+            {% if packages %}
+            <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+                <h2 class="text-xl font-semibold text-gray-900 mb-4">🎒 Paket Wisata</h2>
+                <div class="space-y-3">
+                    {% for package in packages %}
+                    <div class="border border-gray-200 rounded-lg p-3">
+                        <h4 class="font-medium text-gray-900 text-sm mb-1">{{ package.title }}</h4>
+                        <p class="text-xs text-gray-600 mb-2">{{ package.duration }}</p>
+                        <p class="text-sm font-semibold text-green-600">Rp {{ package.price|floatformat:0 }}</p>
+                        <a href="{% url 'tourism:package_detail' package.id %}" 
+                           class="text-xs text-blue-600 hover:text-blue-800">
+                            Lihat Detail <i class="fas fa-arrow-right ml-1"></i>
+                        </a>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- FAQ Section -->
+            {% if faqs %}
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-xl font-semibold text-gray-900 mb-4">❓ FAQ</h2>
+                <div class="space-y-3">
+                    {% for faq in faqs %}
+                    <details class="group">
+                        <summary class="flex justify-between items-center cursor-pointer list-none">
+                            <span class="text-sm font-medium text-gray-900">{{ faq.question }}</span>
+                            <span class="transition group-open:rotate-180">
+                                <i class="fas fa-chevron-down text-gray-400"></i>
+                            </span>
+                        </summary>
+                        <p class="text-sm text-gray-600 mt-2 pl-4">{{ faq.answer }}</p>
+                    </details>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Gallery Modal -->
+<div id="galleryModal" class="fixed inset-0 bg-black bg-opacity-75 hidden z-50">
+    <div class="flex items-center justify-center min-h-screen p-4">
+        <div class="relative max-w-4xl w-full">
+            <button onclick="closeGalleryModal()" 
+                    class="absolute top-4 right-4 text-white text-2xl hover:text-gray-300 z-10">
+                <i class="fas fa-times"></i>
+            </button>
+            
+            <div id="modalContent" class="bg-white rounded-lg overflow-hidden">
+                <!-- Content will be loaded here -->
+            </div>
+            
+            <div class="flex justify-between items-center mt-4">
+                <button onclick="previousImage()" 
+                        class="bg-white text-gray-800 px-4 py-2 rounded-md hover:bg-gray-100 transition-colors duration-200">
+                    <i class="fas fa-chevron-left mr-2"></i>
+                    Sebelumnya
+                </button>
+                
+                <span id="imageCounter" class="text-white text-sm"></span>
+                
+                <button onclick="nextImage()" 
+                        class="bg-white text-gray-800 px-4 py-2 rounded-md hover:bg-gray-100 transition-colors duration-200">
+                    Berikutnya
+                    <i class="fas fa-chevron-right ml-2"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript for Gallery Modal and Review Form -->
+<script>
+let currentImageIndex = 0;
+const galleryItems = {{ gallery|safe }};
+
+function openGalleryModal(index) {
+    currentImageIndex = index;
+    updateModalContent();
+    document.getElementById('galleryModal').classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeGalleryModal() {
+    document.getElementById('galleryModal').classList.add('hidden');
+    document.body.style.overflow = 'auto';
+}
+
+function updateModalContent() {
+    const item = galleryItems[currentImageIndex];
+    const modalContent = document.getElementById('modalContent');
+    const imageCounter = document.getElementById('imageCounter');
+    
+    if (item.media_type === 'image') {
+        modalContent.innerHTML = `
+            <img src="${item.image}" alt="${item.title}" class="w-full h-auto max-h-96 object-contain">
+            <div class="p-4">
+                <h3 class="text-lg font-semibold text-gray-900 mb-2">${item.title}</h3>
+                ${item.description ? `<p class="text-gray-600">${item.description}</p>` : ''}
+            </div>
+        `;
+    } else if (item.media_type === 'video') {
+        modalContent.innerHTML = `
+            <div class="p-4">
+                <h3 class="text-lg font-semibold text-gray-900 mb-2">${item.title}</h3>
+                ${item.description ? `<p class="text-gray-600 mb-4">${item.description}</p>` : ''}
+                ${item.video_url ? `
+                    <iframe src="${item.video_url}" 
+                            class="w-full h-96" 
+                            frameborder="0" 
+                            allowfullscreen>
+                    </iframe>
+                ` : '<p class="text-gray-500">Video tidak tersedia</p>'}
+            </div>
+        `;
+    } else if (item.media_type === '360') {
+        modalContent.innerHTML = `
+            <div class="p-4">
+                <h3 class="text-lg font-semibold text-gray-900 mb-2">${item.title}</h3>
+                ${item.description ? `<p class="text-gray-600">${item.description}</p>` : ''}
+                <p class="text-gray-500 mt-4">Foto 360° - Gunakan aplikasi khusus untuk melihat</p>
+            </div>
+        `;
+    }
+    
+    imageCounter.textContent = `${currentImageIndex + 1} dari ${galleryItems.length}`;
+}
+
+function previousImage() {
+    currentImageIndex = currentImageIndex > 0 ? currentImageIndex - 1 : galleryItems.length - 1;
+    updateModalContent();
+}
+
+function nextImage() {
+    currentImageIndex = currentImageIndex < galleryItems.length - 1 ? currentImageIndex + 1 : 0;
+    updateModalContent();
+}
+
+function toggleReviewForm() {
+    const form = document.getElementById('reviewForm');
+    form.classList.toggle('hidden');
+}
+
+function shareLocation() {
+    if (navigator.share) {
+        navigator.share({
+            title: '{{ location.title }}',
+            text: '{{ location.short_description }}',
+            url: window.location.href
+        });
+    } else {
+        // Fallback for browsers that don't support Web Share API
+        navigator.clipboard.writeText(window.location.href).then(() => {
+            alert('Link berhasil disalin ke clipboard!');
+        });
+    }
+}
+
+// Close modal when clicking outside
+document.getElementById('galleryModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeGalleryModal();
+    }
+});
+
+// Keyboard navigation
+document.addEventListener('keydown', function(e) {
+    if (document.getElementById('galleryModal').classList.contains('hidden')) return;
+    
+    if (e.key === 'Escape') {
+        closeGalleryModal();
+    } else if (e.key === 'ArrowLeft') {
+        previousImage();
+    } else if (e.key === 'ArrowRight') {
+        nextImage();
+    }
+});
+</script>
+{% endblock %}

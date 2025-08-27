@@ -1,0 +1,453 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="id" class="h-full bg-gray-50">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sejarah Desa</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="h-full">
+    <div class="min-h-full">
+        <!-- Navigation -->
+        <nav class="bg-white shadow-sm border-b border-gray-200">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between h-16">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <a href="{% url 'village_profile:dashboard' %}" class="text-xl font-bold text-gray-900 hover:text-blue-600">
+                                <i class="fas fa-arrow-left mr-2"></i>
+                                Kembali ke Dashboard
+                            </a>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <a href="{% url 'village_profile:history_add' %}" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-amber-600 hover:bg-amber-700">
+                            <i class="fas fa-plus mr-2"></i>
+                            Tambah Sejarah
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+            <!-- Page Header -->
+            <div class="px-4 py-6 sm:px-0">
+                <div class="border-4 border-dashed border-gray-200 rounded-lg p-6 bg-white">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h1 class="text-3xl font-bold text-gray-900">
+                                <i class="fas fa-history text-amber-600 mr-3"></i>
+                                Sejarah Desa
+                            </h1>
+                            <p class="mt-2 text-sm text-gray-600">Kelola dan dokumentasikan sejarah perkembangan desa</p>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <div class="bg-amber-50 px-4 py-2 rounded-lg">
+                                <span class="text-sm font-medium text-amber-800">Total: {{ histories|length }} periode sejarah</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Search and Filter -->
+            <div class="px-4 py-6 sm:px-0">
+                <div class="bg-white shadow rounded-lg p-6">
+                    <form method="GET" class="flex flex-col lg:flex-row gap-4">
+                        <div class="flex-1">
+                            <label for="search" class="sr-only">Pencarian</label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="fas fa-search text-gray-400"></i>
+                                </div>
+                                <input type="text" name="search" id="search" value="{{ request.GET.search }}" 
+                                       class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-amber-500 focus:border-amber-500" 
+                                       placeholder="Cari periode, judul, atau deskripsi...">
+                            </div>
+                        </div>
+                        <div class="flex flex-col sm:flex-row gap-4">
+                            <select name="period_filter" class="block w-full sm:w-auto px-3 py-2 border border-gray-300 rounded-md leading-5 bg-white focus:outline-none focus:ring-1 focus:ring-amber-500 focus:border-amber-500">
+                                <option value="">Semua Periode</option>
+                                <option value="ancient" {% if request.GET.period_filter == 'ancient' %}selected{% endif %}>Zaman Kuno</option>
+                                <option value="colonial" {% if request.GET.period_filter == 'colonial' %}selected{% endif %}>Zaman Kolonial</option>
+                                <option value="independence" {% if request.GET.period_filter == 'independence' %}selected{% endif %}>Kemerdekaan</option>
+                                <option value="modern" {% if request.GET.period_filter == 'modern' %}selected{% endif %}>Era Modern</option>
+                            </select>
+                            <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-amber-600 hover:bg-amber-700">
+                                <i class="fas fa-search mr-2"></i>
+                                Cari
+                            </button>
+                            {% if request.GET.search or request.GET.period_filter %}
+                                <a href="{% url 'village_profile:history_list' %}" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                                    <i class="fas fa-times mr-2"></i>
+                                    Reset
+                                </a>
+                            {% endif %}
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Timeline View Toggle -->
+            <div class="px-4 py-6 sm:px-0">
+                <div class="bg-white shadow rounded-lg p-4">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-4">
+                            <span class="text-sm font-medium text-gray-700">Tampilan:</span>
+                            <div class="flex rounded-md shadow-sm" role="group">
+                                <button type="button" onclick="toggleView('list')" id="list-view-btn" class="px-4 py-2 text-sm font-medium text-gray-900 bg-white border border-gray-200 rounded-l-lg hover:bg-gray-100 focus:z-10 focus:ring-2 focus:ring-amber-500">
+                                    <i class="fas fa-list mr-2"></i>
+                                    Daftar
+                                </button>
+                                <button type="button" onclick="toggleView('timeline')" id="timeline-view-btn" class="px-4 py-2 text-sm font-medium text-gray-900 bg-gray-50 border border-gray-200 rounded-r-lg hover:bg-gray-100 focus:z-10 focus:ring-2 focus:ring-amber-500">
+                                    <i class="fas fa-clock mr-2"></i>
+                                    Timeline
+                                </button>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <button onclick="exportHistory()" class="inline-flex items-center px-3 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                                <i class="fas fa-download mr-2"></i>
+                                Export
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- History Content -->
+            <div class="px-4 py-6 sm:px-0">
+                {% if histories %}
+                    <!-- List View -->
+                    <div id="list-view" class="grid gap-6">
+                        {% for history in histories %}
+                            <div class="bg-white shadow rounded-lg overflow-hidden hover:shadow-lg transition-shadow duration-200">
+                                <div class="p-6">
+                                    <div class="flex items-start justify-between">
+                                        <div class="flex-1">
+                                            <div class="flex items-center space-x-3 mb-4">
+                                                <div class="flex-shrink-0">
+                                                    <div class="w-12 h-12 bg-amber-100 rounded-lg flex items-center justify-center">
+                                                        <i class="fas fa-scroll text-amber-600 text-xl"></i>
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <h3 class="text-xl font-semibold text-gray-900">
+                                                        {{ history.title }}
+                                                    </h3>
+                                                    <div class="flex items-center space-x-4 mt-1">
+                                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
+                                                            <i class="fas fa-calendar mr-1"></i>
+                                                            {{ history.period_start|date:"Y" }}{% if history.period_end %} - {{ history.period_end|date:"Y" }}{% endif %}
+                                                        </span>
+                                                        {% if history.is_featured %}
+                                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                                                <i class="fas fa-star mr-1"></i>
+                                                                Unggulan
+                                                            </span>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="grid md:grid-cols-3 gap-6">
+                                                <!-- Description -->
+                                                <div class="md:col-span-2">
+                                                    <h4 class="text-sm font-medium text-gray-600 mb-2">
+                                                        <i class="fas fa-file-alt mr-1"></i>
+                                                        Deskripsi
+                                                    </h4>
+                                                    <div class="bg-gray-50 p-4 rounded-lg">
+                                                        <p class="text-sm text-gray-700 leading-relaxed">
+                                                            {{ history.description|truncatewords:50 }}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                                
+                                                <!-- Key Events -->
+                                                <div>
+                                                    <h4 class="text-sm font-medium text-gray-600 mb-2">
+                                                        <i class="fas fa-list-ul mr-1"></i>
+                                                        Peristiwa Penting
+                                                    </h4>
+                                                    <div class="bg-amber-50 p-4 rounded-lg">
+                                                        {% if history.key_events %}
+                                                            <ul class="text-sm text-gray-700 space-y-1">
+                                                                {% for event in history.key_events|slice:":3" %}
+                                                                    <li class="flex items-start">
+                                                                        <i class="fas fa-dot-circle text-amber-500 mt-1.5 mr-2 text-xs"></i>
+                                                                        <span>{{ event|truncatewords:8 }}</span>
+                                                                    </li>
+                                                                {% endfor %}
+                                                            </ul>
+                                                            {% if history.key_events|length > 3 %}
+                                                                <p class="text-xs text-amber-600 mt-2">+{{ history.key_events|length|add:"-3" }} peristiwa lainnya</p>
+                                                            {% endif %}
+                                                        {% else %}
+                                                            <p class="text-sm text-gray-500 italic">Belum ada peristiwa tercatat</p>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            {% if history.historical_figures %}
+                                                <div class="mt-4">
+                                                    <h4 class="text-sm font-medium text-gray-600 mb-2">
+                                                        <i class="fas fa-users mr-1"></i>
+                                                        Tokoh Bersejarah
+                                                    </h4>
+                                                    <div class="flex flex-wrap gap-2">
+                                                        {% for figure in history.historical_figures|slice:":5" %}
+                                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                                                <i class="fas fa-user mr-1"></i>
+                                                                {{ figure }}
+                                                            </span>
+                                                        {% endfor %}
+                                                        {% if history.historical_figures|length > 5 %}
+                                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
+                                                                +{{ history.historical_figures|length|add:"-5" }} lainnya
+                                                            </span>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            {% endif %}
+                                            
+                                            <div class="mt-4 flex items-center text-sm text-gray-500">
+                                                <i class="fas fa-clock mr-2"></i>
+                                                <span>Diperbarui: {{ history.updated_at|date:"d F Y H:i" }}</span>
+                                                {% if history.sources %}
+                                                    <span class="mx-2">•</span>
+                                                    <i class="fas fa-book mr-1"></i>
+                                                    <span>{{ history.sources|length }} sumber</span>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Action Buttons -->
+                                        <div class="flex flex-col space-y-2 ml-4">
+                                            <a href="{% url 'village_profile:history_detail' history.pk %}" 
+                                               class="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500">
+                                                <i class="fas fa-eye mr-2"></i>
+                                                Detail
+                                            </a>
+                                            <a href="{% url 'village_profile:history_edit' history.pk %}" 
+                                               class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-amber-600 hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500">
+                                                <i class="fas fa-edit mr-2"></i>
+                                                Edit
+                                            </a>
+                                            <a href="{% url 'village_profile:history_delete' history.pk %}" 
+                                               class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                                               onclick="return confirm('Apakah Anda yakin ingin menghapus data sejarah ini?')">
+                                                <i class="fas fa-trash mr-2"></i>
+                                                Hapus
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Timeline View -->
+                    <div id="timeline-view" class="hidden">
+                        <div class="relative">
+                            <!-- Timeline Line -->
+                            <div class="absolute left-8 top-0 bottom-0 w-0.5 bg-amber-200"></div>
+                            
+                            {% for history in histories %}
+                                <div class="relative flex items-start mb-8">
+                                    <!-- Timeline Dot -->
+                                    <div class="flex-shrink-0 w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center border-4 border-white shadow-lg">
+                                        <i class="fas fa-scroll text-amber-600 text-xl"></i>
+                                    </div>
+                                    
+                                    <!-- Timeline Content -->
+                                    <div class="ml-6 flex-1">
+                                        <div class="bg-white shadow rounded-lg p-6 hover:shadow-lg transition-shadow duration-200">
+                                            <div class="flex items-center justify-between mb-3">
+                                                <h3 class="text-lg font-semibold text-gray-900">{{ history.title }}</h3>
+                                                <span class="text-sm font-medium text-amber-600">
+                                                    {{ history.period_start|date:"Y" }}{% if history.period_end %} - {{ history.period_end|date:"Y" }}{% endif %}
+                                                </span>
+                                            </div>
+                                            <p class="text-gray-700 mb-4">{{ history.description|truncatewords:30 }}</p>
+                                            <div class="flex items-center justify-between">
+                                                <div class="flex items-center space-x-4">
+                                                    {% if history.is_featured %}
+                                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                                            <i class="fas fa-star mr-1"></i>
+                                                            Unggulan
+                                                        </span>
+                                                    {% endif %}
+                                                    {% if history.key_events %}
+                                                        <span class="text-xs text-gray-500">
+                                                            <i class="fas fa-list mr-1"></i>
+                                                            {{ history.key_events|length }} peristiwa
+                                                        </span>
+                                                    {% endif %}
+                                                </div>
+                                                <a href="{% url 'village_profile:history_detail' history.pk %}" class="text-amber-600 hover:text-amber-700 text-sm font-medium">
+                                                    Selengkapnya <i class="fas fa-arrow-right ml-1"></i>
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <!-- Pagination -->
+                    {% if is_paginated %}
+                        <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6 mt-6 rounded-lg shadow">
+                            <div class="flex-1 flex justify-between sm:hidden">
+                                {% if page_obj.has_previous %}
+                                    <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.period_filter %}&period_filter={{ request.GET.period_filter }}{% endif %}" 
+                                       class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                                        Sebelumnya
+                                    </a>
+                                {% endif %}
+                                {% if page_obj.has_next %}
+                                    <a href="?page={{ page_obj.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.period_filter %}&period_filter={{ request.GET.period_filter }}{% endif %}" 
+                                       class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                                        Selanjutnya
+                                    </a>
+                                {% endif %}
+                            </div>
+                            <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                                <div>
+                                    <p class="text-sm text-gray-700">
+                                        Menampilkan
+                                        <span class="font-medium">{{ page_obj.start_index }}</span>
+                                        sampai
+                                        <span class="font-medium">{{ page_obj.end_index }}</span>
+                                        dari
+                                        <span class="font-medium">{{ page_obj.paginator.count }}</span>
+                                        hasil
+                                    </p>
+                                </div>
+                                <div>
+                                    <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                                        {% if page_obj.has_previous %}
+                                            <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.period_filter %}&period_filter={{ request.GET.period_filter }}{% endif %}" 
+                                               class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                                <i class="fas fa-chevron-left"></i>
+                                            </a>
+                                        {% endif %}
+                                        
+                                        {% for num in page_obj.paginator.page_range %}
+                                            {% if page_obj.number == num %}
+                                                <span class="relative inline-flex items-center px-4 py-2 border border-amber-500 bg-amber-50 text-sm font-medium text-amber-600">
+                                                    {{ num }}
+                                                </span>
+                                            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                                <a href="?page={{ num }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.period_filter %}&period_filter={{ request.GET.period_filter }}{% endif %}" 
+                                                   class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
+                                                    {{ num }}
+                                                </a>
+                                            {% endif %}
+                                        {% endfor %}
+                                        
+                                        {% if page_obj.has_next %}
+                                            <a href="?page={{ page_obj.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.period_filter %}&period_filter={{ request.GET.period_filter }}{% endif %}" 
+                                               class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                                <i class="fas fa-chevron-right"></i>
+                                            </a>
+                                        {% endif %}
+                                    </nav>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                {% else %}
+                    <!-- Empty State -->
+                    <div class="text-center py-12">
+                        <div class="bg-white rounded-lg shadow p-8">
+                            <i class="fas fa-history text-6xl text-gray-300 mb-4"></i>
+                            <h3 class="text-lg font-medium text-gray-900 mb-2">Belum Ada Data Sejarah</h3>
+                            {% if request.GET.search or request.GET.period_filter %}
+                                <p class="text-gray-500 mb-4">Tidak ditemukan data sejarah dengan kriteria pencarian tersebut</p>
+                                <div class="space-x-3">
+                                    <a href="{% url 'village_profile:history_list' %}" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                                        <i class="fas fa-times mr-2"></i>
+                                        Reset Pencarian
+                                    </a>
+                                    <a href="{% url 'village_profile:history_add' %}" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-amber-600 hover:bg-amber-700">
+                                        <i class="fas fa-plus mr-2"></i>
+                                        Tambah Sejarah
+                                    </a>
+                                </div>
+                            {% else %}
+                                <p class="text-gray-500 mb-4">Mulai dokumentasikan sejarah desa Anda</p>
+                                <a href="{% url 'village_profile:history_add' %}" class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-amber-600 hover:bg-amber-700">
+                                    <i class="fas fa-plus mr-2"></i>
+                                    Tambah Sejarah Pertama
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </main>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        // View toggle functionality
+        function toggleView(viewType) {
+            const listView = document.getElementById('list-view');
+            const timelineView = document.getElementById('timeline-view');
+            const listBtn = document.getElementById('list-view-btn');
+            const timelineBtn = document.getElementById('timeline-view-btn');
+            
+            if (viewType === 'list') {
+                listView.classList.remove('hidden');
+                timelineView.classList.add('hidden');
+                listBtn.classList.add('bg-amber-50', 'text-amber-700');
+                listBtn.classList.remove('bg-white', 'text-gray-900');
+                timelineBtn.classList.remove('bg-amber-50', 'text-amber-700');
+                timelineBtn.classList.add('bg-white', 'text-gray-900');
+            } else {
+                listView.classList.add('hidden');
+                timelineView.classList.remove('hidden');
+                timelineBtn.classList.add('bg-amber-50', 'text-amber-700');
+                timelineBtn.classList.remove('bg-white', 'text-gray-900');
+                listBtn.classList.remove('bg-amber-50', 'text-amber-700');
+                listBtn.classList.add('bg-white', 'text-gray-900');
+            }
+            
+            // Save preference
+            localStorage.setItem('historyViewType', viewType);
+        }
+        
+        // Load saved view preference
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedView = localStorage.getItem('historyViewType') || 'list';
+            toggleView(savedView);
+        });
+        
+        // Export functionality
+        function exportHistory() {
+            // You can implement export logic here
+            alert('Fitur export akan segera tersedia!');
+        }
+        
+        // Auto-submit search form on Enter
+        document.getElementById('search').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                this.form.submit();
+            }
+        });
+        
+        // Smooth scroll to top after pagination
+        if (window.location.search.includes('page=')) {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>

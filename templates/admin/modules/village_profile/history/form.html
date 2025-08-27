@@ -1,0 +1,427 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="id" class="h-full bg-gray-50">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% if form.instance.pk %}Edit{% else %}Tambah{% endif %} Sejarah Desa</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="h-full" x-data="historyForm()">
+    <div class="min-h-full">
+        <!-- Navigation -->
+        <nav class="bg-white shadow-sm border-b border-gray-200">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between h-16">
+                    <div class="flex items-center space-x-4">
+                        <a href="{% url 'village_profile:history_list' %}" class="text-sm font-medium text-gray-600 hover:text-amber-600">
+                            <i class="fas fa-arrow-left mr-2"></i>
+                            Kembali ke Daftar
+                        </a>
+                        <div class="h-6 border-l border-gray-300"></div>
+                        <a href="{% url 'village_profile:dashboard' %}" class="text-sm font-medium text-gray-600 hover:text-amber-600">
+                            <i class="fas fa-home mr-2"></i>
+                            Dashboard
+                        </a>
+                    </div>
+                    <div class="flex items-center space-x-3">
+                        <button type="submit" form="history-form" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-amber-600 hover:bg-amber-700">
+                            <i class="fas fa-save mr-2"></i>
+                            Simpan
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+            <!-- Page Header -->
+            <div class="px-4 py-6 sm:px-0">
+                <div class="bg-white shadow rounded-lg p-6">
+                    <div class="flex items-center space-x-4">
+                        <div class="flex-shrink-0">
+                            <div class="w-16 h-16 bg-amber-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-scroll text-amber-600 text-2xl"></i>
+                            </div>
+                        </div>
+                        <div>
+                            <h1 class="text-3xl font-bold text-gray-900">
+                                {% if form.instance.pk %}
+                                    Edit Sejarah Desa
+                                {% else %}
+                                    Tambah Sejarah Desa
+                                {% endif %}
+                            </h1>
+                            <p class="text-lg text-gray-600 mt-1">
+                                {% if form.instance.pk %}
+                                    Perbarui informasi sejarah desa
+                                {% else %}
+                                    Tambahkan catatan sejarah baru untuk desa
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form -->
+            <div class="px-4 py-6 sm:px-0">
+                <form id="history-form" method="post" class="space-y-6" @submit="validateForm">
+                    {% csrf_token %}
+                    
+                    <!-- Basic Information -->
+                    <div class="bg-white shadow rounded-lg">
+                        <div class="px-6 py-4 border-b border-gray-200">
+                            <h2 class="text-xl font-semibold text-gray-900">
+                                <i class="fas fa-info-circle mr-2 text-amber-600"></i>
+                                Informasi Dasar
+                            </h2>
+                        </div>
+                        <div class="p-6 space-y-6">
+                            <!-- Title -->
+                            <div>
+                                <label for="{{ form.title.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                    <i class="fas fa-heading mr-2"></i>
+                                    {{ form.title.label }}
+                                    <span class="text-red-500">*</span>
+                                </label>
+                                {{ form.title }}
+                                <div class="mt-1 flex justify-between">
+                                    <div>
+                                        {% if form.title.errors %}
+                                            <p class="text-sm text-red-600">{{ form.title.errors.0 }}</p>
+                                        {% endif %}
+                                    </div>
+                                    <div class="text-sm text-gray-500">
+                                        <span x-text="titleCount"></span>/200 karakter
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Period Start -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label for="{{ form.period_start.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                        <i class="fas fa-calendar-alt mr-2"></i>
+                                        {{ form.period_start.label }}
+                                        <span class="text-red-500">*</span>
+                                    </label>
+                                    {{ form.period_start }}
+                                    {% if form.period_start.errors %}
+                                        <p class="mt-1 text-sm text-red-600">{{ form.period_start.errors.0 }}</p>
+                                    {% endif %}
+                                </div>
+
+                                <!-- Period End -->
+                                <div>
+                                    <label for="{{ form.period_end.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                        <i class="fas fa-calendar-times mr-2"></i>
+                                        {{ form.period_end.label }}
+                                    </label>
+                                    {{ form.period_end }}
+                                    {% if form.period_end.errors %}
+                                        <p class="mt-1 text-sm text-red-600">{{ form.period_end.errors.0 }}</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <!-- Is Featured -->
+                            <div>
+                                <div class="flex items-center">
+                                    {{ form.is_featured }}
+                                    <label for="{{ form.is_featured.id_for_label }}" class="ml-2 block text-sm text-gray-700">
+                                        <i class="fas fa-star mr-2 text-yellow-500"></i>
+                                        {{ form.is_featured.label }}
+                                    </label>
+                                </div>
+                                <p class="mt-1 text-sm text-gray-500">Tandai sebagai sejarah unggulan untuk ditampilkan di halaman utama</p>
+                                {% if form.is_featured.errors %}
+                                    <p class="mt-1 text-sm text-red-600">{{ form.is_featured.errors.0 }}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Description -->
+                    <div class="bg-white shadow rounded-lg">
+                        <div class="px-6 py-4 border-b border-gray-200">
+                            <h2 class="text-xl font-semibold text-gray-900">
+                                <i class="fas fa-file-alt mr-2 text-amber-600"></i>
+                                Deskripsi Sejarah
+                            </h2>
+                        </div>
+                        <div class="p-6">
+                            <div>
+                                <label for="{{ form.description.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                    <i class="fas fa-align-left mr-2"></i>
+                                    {{ form.description.label }}
+                                    <span class="text-red-500">*</span>
+                                </label>
+                                {{ form.description }}
+                                <div class="mt-1 flex justify-between">
+                                    <div>
+                                        {% if form.description.errors %}
+                                            <p class="text-sm text-red-600">{{ form.description.errors.0 }}</p>
+                                        {% endif %}
+                                    </div>
+                                    <div class="text-sm text-gray-500">
+                                        <span x-text="descriptionCount"></span>/5000 karakter
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Key Events -->
+                    <div class="bg-white shadow rounded-lg">
+                        <div class="px-6 py-4 border-b border-gray-200">
+                            <h2 class="text-xl font-semibold text-gray-900">
+                                <i class="fas fa-list-ul mr-2 text-amber-600"></i>
+                                Peristiwa Penting
+                            </h2>
+                            <p class="text-sm text-gray-600 mt-1">Tambahkan peristiwa-peristiwa penting dalam periode sejarah ini</p>
+                        </div>
+                        <div class="p-6">
+                            <div x-data="{ events: {{ form.key_events.value|default:'[]'|safe }} }">
+                                <div class="space-y-3">
+                                    <template x-for="(event, index) in events" :key="index">
+                                        <div class="flex items-center space-x-3 p-3 bg-amber-50 rounded-lg border border-amber-200">
+                                            <div class="flex-1">
+                                                <input type="text" x-model="events[index]" 
+                                                       class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-amber-500 focus:border-amber-500"
+                                                       placeholder="Masukkan peristiwa penting...">
+                                            </div>
+                                            <button type="button" @click="events.splice(index, 1)" 
+                                                    class="text-red-600 hover:text-red-800">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </template>
+                                </div>
+                                
+                                <button type="button" @click="events.push('')" 
+                                        class="mt-3 inline-flex items-center px-3 py-2 border border-amber-300 rounded-md text-sm font-medium text-amber-700 bg-amber-50 hover:bg-amber-100">
+                                    <i class="fas fa-plus mr-2"></i>
+                                    Tambah Peristiwa
+                                </button>
+                                
+                                <input type="hidden" name="key_events" :value="JSON.stringify(events.filter(e => e.trim()))">
+                            </div>
+                            {% if form.key_events.errors %}
+                                <p class="mt-1 text-sm text-red-600">{{ form.key_events.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Historical Figures -->
+                    <div class="bg-white shadow rounded-lg">
+                        <div class="px-6 py-4 border-b border-gray-200">
+                            <h2 class="text-xl font-semibold text-gray-900">
+                                <i class="fas fa-users mr-2 text-amber-600"></i>
+                                Tokoh Bersejarah
+                            </h2>
+                            <p class="text-sm text-gray-600 mt-1">Tambahkan nama-nama tokoh penting dalam periode sejarah ini</p>
+                        </div>
+                        <div class="p-6">
+                            <div x-data="{ figures: {{ form.historical_figures.value|default:'[]'|safe }} }">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                    <template x-for="(figure, index) in figures" :key="index">
+                                        <div class="flex items-center space-x-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                                            <div class="flex-1">
+                                                <input type="text" x-model="figures[index]" 
+                                                       class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                                       placeholder="Nama tokoh bersejarah...">
+                                            </div>
+                                            <button type="button" @click="figures.splice(index, 1)" 
+                                                    class="text-red-600 hover:text-red-800">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </template>
+                                </div>
+                                
+                                <button type="button" @click="figures.push('')" 
+                                        class="mt-3 inline-flex items-center px-3 py-2 border border-blue-300 rounded-md text-sm font-medium text-blue-700 bg-blue-50 hover:bg-blue-100">
+                                    <i class="fas fa-plus mr-2"></i>
+                                    Tambah Tokoh
+                                </button>
+                                
+                                <input type="hidden" name="historical_figures" :value="JSON.stringify(figures.filter(f => f.trim()))">
+                            </div>
+                            {% if form.historical_figures.errors %}
+                                <p class="mt-1 text-sm text-red-600">{{ form.historical_figures.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Sources -->
+                    <div class="bg-white shadow rounded-lg">
+                        <div class="px-6 py-4 border-b border-gray-200">
+                            <h2 class="text-xl font-semibold text-gray-900">
+                                <i class="fas fa-book mr-2 text-amber-600"></i>
+                                Sumber Referensi
+                            </h2>
+                            <p class="text-sm text-gray-600 mt-1">Tambahkan sumber-sumber referensi untuk validasi sejarah</p>
+                        </div>
+                        <div class="p-6">
+                            <div x-data="{ sources: {{ form.sources.value|default:'[]'|safe }} }">
+                                <div class="space-y-3">
+                                    <template x-for="(source, index) in sources" :key="index">
+                                        <div class="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                                            <div class="flex-1">
+                                                <input type="text" x-model="sources[index]" 
+                                                       class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-gray-500 focus:border-gray-500"
+                                                       placeholder="Sumber referensi (buku, artikel, dokumen, dll.)...">
+                                            </div>
+                                            <button type="button" @click="sources.splice(index, 1)" 
+                                                    class="text-red-600 hover:text-red-800">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </template>
+                                </div>
+                                
+                                <button type="button" @click="sources.push('')" 
+                                        class="mt-3 inline-flex items-center px-3 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-gray-50 hover:bg-gray-100">
+                                    <i class="fas fa-plus mr-2"></i>
+                                    Tambah Sumber
+                                </button>
+                                
+                                <input type="hidden" name="sources" :value="JSON.stringify(sources.filter(s => s.trim()))">
+                            </div>
+                            {% if form.sources.errors %}
+                                <p class="mt-1 text-sm text-red-600">{{ form.sources.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Form Actions -->
+                    <div class="bg-white shadow rounded-lg p-6">
+                        <div class="flex flex-col sm:flex-row gap-4 justify-end">
+                            <a href="{% url 'village_profile:history_list' %}" class="inline-flex items-center justify-center px-6 py-3 border border-gray-300 text-base font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500">
+                                <i class="fas fa-times mr-2"></i>
+                                Batal
+                            </a>
+                            <button type="submit" class="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-amber-600 hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500">
+                                <i class="fas fa-save mr-2"></i>
+                                {% if form.instance.pk %}Perbarui{% else %}Simpan{% endif %} Sejarah
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </main>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        function historyForm() {
+            return {
+                titleCount: 0,
+                descriptionCount: 0,
+                
+                init() {
+                    this.updateCounts();
+                    this.setupEventListeners();
+                },
+                
+                updateCounts() {
+                    const titleField = document.getElementById('id_title');
+                    const descriptionField = document.getElementById('id_description');
+                    
+                    if (titleField) {
+                        this.titleCount = titleField.value.length;
+                        titleField.addEventListener('input', () => {
+                            this.titleCount = titleField.value.length;
+                        });
+                    }
+                    
+                    if (descriptionField) {
+                        this.descriptionCount = descriptionField.value.length;
+                        descriptionField.addEventListener('input', () => {
+                            this.descriptionCount = descriptionField.value.length;
+                        });
+                    }
+                },
+                
+                setupEventListeners() {
+                    // Keyboard shortcuts
+                    document.addEventListener('keydown', (e) => {
+                        // Ctrl+S for save
+                        if (e.ctrlKey && e.key === 's') {
+                            e.preventDefault();
+                            document.getElementById('history-form').submit();
+                        }
+                        // Escape for cancel
+                        if (e.key === 'Escape') {
+                            if (confirm('Apakah Anda yakin ingin membatalkan? Perubahan yang belum disimpan akan hilang.')) {
+                                window.location.href = "{% url 'village_profile:history_list' %}";
+                            }
+                        }
+                    });
+                },
+                
+                validateForm(e) {
+                    const form = e.target;
+                    const titleField = form.querySelector('#id_title');
+                    const descriptionField = form.querySelector('#id_description');
+                    const periodStartField = form.querySelector('#id_period_start');
+                    
+                    let isValid = true;
+                    let errors = [];
+                    
+                    // Validate required fields
+                    if (!titleField.value.trim()) {
+                        errors.push('Judul sejarah harus diisi');
+                        isValid = false;
+                    }
+                    
+                    if (!descriptionField.value.trim()) {
+                        errors.push('Deskripsi sejarah harus diisi');
+                        isValid = false;
+                    }
+                    
+                    if (!periodStartField.value) {
+                        errors.push('Periode mulai harus diisi');
+                        isValid = false;
+                    }
+                    
+                    // Validate character limits
+                    if (titleField.value.length > 200) {
+                        errors.push('Judul tidak boleh lebih dari 200 karakter');
+                        isValid = false;
+                    }
+                    
+                    if (descriptionField.value.length > 5000) {
+                        errors.push('Deskripsi tidak boleh lebih dari 5000 karakter');
+                        isValid = false;
+                    }
+                    
+                    // Validate date range
+                    const periodEndField = form.querySelector('#id_period_end');
+                    if (periodStartField.value && periodEndField.value) {
+                        const startDate = new Date(periodStartField.value);
+                        const endDate = new Date(periodEndField.value);
+                        
+                        if (endDate <= startDate) {
+                            errors.push('Periode berakhir harus setelah periode mulai');
+                            isValid = false;
+                        }
+                    }
+                    
+                    if (!isValid) {
+                        e.preventDefault();
+                        alert('Terdapat kesalahan dalam form:\n\n' + errors.join('\n'));
+                        return false;
+                    }
+                    
+                    return true;
+                }
+            }
+        }
+    </script>
+</body>
+</html>
