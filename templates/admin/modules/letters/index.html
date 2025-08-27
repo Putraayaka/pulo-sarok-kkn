@@ -1,0 +1,334 @@
+{% extends 'admin/base.html' %}
+
+{% block title %}Surat Menyurat{% endblock %}
+
+{% block page_title %}Surat Menyurat{% endblock %}
+
+{% block content %}
+<div class="p-6">
+    <!-- Header Section -->
+    <div class="bg-white rounded-lg shadow p-6 mb-6">
+        <div class="flex justify-between items-center">
+            <div>
+                <h2 class="text-2xl font-bold text-gray-900 mb-2">
+                    <i class="fas fa-envelope mr-3 text-blue-600"></i>
+                    Manajemen Surat Menyurat
+                </h2>
+                <p class="text-gray-600">Kelola surat keterangan dan dokumen resmi desa</p>
+            </div>
+            <button class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors duration-200" onclick="openAddModal()">
+                <i class="fas fa-plus mr-2"></i>
+                Buat Surat Baru
+            </button>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-blue-100">
+                    <i class="fas fa-file-alt text-blue-600 text-xl"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-600">Total Surat</p>
+                    <p class="text-2xl font-bold text-gray-900" id="total-letters">-</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-green-100">
+                    <i class="fas fa-check-circle text-green-600 text-xl"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-600">Selesai</p>
+                    <p class="text-2xl font-bold text-gray-900" id="completed-letters">-</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-yellow-100">
+                    <i class="fas fa-clock text-yellow-600 text-xl"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-600">Proses</p>
+                    <p class="text-2xl font-bold text-gray-900" id="pending-letters">-</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-purple-100">
+                    <i class="fas fa-calendar text-purple-600 text-xl"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-600">Bulan Ini</p>
+                    <p class="text-2xl font-bold text-gray-900" id="monthly-letters">-</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter and Search -->
+    <div class="bg-white rounded-lg shadow p-6 mb-6">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Cari Surat</label>
+                <div class="relative">
+                    <input type="text" id="search-input" placeholder="Cari berdasarkan nama, NIK, atau jenis surat..." 
+                           class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i class="fas fa-search text-gray-400"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Jenis Surat</label>
+                <select id="letter-type-filter" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <option value="">Semua Jenis</option>
+                    <option value="keterangan_domisili">Keterangan Domisili</option>
+                    <option value="keterangan_usaha">Keterangan Usaha</option>
+                    <option value="keterangan_tidak_mampu">Keterangan Tidak Mampu</option>
+                    <option value="keterangan_kelahiran">Keterangan Kelahiran</option>
+                    <option value="keterangan_kematian">Keterangan Kematian</option>
+                    <option value="pengantar_nikah">Pengantar Nikah</option>
+                    <option value="lainnya">Lainnya</option>
+                </select>
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                <select id="status-filter" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <option value="">Semua Status</option>
+                    <option value="pending">Menunggu</option>
+                    <option value="processing">Diproses</option>
+                    <option value="completed">Selesai</option>
+                    <option value="rejected">Ditolak</option>
+                </select>
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Periode</label>
+                <select id="period-filter" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <option value="">Semua Periode</option>
+                    <option value="today">Hari Ini</option>
+                    <option value="week">Minggu Ini</option>
+                    <option value="month">Bulan Ini</option>
+                    <option value="year">Tahun Ini</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- Letters Table -->
+    <div class="bg-white rounded-lg shadow overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <h3 class="text-lg font-semibold text-gray-900">Daftar Surat</h3>
+        </div>
+        
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200" id="letters-table">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Surat</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pemohon</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jenis Surat</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200" id="letters-tbody">
+                    <!-- Data will be loaded here -->
+                    <tr>
+                        <td colspan="6" class="px-6 py-12 text-center text-gray-500">
+                            <i class="fas fa-inbox text-4xl mb-4 block"></i>
+                            <p>Belum ada data surat</p>
+                            <button class="mt-2 text-blue-600 hover:text-blue-800" onclick="loadLetters()">
+                                <i class="fas fa-refresh mr-1"></i>Muat Ulang
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Pagination -->
+        <div class="bg-white px-4 py-3 border-t border-gray-200 sm:px-6">
+            <div class="flex items-center justify-between">
+                <div class="flex-1 flex justify-between sm:hidden">
+                    <button class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                        Sebelumnya
+                    </button>
+                    <button class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                        Selanjutnya
+                    </button>
+                </div>
+                <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                    <div>
+                        <p class="text-sm text-gray-700">
+                            Menampilkan <span class="font-medium">1</span> sampai <span class="font-medium">10</span> dari <span class="font-medium">0</span> hasil
+                        </p>
+                    </div>
+                    <div>
+                        <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                            <button class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                <i class="fas fa-chevron-left"></i>
+                            </button>
+                            <button class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
+                                1
+                            </button>
+                            <button class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Letter Modal -->
+<div id="add-modal" class="fixed inset-0 z-50 hidden overflow-y-auto">
+    <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"></div>
+        
+        <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+            <form id="add-letter-form">
+                <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <div class="sm:flex sm:items-start">
+                        <div class="mt-3 text-center sm:mt-0 sm:text-left w-full">
+                            <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">
+                                <i class="fas fa-plus-circle mr-2 text-blue-600"></i>
+                                Buat Surat Baru
+                            </h3>
+                            
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Jenis Surat</label>
+                                    <select name="letter_type" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                        <option value="">Pilih Jenis Surat</option>
+                                        <option value="keterangan_domisili">Surat Keterangan Domisili</option>
+                                        <option value="keterangan_usaha">Surat Keterangan Usaha</option>
+                                        <option value="keterangan_tidak_mampu">Surat Keterangan Tidak Mampu</option>
+                                        <option value="keterangan_kelahiran">Surat Keterangan Kelahiran</option>
+                                        <option value="keterangan_kematian">Surat Keterangan Kematian</option>
+                                        <option value="pengantar_nikah">Surat Pengantar Nikah</option>
+                                        <option value="lainnya">Lainnya</option>
+                                    </select>
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Nama Pemohon</label>
+                                    <input type="text" name="applicant_name" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">NIK</label>
+                                    <input type="text" name="nik" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Keperluan</label>
+                                    <textarea name="purpose" rows="3" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                    <button type="submit" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm">
+                        <i class="fas fa-save mr-2"></i>
+                        Simpan
+                    </button>
+                    <button type="button" onclick="closeAddModal()" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                        Batal
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Modal functions
+    function openAddModal() {
+        document.getElementById('add-modal').classList.remove('hidden');
+    }
+    
+    function closeAddModal() {
+        document.getElementById('add-modal').classList.add('hidden');
+        document.getElementById('add-letter-form').reset();
+    }
+    
+    // Load letters data
+    function loadLetters() {
+        // This would typically fetch data from the server
+        console.log('Loading letters data...');
+        
+        // Update statistics
+        document.getElementById('total-letters').textContent = '0';
+        document.getElementById('completed-letters').textContent = '0';
+        document.getElementById('pending-letters').textContent = '0';
+        document.getElementById('monthly-letters').textContent = '0';
+    }
+    
+    // Search and filter functions
+    document.getElementById('search-input').addEventListener('input', function() {
+        // Implement search functionality
+        console.log('Searching:', this.value);
+    });
+    
+    document.getElementById('letter-type-filter').addEventListener('change', function() {
+        // Implement filter functionality
+        console.log('Filter by type:', this.value);
+    });
+    
+    document.getElementById('status-filter').addEventListener('change', function() {
+        // Implement filter functionality
+        console.log('Filter by status:', this.value);
+    });
+    
+    document.getElementById('period-filter').addEventListener('change', function() {
+        // Implement filter functionality
+        console.log('Filter by period:', this.value);
+    });
+    
+    // Form submission
+    document.getElementById('add-letter-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(this);
+        
+        // This would typically send data to the server
+        console.log('Submitting letter data:', Object.fromEntries(formData));
+        
+        // Show success message
+        alert('Surat berhasil dibuat!');
+        closeAddModal();
+        loadLetters();
+    });
+    
+    // Load initial data
+    document.addEventListener('DOMContentLoaded', function() {
+        loadLetters();
+    });
+    
+    // Close modal when clicking outside
+    document.getElementById('add-modal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeAddModal();
+        }
+    });
+</script>
+{% endblock %}

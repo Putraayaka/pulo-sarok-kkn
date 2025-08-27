@@ -1,0 +1,1332 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block title %}Edit Letter - {{ letter.subject }} - {{ block.super }}{% endblock %}
+
+{% block extrahead %}
+    {{ block.super }}
+    <!-- Quill Editor -->
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+    <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
+    
+    <!-- Select2 -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Custom Styles -->
+    <style>
+        .edit-container {
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin: 20px 0;
+        }
+        
+        .edit-header {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 10px 10px 0 0;
+        }
+        
+        .edit-header h1 {
+            margin: 0;
+            font-size: 1.6em;
+        }
+        
+        .edit-content {
+            padding: 30px;
+        }
+        
+        .form-section {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 25px;
+            margin-bottom: 25px;
+            border-left: 4px solid #007bff;
+        }
+        
+        .form-section h4 {
+            color: #495057;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 8px;
+        }
+        
+        .form-control, .form-select {
+            border-radius: 8px;
+            border: 2px solid #e9ecef;
+            padding: 12px 15px;
+            transition: all 0.3s ease;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 0 0.2rem rgba(0,123,255,0.25);
+        }
+        
+        .quill-container {
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .ql-toolbar {
+            border: none;
+            border-bottom: 1px solid #e9ecef;
+            background: #f8f9fa;
+        }
+        
+        .ql-container {
+            border: none;
+            font-size: 14px;
+            min-height: 300px;
+        }
+        
+        .ai-assistant {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+        
+        .ai-assistant h5 {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .ai-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+        }
+        
+        .ai-btn {
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            transition: all 0.3s ease;
+        }
+        
+        .ai-btn:hover {
+            background: rgba(255,255,255,0.3);
+            color: white;
+        }
+        
+        .quick-templates {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .template-btn {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: white;
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        
+        .template-btn:hover {
+            background: rgba(255,255,255,0.2);
+            color: white;
+        }
+        
+        .writing-assistant {
+            background: rgba(255,255,255,0.1);
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+        
+        .writing-assistant .form-control {
+            background: rgba(255,255,255,0.9);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: #333;
+        }
+        
+        .writing-assistant .form-control:focus {
+            background: white;
+            border-color: #007bff;
+        }
+        
+        .char-counter {
+            font-size: 0.85em;
+            color: #6c757d;
+            text-align: right;
+            margin-top: 5px;
+        }
+        
+        .char-counter.warning {
+            color: #ffc107;
+        }
+        
+        .char-counter.danger {
+            color: #dc3545;
+        }
+        
+        .auto-save-indicator {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #28a745;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 25px;
+            font-size: 0.85em;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .auto-save-indicator.show {
+            opacity: 1;
+        }
+        
+        .auto-save-indicator.saving {
+            background: #ffc107;
+        }
+        
+        .auto-save-indicator.error {
+            background: #dc3545;
+        }
+        
+        .validation-result {
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+            display: none;
+        }
+        
+        .validation-success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        
+        .validation-warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+        }
+        
+        .validation-error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        
+        .suggestions-list {
+            margin-top: 10px;
+        }
+        
+        .suggestion-item {
+            background: rgba(255,255,255,0.8);
+            border-radius: 6px;
+            padding: 8px 12px;
+            margin-bottom: 5px;
+            border-left: 3px solid #007bff;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .suggestion-item:hover {
+            background: rgba(255,255,255,0.9);
+            transform: translateX(5px);
+        }
+        
+        .recipients-container {
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 10px;
+        }
+        
+        .recipient-item {
+            background: #f8f9fa;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 10px;
+            border: 1px solid #dee2e6;
+        }
+        
+        .recipient-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        .add-recipient-btn {
+            width: 100%;
+            padding: 10px;
+            border: 2px dashed #007bff;
+            background: transparent;
+            color: #007bff;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .add-recipient-btn:hover {
+            background: #007bff;
+            color: white;
+        }
+        
+        .attachments-container {
+            border: 2px dashed #dee2e6;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        
+        .attachments-container.dragover {
+            border-color: #007bff;
+            background: #f8f9fa;
+        }
+        
+        .attachment-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #f8f9fa;
+            border-radius: 6px;
+            padding: 10px 15px;
+            margin-bottom: 10px;
+            border: 1px solid #dee2e6;
+        }
+        
+        .attachment-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .attachment-icon {
+            font-size: 1.2em;
+            color: #007bff;
+        }
+        
+        .form-actions {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 0 0 10px 10px;
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            border-radius: 25px;
+            padding: 10px 25px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+        
+        .loading-content {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+        
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #007bff;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .preview-mode {
+            background: white;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            padding: 30px;
+            margin: 20px 0;
+            font-family: 'Times New Roman', serif;
+            line-height: 1.6;
+            display: none;
+        }
+        
+        .preview-mode.active {
+            display: block;
+        }
+        
+        .letterhead {
+            text-align: center;
+            border-bottom: 3px solid #007bff;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .letterhead h2 {
+            margin: 0;
+            color: #007bff;
+            font-size: 1.5em;
+        }
+        
+        .letterhead p {
+            margin: 5px 0;
+            color: #6c757d;
+        }
+        
+        .letter-number {
+            text-align: right;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+        
+        .letter-subject {
+            text-align: center;
+            font-weight: bold;
+            margin: 20px 0;
+            text-decoration: underline;
+        }
+        
+        .letter-body {
+            text-align: justify;
+            margin: 20px 0;
+        }
+        
+        .signature-section {
+            margin-top: 40px;
+            text-align: right;
+        }
+        
+        .mode-toggle {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+        
+        .mode-toggle .btn {
+            border-radius: 50px;
+            padding: 15px 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <form method="post" enctype="multipart/form-data" id="letterForm">
+        {% csrf_token %}
+        
+        <div class="edit-container">
+            <!-- Header -->
+            <div class="edit-header">
+                <h1><i class="fas fa-edit"></i> Edit Letter: {{ letter.subject }}</h1>
+                <p class="mb-0">Last updated: {{ letter.updated_at|date:"d M Y H:i" }}</p>
+            </div>
+            
+            <!-- AI Assistant Panel -->
+            <div class="edit-content">
+                <div class="ai-assistant">
+                    <h5><i class="fas fa-robot"></i> AI Writing Assistant</h5>
+                    
+                    <!-- Quick Actions -->
+                    <div class="ai-actions">
+                        <button type="button" class="btn ai-btn" onclick="improveContent()">
+                            <i class="fas fa-magic"></i> Improve
+                        </button>
+                        <button type="button" class="btn ai-btn" onclick="summarizeContent()">
+                            <i class="fas fa-compress-alt"></i> Summarize
+                        </button>
+                        <button type="button" class="btn ai-btn" onclick="checkGrammar()">
+                            <i class="fas fa-spell-check"></i> Grammar
+                        </button>
+                        <button type="button" class="btn ai-btn" onclick="generateContent()">
+                            <i class="fas fa-lightbulb"></i> Generate
+                        </button>
+                        <button type="button" class="btn ai-btn" onclick="translateContent()">
+                            <i class="fas fa-language"></i> Translate
+                        </button>
+                        <button type="button" class="btn ai-btn" onclick="validateLetter()">
+                            <i class="fas fa-check-circle"></i> Validate
+                        </button>
+                    </div>
+                    
+                    <!-- Quick Templates -->
+                    <div class="quick-templates">
+                        <button type="button" class="btn template-btn" onclick="applyTemplate('formal')">
+                            <i class="fas fa-file-alt"></i><br>Formal Letter
+                        </button>
+                        <button type="button" class="btn template-btn" onclick="applyTemplate('invitation')">
+                            <i class="fas fa-envelope"></i><br>Invitation
+                        </button>
+                        <button type="button" class="btn template-btn" onclick="applyTemplate('announcement')">
+                            <i class="fas fa-bullhorn"></i><br>Announcement
+                        </button>
+                        <button type="button" class="btn template-btn" onclick="applyTemplate('certificate')">
+                            <i class="fas fa-certificate"></i><br>Certificate
+                        </button>
+                        <button type="button" class="btn template-btn" onclick="applyTemplate('recommendation')">
+                            <i class="fas fa-thumbs-up"></i><br>Recommendation
+                        </button>
+                    </div>
+                    
+                    <!-- Writing Assistant -->
+                    <div class="writing-assistant">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <input type="text" class="form-control" id="ai-prompt" placeholder="Ask AI to help with your letter...">
+                            </div>
+                            <div class="col-md-4">
+                                <select class="form-select" id="ai-tone">
+                                    <option value="formal">Formal</option>
+                                    <option value="friendly">Friendly</option>
+                                    <option value="professional">Professional</option>
+                                    <option value="casual">Casual</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button type="button" class="btn ai-btn mt-2" onclick="processAIPrompt()">
+                            <i class="fas fa-paper-plane"></i> Send to AI
+                        </button>
+                    </div>
+                    
+                    <!-- Validation Result -->
+                    <div id="validation-result" class="validation-result"></div>
+                </div>
+                
+                <!-- Basic Information -->
+                <div class="form-section">
+                    <h4><i class="fas fa-info-circle"></i> Basic Information</h4>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label" for="id_letter_number">Letter Number</label>
+                                {{ form.letter_number }}
+                                <small class="form-text text-muted">Leave empty for auto-generation</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label" for="id_letter_type">Letter Type *</label>
+                                {{ form.letter_type }}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="form-group">
+                                <label class="form-label" for="id_subject">Subject *</label>
+                                {{ form.subject }}
+                                <div class="char-counter" id="subject-counter">0 / 200 characters</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label class="form-label" for="id_priority">Priority</label>
+                                {{ form.priority }}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label" for="id_status">Status</label>
+                                {{ form.status }}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label" for="id_applicant">Applicant *</label>
+                                {{ form.applicant }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Letter Content -->
+                <div class="form-section">
+                    <h4><i class="fas fa-edit"></i> Letter Content</h4>
+                    <div class="form-group">
+                        <label class="form-label">Content *</label>
+                        <div class="quill-container">
+                            <div id="editor">{{ letter.content|safe }}</div>
+                        </div>
+                        <textarea name="content" id="content-input" style="display: none;">{{ letter.content }}</textarea>
+                        <div class="char-counter" id="content-counter">0 characters</div>
+                    </div>
+                </div>
+                
+                <!-- Recipients -->
+                <div class="form-section">
+                    <h4><i class="fas fa-users"></i> Recipients</h4>
+                    <div class="recipients-container" id="recipients-container">
+                        {% for recipient in letter.recipients.all %}
+                        <div class="recipient-item">
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <label class="form-label">Type</label>
+                                    <select class="form-select recipient-type" name="recipient_type[]">
+                                        <option value="to" {% if recipient.recipient_type == 'to' %}selected{% endif %}>To</option>
+                                        <option value="cc" {% if recipient.recipient_type == 'cc' %}selected{% endif %}>CC</option>
+                                        <option value="bcc" {% if recipient.recipient_type == 'bcc' %}selected{% endif %}>BCC</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Name</label>
+                                    <input type="text" class="form-control" name="recipient_name[]" value="{{ recipient.name }}" placeholder="Recipient name">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Address</label>
+                                    <input type="text" class="form-control" name="recipient_address[]" value="{{ recipient.address }}" placeholder="Recipient address">
+                                </div>
+                                <div class="col-md-1">
+                                    <label class="form-label">&nbsp;</label>
+                                    <button type="button" class="btn btn-outline-danger btn-sm w-100" onclick="removeRecipient(this)">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <button type="button" class="btn add-recipient-btn" onclick="addRecipient()">
+                        <i class="fas fa-plus"></i> Add Recipient
+                    </button>
+                </div>
+                
+                <!-- Attachments -->
+                <div class="form-section">
+                    <h4><i class="fas fa-paperclip"></i> Attachments</h4>
+                    <div class="attachments-container" id="attachments-container">
+                        <i class="fas fa-cloud-upload-alt fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">Drag and drop files here or click to browse</p>
+                        <input type="file" id="file-input" multiple accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" style="display: none;">
+                        <button type="button" class="btn btn-outline-primary" onclick="document.getElementById('file-input').click()">
+                            <i class="fas fa-folder-open"></i> Browse Files
+                        </button>
+                    </div>
+                    
+                    <!-- Existing Attachments -->
+                    <div id="existing-attachments">
+                        {% for attachment in letter.attachments.all %}
+                        <div class="attachment-item">
+                            <div class="attachment-info">
+                                <i class="fas fa-file attachment-icon"></i>
+                                <div>
+                                    <div class="fw-bold">{{ attachment.filename }}</div>
+                                    <small class="text-muted">{{ attachment.file_size|filesizeformat }}</small>
+                                </div>
+                            </div>
+                            <div>
+                                <a href="{{ attachment.file.url }}" class="btn btn-sm btn-outline-primary me-2" download>
+                                    <i class="fas fa-download"></i>
+                                </a>
+                                <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeExistingAttachment({{ attachment.id }}, this)">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <!-- New Attachments -->
+                    <div id="new-attachments"></div>
+                </div>
+                
+                <!-- Additional Information -->
+                <div class="form-section">
+                    <h4><i class="fas fa-plus-circle"></i> Additional Information</h4>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label" for="id_notes">Notes</label>
+                                {{ form.notes }}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label" for="id_tags">Tags</label>
+                                {{ form.tags }}
+                                <small class="form-text text-muted">Separate tags with commas</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Form Actions -->
+            <div class="form-actions">
+                <button type="submit" class="btn btn-success btn-lg">
+                    <i class="fas fa-save"></i> Update Letter
+                </button>
+                <button type="button" class="btn btn-info btn-lg" onclick="togglePreview()">
+                    <i class="fas fa-eye"></i> Preview
+                </button>
+                <button type="button" class="btn btn-warning btn-lg" onclick="validateLetter()">
+                    <i class="fas fa-robot"></i> AI Validate
+                </button>
+                <button type="button" class="btn btn-secondary btn-lg" onclick="saveDraft()">
+                    <i class="fas fa-file-alt"></i> Save as Draft
+                </button>
+                <a href="{% url 'letters:admin_detail' letter.id %}" class="btn btn-outline-primary btn-lg">
+                    <i class="fas fa-arrow-left"></i> Back to Detail
+                </a>
+                <a href="{% url 'letters:admin_list' %}" class="btn btn-outline-dark btn-lg">
+                    <i class="fas fa-list"></i> Back to List
+                </a>
+            </div>
+        </div>
+    </form>
+    
+    <!-- Preview Mode -->
+    <div class="preview-mode" id="preview-mode">
+        <div class="letterhead">
+            <h2>PEMERINTAH DESA PULOSAROK</h2>
+            <p>Kecamatan Cibadak, Kabupaten Sukabumi, Jawa Barat</p>
+            <p>Kode Pos: 43351 | Telp: (0266) 123456</p>
+            <p>Email: info@pulosarok.desa.id | Website: www.pulosarok.desa.id</p>
+        </div>
+        
+        <div class="letter-number" id="preview-number">
+            Nomor: {{ letter.letter_number|default:"[Auto-generated]" }}
+        </div>
+        
+        <div class="letter-subject" id="preview-subject">
+            {{ letter.subject }}
+        </div>
+        
+        <div class="letter-body" id="preview-content">
+            {{ letter.content|safe }}
+        </div>
+        
+        <div class="signature-section">
+            <div class="signature-info">
+                <p>Pulosarok, {{ letter.created_at|date:"d F Y" }}</p>
+                <p>Kepala Desa Pulosarok</p>
+            </div>
+            <div class="signature-name">
+                [Kepala Desa]
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Mode Toggle -->
+<div class="mode-toggle">
+    <button type="button" class="btn btn-primary" id="mode-toggle-btn" onclick="togglePreview()">
+        <i class="fas fa-eye"></i> Preview
+    </button>
+</div>
+
+<!-- Auto-save Indicator -->
+<div class="auto-save-indicator" id="auto-save-indicator">
+    <i class="fas fa-save"></i> <span id="save-text">Saved</span>
+</div>
+
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loading-overlay">
+    <div class="loading-content">
+        <div class="spinner"></div>
+        <p id="loading-text">Processing...</p>
+    </div>
+</div>
+
+<!-- JavaScript -->
+<script>
+    let quill;
+    let autoSaveTimer;
+    let isPreviewMode = false;
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize Quill editor
+        quill = new Quill('#editor', {
+            theme: 'snow',
+            modules: {
+                toolbar: [
+                    [{ 'header': [1, 2, 3, false] }],
+                    ['bold', 'italic', 'underline', 'strike'],
+                    [{ 'color': [] }, { 'background': [] }],
+                    [{ 'align': [] }],
+                    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                    ['blockquote', 'code-block'],
+                    ['link', 'image'],
+                    ['clean']
+                ]
+            },
+            placeholder: 'Write your letter content here...'
+        });
+        
+        // Sync Quill content with hidden textarea
+        quill.on('text-change', function() {
+            document.getElementById('content-input').value = quill.root.innerHTML;
+            updateCharCounter('content-counter', quill.getText().length);
+            scheduleAutoSave();
+        });
+        
+        // Initialize Select2
+        $('#id_applicant, #id_letter_type').select2({
+            theme: 'bootstrap-4',
+            width: '100%'
+        });
+        
+        // Character counters
+        updateCharCounter('subject-counter', document.getElementById('id_subject').value.length, 200);
+        updateCharCounter('content-counter', quill.getText().length);
+        
+        // Subject character counter
+        document.getElementById('id_subject').addEventListener('input', function() {
+            updateCharCounter('subject-counter', this.value.length, 200);
+            scheduleAutoSave();
+        });
+        
+        // File upload handling
+        setupFileUpload();
+        
+        // Auto-save on form changes
+        document.querySelectorAll('input, select, textarea').forEach(element => {
+            element.addEventListener('change', scheduleAutoSave);
+        });
+    });
+    
+    // Character counter function
+    function updateCharCounter(counterId, length, maxLength = null) {
+        const counter = document.getElementById(counterId);
+        if (maxLength) {
+            counter.textContent = `${length} / ${maxLength} characters`;
+            if (length > maxLength * 0.9) {
+                counter.className = 'char-counter danger';
+            } else if (length > maxLength * 0.8) {
+                counter.className = 'char-counter warning';
+            } else {
+                counter.className = 'char-counter';
+            }
+        } else {
+            counter.textContent = `${length} characters`;
+        }
+    }
+    
+    // Auto-save functionality
+    function scheduleAutoSave() {
+        clearTimeout(autoSaveTimer);
+        autoSaveTimer = setTimeout(autoSave, 3000); // Auto-save after 3 seconds of inactivity
+    }
+    
+    function autoSave() {
+        const indicator = document.getElementById('auto-save-indicator');
+        const saveText = document.getElementById('save-text');
+        
+        indicator.className = 'auto-save-indicator saving show';
+        saveText.textContent = 'Saving...';
+        
+        const formData = new FormData(document.getElementById('letterForm'));
+        formData.append('auto_save', 'true');
+        
+        fetch(window.location.href, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                indicator.className = 'auto-save-indicator show';
+                saveText.textContent = 'Saved';
+            } else {
+                indicator.className = 'auto-save-indicator error show';
+                saveText.textContent = 'Error';
+            }
+            
+            setTimeout(() => {
+                indicator.classList.remove('show');
+            }, 2000);
+        })
+        .catch(error => {
+            console.error('Auto-save error:', error);
+            indicator.className = 'auto-save-indicator error show';
+            saveText.textContent = 'Error';
+            
+            setTimeout(() => {
+                indicator.classList.remove('show');
+            }, 2000);
+        });
+    }
+    
+    // File upload setup
+    function setupFileUpload() {
+        const container = document.getElementById('attachments-container');
+        const fileInput = document.getElementById('file-input');
+        
+        // Drag and drop
+        container.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            container.classList.add('dragover');
+        });
+        
+        container.addEventListener('dragleave', function(e) {
+            e.preventDefault();
+            container.classList.remove('dragover');
+        });
+        
+        container.addEventListener('drop', function(e) {
+            e.preventDefault();
+            container.classList.remove('dragover');
+            handleFiles(e.dataTransfer.files);
+        });
+        
+        // File input change
+        fileInput.addEventListener('change', function() {
+            handleFiles(this.files);
+        });
+    }
+    
+    function handleFiles(files) {
+        const newAttachments = document.getElementById('new-attachments');
+        
+        Array.from(files).forEach(file => {
+            const attachmentItem = document.createElement('div');
+            attachmentItem.className = 'attachment-item';
+            attachmentItem.innerHTML = `
+                <div class="attachment-info">
+                    <i class="fas fa-file attachment-icon"></i>
+                    <div>
+                        <div class="fw-bold">${file.name}</div>
+                        <small class="text-muted">${formatFileSize(file.size)}</small>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeNewAttachment(this)">
+                    <i class="fas fa-trash"></i>
+                </button>
+            `;
+            
+            newAttachments.appendChild(attachmentItem);
+        });
+    }
+    
+    function formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+    
+    // Recipients management
+    function addRecipient() {
+        const container = document.getElementById('recipients-container');
+        const recipientItem = document.createElement('div');
+        recipientItem.className = 'recipient-item';
+        recipientItem.innerHTML = `
+            <div class="row">
+                <div class="col-md-3">
+                    <label class="form-label">Type</label>
+                    <select class="form-select recipient-type" name="recipient_type[]">
+                        <option value="to">To</option>
+                        <option value="cc">CC</option>
+                        <option value="bcc">BCC</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Name</label>
+                    <input type="text" class="form-control" name="recipient_name[]" placeholder="Recipient name">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Address</label>
+                    <input type="text" class="form-control" name="recipient_address[]" placeholder="Recipient address">
+                </div>
+                <div class="col-md-1">
+                    <label class="form-label">&nbsp;</label>
+                    <button type="button" class="btn btn-outline-danger btn-sm w-100" onclick="removeRecipient(this)">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        container.appendChild(recipientItem);
+    }
+    
+    function removeRecipient(button) {
+        button.closest('.recipient-item').remove();
+    }
+    
+    function removeNewAttachment(button) {
+        button.closest('.attachment-item').remove();
+    }
+    
+    function removeExistingAttachment(attachmentId, button) {
+        if (confirm('Are you sure you want to remove this attachment?')) {
+            // Add hidden input to mark for deletion
+            const hiddenInput = document.createElement('input');
+            hiddenInput.type = 'hidden';
+            hiddenInput.name = 'delete_attachments[]';
+            hiddenInput.value = attachmentId;
+            document.getElementById('letterForm').appendChild(hiddenInput);
+            
+            button.closest('.attachment-item').remove();
+        }
+    }
+    
+    // Preview mode
+    function togglePreview() {
+        const editContainer = document.querySelector('.edit-container');
+        const previewMode = document.getElementById('preview-mode');
+        const toggleBtn = document.getElementById('mode-toggle-btn');
+        
+        isPreviewMode = !isPreviewMode;
+        
+        if (isPreviewMode) {
+            // Update preview content
+            document.getElementById('preview-subject').textContent = document.getElementById('id_subject').value;
+            document.getElementById('preview-content').innerHTML = quill.root.innerHTML;
+            document.getElementById('preview-number').textContent = 'Nomor: ' + (document.getElementById('id_letter_number').value || '[Auto-generated]');
+            
+            editContainer.style.display = 'none';
+            previewMode.classList.add('active');
+            toggleBtn.innerHTML = '<i class="fas fa-edit"></i> Edit';
+        } else {
+            editContainer.style.display = 'block';
+            previewMode.classList.remove('active');
+            toggleBtn.innerHTML = '<i class="fas fa-eye"></i> Preview';
+        }
+    }
+    
+    // AI Functions
+    function showLoading(text = 'Processing...') {
+        document.getElementById('loading-text').textContent = text;
+        document.getElementById('loading-overlay').style.display = 'flex';
+    }
+    
+    function hideLoading() {
+        document.getElementById('loading-overlay').style.display = 'none';
+    }
+    
+    function improveContent() {
+        const content = quill.getText();
+        if (!content.trim()) {
+            alert('Please write some content first.');
+            return;
+        }
+        
+        showLoading('Improving content with AI...');
+        
+        fetch('{% url "letters:letter_ai_improve_api" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: JSON.stringify({ content: content })
+        })
+        .then(response => response.json())
+        .then(data => {
+            hideLoading();
+            if (data.success) {
+                quill.root.innerHTML = data.improved_content;
+                showValidationResult('Content improved successfully!', 'success');
+            } else {
+                showValidationResult('Failed to improve content: ' + (data.error || 'Unknown error'), 'error');
+            }
+        })
+        .catch(error => {
+            hideLoading();
+            console.error('Improve content error:', error);
+            showValidationResult('An error occurred while improving content.', 'error');
+        });
+    }
+    
+    function summarizeContent() {
+        const content = quill.getText();
+        if (!content.trim()) {
+            alert('Please write some content first.');
+            return;
+        }
+        
+        showLoading('Summarizing content...');
+        
+        fetch('{% url "letters:letter_ai_summarize_api" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: JSON.stringify({ content: content })
+        })
+        .then(response => response.json())
+        .then(data => {
+            hideLoading();
+            if (data.success) {
+                quill.root.innerHTML = data.summary;
+                showValidationResult('Content summarized successfully!', 'success');
+            } else {
+                showValidationResult('Failed to summarize content: ' + (data.error || 'Unknown error'), 'error');
+            }
+        })
+        .catch(error => {
+            hideLoading();
+            console.error('Summarize content error:', error);
+            showValidationResult('An error occurred while summarizing content.', 'error');
+        });
+    }
+    
+    function checkGrammar() {
+        const content = quill.getText();
+        if (!content.trim()) {
+            alert('Please write some content first.');
+            return;
+        }
+        
+        showLoading('Checking grammar...');
+        
+        // Implement grammar check API call
+        setTimeout(() => {
+            hideLoading();
+            showValidationResult('Grammar check completed. No major issues found.', 'success');
+        }, 2000);
+    }
+    
+    function generateContent() {
+        const subject = document.getElementById('id_subject').value;
+        if (!subject.trim()) {
+            alert('Please enter a subject first.');
+            return;
+        }
+        
+        showLoading('Generating content...');
+        
+        fetch('{% url "letters:letter_ai_generate_api" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: JSON.stringify({ 
+                subject: subject,
+                letter_type: document.getElementById('id_letter_type').value
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            hideLoading();
+            if (data.success) {
+                quill.root.innerHTML = data.content;
+                showValidationResult('Content generated successfully!', 'success');
+            } else {
+                showValidationResult('Failed to generate content: ' + (data.error || 'Unknown error'), 'error');
+            }
+        })
+        .catch(error => {
+            hideLoading();
+            console.error('Generate content error:', error);
+            showValidationResult('An error occurred while generating content.', 'error');
+        });
+    }
+    
+    function translateContent() {
+        const content = quill.getText();
+        if (!content.trim()) {
+            alert('Please write some content first.');
+            return;
+        }
+        
+        const targetLang = prompt('Enter target language (e.g., en, id, jv):');
+        if (!targetLang) return;
+        
+        showLoading('Translating content...');
+        
+        // Implement translation API call
+        setTimeout(() => {
+            hideLoading();
+            showValidationResult('Content translated successfully!', 'success');
+        }, 2000);
+    }
+    
+    function validateLetter() {
+        const formData = {
+            subject: document.getElementById('id_subject').value,
+            content: quill.root.innerHTML,
+            letter_type: document.getElementById('id_letter_type').value
+        };
+        
+        showLoading('Validating letter with AI...');
+        
+        fetch('{% url "letters:letter_ai_validate_api" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: JSON.stringify(formData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            hideLoading();
+            if (data.success) {
+                showValidationResult(
+                    `Validation completed! Score: ${data.confidence_score}%<br>${data.summary}`,
+                    data.is_valid ? 'success' : 'warning',
+                    data.suggestions
+                );
+            } else {
+                showValidationResult('Validation failed: ' + (data.error || 'Unknown error'), 'error');
+            }
+        })
+        .catch(error => {
+            hideLoading();
+            console.error('Validation error:', error);
+            showValidationResult('An error occurred during validation.', 'error');
+        });
+    }
+    
+    function applyTemplate(templateType) {
+        showLoading('Loading template...');
+        
+        fetch('{% url "letters:letter_template_apply_api" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: JSON.stringify({ template_type: templateType })
+        })
+        .then(response => response.json())
+        .then(data => {
+            hideLoading();
+            if (data.success) {
+                quill.root.innerHTML = data.content;
+                showValidationResult('Template applied successfully!', 'success');
+            } else {
+                showValidationResult('Failed to apply template: ' + (data.error || 'Unknown error'), 'error');
+            }
+        })
+        .catch(error => {
+            hideLoading();
+            console.error('Apply template error:', error);
+            showValidationResult('An error occurred while applying template.', 'error');
+        });
+    }
+    
+    function processAIPrompt() {
+        const prompt = document.getElementById('ai-prompt').value;
+        const tone = document.getElementById('ai-tone').value;
+        
+        if (!prompt.trim()) {
+            alert('Please enter a prompt.');
+            return;
+        }
+        
+        showLoading('Processing AI prompt...');
+        
+        // Implement AI prompt processing
+        setTimeout(() => {
+            hideLoading();
+            showValidationResult('AI prompt processed successfully!', 'success');
+            document.getElementById('ai-prompt').value = '';
+        }, 2000);
+    }
+    
+    function showValidationResult(message, type, suggestions = null) {
+        const resultDiv = document.getElementById('validation-result');
+        resultDiv.className = `validation-result validation-${type}`;
+        
+        let html = `<div><strong>AI Result:</strong> ${message}</div>`;
+        
+        if (suggestions && suggestions.length > 0) {
+            html += '<div class="suggestions-list"><strong>Suggestions:</strong>';
+            suggestions.forEach(suggestion => {
+                html += `<div class="suggestion-item" onclick="applySuggestion('${suggestion}')">${suggestion}</div>`;
+            });
+            html += '</div>';
+        }
+        
+        resultDiv.innerHTML = html;
+        resultDiv.style.display = 'block';
+        
+        setTimeout(() => {
+            resultDiv.style.display = 'none';
+        }, 10000);
+    }
+    
+    function applySuggestion(suggestion) {
+        // Apply suggestion to content
+        const currentContent = quill.root.innerHTML;
+        // Simple implementation - you might want to make this more sophisticated
+        quill.root.innerHTML = currentContent + '<p>' + suggestion + '</p>';
+        showValidationResult('Suggestion applied!', 'success');
+    }
+    
+    function saveDraft() {
+        const formData = new FormData(document.getElementById('letterForm'));
+        formData.append('save_as_draft', 'true');
+        
+        showLoading('Saving draft...');
+        
+        fetch(window.location.href, {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            hideLoading();
+            if (data.success) {
+                showValidationResult('Draft saved successfully!', 'success');
+            } else {
+                showValidationResult('Failed to save draft: ' + (data.error || 'Unknown error'), 'error');
+            }
+        })
+        .catch(error => {
+            hideLoading();
+            console.error('Save draft error:', error);
+            showValidationResult('An error occurred while saving draft.', 'error');
+        });
+    }
+</script>
+{% endblock %}

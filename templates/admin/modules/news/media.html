@@ -1,0 +1,1048 @@
+{% extends 'admin/base.html' %}
+{% load static %}
+
+{% block title %}Galeri Media - Admin{% endblock %}
+
+{% block extra_css %}
+<style>
+    .media-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 16px;
+        padding: 24px;
+        margin-bottom: 24px;
+        color: white;
+    }
+    .media-card {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 24px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        border: 1px solid #e5e7eb;
+    }
+    .media-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 20px;
+    }
+    .media-item {
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        border: 1px solid #e5e7eb;
+        transition: all 0.3s ease;
+        position: relative;
+    }
+    .media-item:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    }
+    .media-thumbnail {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+        background: #f3f4f6;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #9ca3af;
+        font-size: 3rem;
+    }
+    .media-info {
+        padding: 16px;
+    }
+    .media-title {
+        font-weight: 600;
+        color: #1f2937;
+        margin-bottom: 8px;
+        font-size: 14px;
+        line-height: 1.4;
+    }
+    .media-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 12px;
+        color: #6b7280;
+        margin-bottom: 12px;
+    }
+    .media-actions {
+        display: flex;
+        gap: 8px;
+    }
+    .action-btn {
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 500;
+        transition: all 0.2s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        border: none;
+        cursor: pointer;
+    }
+    .btn-view {
+        background: #10b981;
+        color: white;
+    }
+    .btn-view:hover {
+        background: #059669;
+        color: white;
+    }
+    .btn-edit {
+        background: #3b82f6;
+        color: white;
+    }
+    .btn-edit:hover {
+        background: #2563eb;
+        color: white;
+    }
+    .btn-delete {
+        background: #ef4444;
+        color: white;
+    }
+    .btn-delete:hover {
+        background: #dc2626;
+        color: white;
+    }
+    .upload-area {
+        border: 2px dashed #d1d5db;
+        border-radius: 12px;
+        padding: 40px 20px;
+        text-align: center;
+        background: #f9fafb;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+    .upload-area:hover {
+        border-color: #3b82f6;
+        background: #eff6ff;
+    }
+    .upload-area.dragover {
+        border-color: #3b82f6;
+        background: #dbeafe;
+    }
+    .filter-bar {
+        display: flex;
+        gap: 16px;
+        align-items: center;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+    }
+    .filter-select {
+        padding: 8px 12px;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        background: white;
+        font-size: 14px;
+    }
+    .search-input {
+        padding: 8px 12px;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        font-size: 14px;
+        min-width: 200px;
+    }
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+    .stat-card {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        text-align: center;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        border: 1px solid #e5e7eb;
+    }
+    .stat-number {
+        font-size: 2rem;
+        font-weight: bold;
+        margin-bottom: 8px;
+    }
+    .stat-label {
+        color: #6b7280;
+        font-size: 0.875rem;
+    }
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        animation: fadeIn 0.3s ease;
+    }
+    .modal.show {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .modal-content {
+        background: white;
+        border-radius: 12px;
+        padding: 24px;
+        width: 90%;
+        max-width: 600px;
+        max-height: 90vh;
+        overflow-y: auto;
+        animation: slideIn 0.3s ease;
+    }
+    .modal-content.large {
+        max-width: 800px;
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+    @keyframes slideIn {
+        from { transform: translateY(-50px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+    }
+    .form-group {
+        margin-bottom: 16px;
+    }
+    .form-label {
+        display: block;
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 6px;
+    }
+    .form-input {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        font-size: 14px;
+        transition: all 0.2s ease;
+    }
+    .form-input:focus {
+        outline: none;
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+    .form-textarea {
+        resize: vertical;
+        min-height: 80px;
+    }
+    .file-info {
+        background: #f3f4f6;
+        border-radius: 8px;
+        padding: 12px;
+        margin-top: 12px;
+        font-size: 12px;
+        color: #6b7280;
+    }
+    .progress-bar {
+        width: 100%;
+        height: 8px;
+        background: #e5e7eb;
+        border-radius: 4px;
+        overflow: hidden;
+        margin-top: 8px;
+    }
+    .progress-fill {
+        height: 100%;
+        background: #3b82f6;
+        transition: width 0.3s ease;
+    }
+    .media-checkbox {
+        position: absolute;
+        top: 12px;
+        left: 12px;
+        width: 20px;
+        height: 20px;
+        accent-color: #3b82f6;
+    }
+    .bulk-actions {
+        background: white;
+        border-radius: 8px;
+        padding: 12px 16px;
+        margin-bottom: 20px;
+        border: 1px solid #e5e7eb;
+        display: none;
+    }
+    .bulk-actions.show {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: #6b7280;
+    }
+    .empty-state i {
+        font-size: 4rem;
+        margin-bottom: 16px;
+        color: #d1d5db;
+    }
+    .pagination {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 8px;
+        margin-top: 24px;
+    }
+    .pagination button {
+        padding: 8px 12px;
+        border: 1px solid #d1d5db;
+        background: white;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    .pagination button:hover {
+        background: #f3f4f6;
+    }
+    .pagination button.active {
+        background: #3b82f6;
+        color: white;
+        border-color: #3b82f6;
+    }
+    .pagination button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-6">
+    <!-- Header -->
+    <div class="media-header">
+        <div class="flex items-center justify-between">
+            <div>
+                <h1 class="text-3xl font-bold mb-2">Galeri Media</h1>
+                <p class="opacity-90">Kelola file media untuk berita dan konten website</p>
+            </div>
+            <div class="flex items-center space-x-4">
+                <button onclick="openUploadModal()" class="bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-6 py-3 rounded-lg transition duration-200 flex items-center">
+                    <i class="fas fa-upload mr-2"></i>Upload Media
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-number text-blue-600">{{ stats.total_media|default:0 }}</div>
+            <div class="stat-label">Total Media</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number text-green-600">{{ stats.total_images|default:0 }}</div>
+            <div class="stat-label">Gambar</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number text-purple-600">{{ stats.total_videos|default:0 }}</div>
+            <div class="stat-label">Video</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number text-orange-600">{{ stats.total_size|filesizeformat|default:"0 B" }}</div>
+            <div class="stat-label">Total Ukuran</div>
+        </div>
+    </div>
+
+    <!-- Media Gallery -->
+    <div class="media-card">
+        <!-- Filter Bar -->
+        <div class="filter-bar">
+            <input type="text" id="searchMedia" placeholder="Cari media..." class="search-input">
+            <select id="filterType" class="filter-select">
+                <option value="">Semua Tipe</option>
+                <option value="image">Gambar</option>
+                <option value="video">Video</option>
+                <option value="document">Dokumen</option>
+            </select>
+            <select id="filterDate" class="filter-select">
+                <option value="">Semua Tanggal</option>
+                <option value="today">Hari Ini</option>
+                <option value="week">Minggu Ini</option>
+                <option value="month">Bulan Ini</option>
+                <option value="year">Tahun Ini</option>
+            </select>
+            <button onclick="clearFilters()" class="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition duration-200">
+                <i class="fas fa-times mr-2"></i>Reset Filter
+            </button>
+        </div>
+
+        <!-- Bulk Actions -->
+        <div id="bulkActions" class="bulk-actions">
+            <span class="text-sm font-medium">Dipilih: <span id="selectedCount">0</span> item</span>
+            <button onclick="bulkDelete()" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition duration-200">
+                <i class="fas fa-trash mr-2"></i>Hapus Terpilih
+            </button>
+            <button onclick="bulkDownload()" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition duration-200">
+                <i class="fas fa-download mr-2"></i>Download Terpilih
+            </button>
+        </div>
+
+        <!-- Media Grid -->
+        <div class="media-grid" id="mediaGrid">
+            {% for media in media_files %}
+                <div class="media-item" data-media-id="{{ media.id }}" data-media-type="{{ media.file_type }}" data-media-name="{{ media.title|lower }}">
+                    <input type="checkbox" class="media-checkbox" onchange="toggleSelection({{ media.id }})">
+                    
+                    {% if media.file_type == 'image' %}
+                        <img src="{{ media.file.url }}" alt="{{ media.title }}" class="media-thumbnail" onclick="viewMedia({{ media.id }})">
+                    {% elif media.file_type == 'video' %}
+                        <div class="media-thumbnail" onclick="viewMedia({{ media.id }})">
+                            <i class="fas fa-play-circle"></i>
+                        </div>
+                    {% else %}
+                        <div class="media-thumbnail" onclick="viewMedia({{ media.id }})">
+                            <i class="fas fa-file-alt"></i>
+                        </div>
+                    {% endif %}
+                    
+                    <div class="media-info">
+                        <div class="media-title">{{ media.title|truncatechars:30 }}</div>
+                        <div class="media-meta">
+                            <span>{{ media.file_size|filesizeformat }}</span>
+                            <span>{{ media.created_at|date:"d M Y" }}</span>
+                        </div>
+                        <div class="media-actions">
+                            <button onclick="viewMedia({{ media.id }})" class="action-btn btn-view" title="Lihat">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button onclick="editMedia({{ media.id }})" class="action-btn btn-edit" title="Edit">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button onclick="deleteMedia({{ media.id }})" class="action-btn btn-delete" title="Hapus">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="col-span-full empty-state">
+                    <i class="fas fa-images"></i>
+                    <h3 class="text-lg font-medium mb-2">Belum ada media</h3>
+                    <p class="text-sm mb-4">Upload file media pertama untuk memulai galeri.</p>
+                    <button onclick="openUploadModal()" class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg transition duration-200">
+                        <i class="fas fa-upload mr-2"></i>Upload Media
+                    </button>
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- Pagination -->
+        {% if is_paginated %}
+            <div class="pagination">
+                {% if page_obj.has_previous %}
+                    <button onclick="changePage(1)" {% if page_obj.number == 1 %}disabled{% endif %}>
+                        <i class="fas fa-angle-double-left"></i>
+                    </button>
+                    <button onclick="changePage({{ page_obj.previous_page_number }})">
+                        <i class="fas fa-angle-left"></i>
+                    </button>
+                {% endif %}
+                
+                {% for num in page_obj.paginator.page_range %}
+                    {% if page_obj.number == num %}
+                        <button class="active">{{ num }}</button>
+                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                        <button onclick="changePage({{ num }})">{{ num }}</button>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if page_obj.has_next %}
+                    <button onclick="changePage({{ page_obj.next_page_number }})">
+                        <i class="fas fa-angle-right"></i>
+                    </button>
+                    <button onclick="changePage({{ page_obj.paginator.num_pages }})" {% if page_obj.number == page_obj.paginator.num_pages %}disabled{% endif %}>
+                        <i class="fas fa-angle-double-right"></i>
+                    </button>
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Upload Modal -->
+<div id="uploadModal" class="modal">
+    <div class="modal-content">
+        <div class="flex items-center justify-between mb-6">
+            <h3 class="text-xl font-semibold text-gray-900">Upload Media</h3>
+            <button onclick="closeUploadModal()" class="text-gray-500 hover:text-gray-700">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+        
+        <form id="uploadForm" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            <!-- Upload Area -->
+            <div class="upload-area" id="uploadArea" onclick="document.getElementById('fileInput').click()">
+                <input type="file" id="fileInput" multiple accept="image/*,video/*,.pdf,.doc,.docx" style="display: none;" onchange="handleFileSelect(event)">
+                <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-4"></i>
+                <p class="text-lg font-medium text-gray-700 mb-2">Klik untuk upload atau drag & drop</p>
+                <p class="text-sm text-gray-500">Mendukung: JPG, PNG, GIF, MP4, PDF, DOC (Max: 10MB per file)</p>
+            </div>
+            
+            <!-- File List -->
+            <div id="fileList" class="mt-4"></div>
+            
+            <div class="flex justify-end space-x-3 mt-6">
+                <button type="button" onclick="closeUploadModal()" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition duration-200">
+                    Batal
+                </button>
+                <button type="submit" id="uploadBtn" class="px-6 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition duration-200" disabled>
+                    <i class="fas fa-upload mr-2"></i>Upload
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- View Media Modal -->
+<div id="viewMediaModal" class="modal">
+    <div class="modal-content large">
+        <div class="flex items-center justify-between mb-6">
+            <h3 class="text-xl font-semibold text-gray-900">Detail Media</h3>
+            <button onclick="closeViewMediaModal()" class="text-gray-500 hover:text-gray-700">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+        
+        <div id="mediaDetails">
+            <!-- Media details will be loaded here -->
+        </div>
+        
+        <div class="flex justify-end space-x-3 mt-6">
+            <button onclick="closeViewMediaModal()" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition duration-200">
+                Tutup
+            </button>
+            <button onclick="editMediaFromView()" class="px-6 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition duration-200">
+                <i class="fas fa-edit mr-2"></i>Edit
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Media Modal -->
+<div id="editMediaModal" class="modal">
+    <div class="modal-content">
+        <div class="flex items-center justify-between mb-6">
+            <h3 class="text-xl font-semibold text-gray-900">Edit Media</h3>
+            <button onclick="closeEditMediaModal()" class="text-gray-500 hover:text-gray-700">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+        
+        <form id="editMediaForm">
+            {% csrf_token %}
+            <input type="hidden" id="editMediaId" name="media_id">
+            
+            <div class="form-group">
+                <label class="form-label" for="editMediaTitle">Judul Media *</label>
+                <input type="text" id="editMediaTitle" name="title" class="form-input" required>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label" for="editMediaDescription">Deskripsi</label>
+                <textarea id="editMediaDescription" name="description" class="form-input form-textarea" placeholder="Deskripsi media (opsional)"></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label" for="editMediaAlt">Alt Text</label>
+                <input type="text" id="editMediaAlt" name="alt_text" class="form-input" placeholder="Teks alternatif untuk aksesibilitas">
+            </div>
+            
+            <div class="flex justify-end space-x-3 mt-6">
+                <button type="button" onclick="closeEditMediaModal()" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition duration-200">
+                    Batal
+                </button>
+                <button type="submit" class="px-6 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition duration-200">
+                    <i class="fas fa-save mr-2"></i>Simpan
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let selectedMedia = new Set();
+let currentMediaId = null;
+
+// Upload functions
+function openUploadModal() {
+    document.getElementById('uploadModal').classList.add('show');
+}
+
+function closeUploadModal() {
+    document.getElementById('uploadModal').classList.remove('show');
+    resetUploadForm();
+}
+
+function resetUploadForm() {
+    document.getElementById('uploadForm').reset();
+    document.getElementById('fileList').innerHTML = '';
+    document.getElementById('uploadBtn').disabled = true;
+}
+
+// File handling
+function handleFileSelect(event) {
+    const files = Array.from(event.target.files);
+    displayFileList(files);
+}
+
+function displayFileList(files) {
+    const fileList = document.getElementById('fileList');
+    fileList.innerHTML = '';
+    
+    if (files.length === 0) {
+        document.getElementById('uploadBtn').disabled = true;
+        return;
+    }
+    
+    document.getElementById('uploadBtn').disabled = false;
+    
+    files.forEach((file, index) => {
+        const fileItem = document.createElement('div');
+        fileItem.className = 'file-info';
+        fileItem.innerHTML = `
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <i class="fas fa-file text-blue-500"></i>
+                    <div>
+                        <div class="font-medium">${file.name}</div>
+                        <div class="text-xs text-gray-500">${(file.size / 1024 / 1024).toFixed(2)} MB</div>
+                    </div>
+                </div>
+                <button type="button" onclick="removeFile(${index})" class="text-red-500 hover:text-red-700">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="progress-bar" id="progress-${index}" style="display: none;">
+                <div class="progress-fill" style="width: 0%"></div>
+            </div>
+        `;
+        fileList.appendChild(fileItem);
+    });
+}
+
+function removeFile(index) {
+    const fileInput = document.getElementById('fileInput');
+    const dt = new DataTransfer();
+    const files = Array.from(fileInput.files);
+    
+    files.forEach((file, i) => {
+        if (i !== index) {
+            dt.items.add(file);
+        }
+    });
+    
+    fileInput.files = dt.files;
+    displayFileList(Array.from(dt.files));
+}
+
+// Drag and drop
+const uploadArea = document.getElementById('uploadArea');
+
+uploadArea.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    uploadArea.classList.add('dragover');
+});
+
+uploadArea.addEventListener('dragleave', () => {
+    uploadArea.classList.remove('dragover');
+});
+
+uploadArea.addEventListener('drop', (e) => {
+    e.preventDefault();
+    uploadArea.classList.remove('dragover');
+    
+    const files = Array.from(e.dataTransfer.files);
+    document.getElementById('fileInput').files = e.dataTransfer.files;
+    displayFileList(files);
+});
+
+// Upload form submission
+document.getElementById('uploadForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData();
+    const files = document.getElementById('fileInput').files;
+    
+    for (let i = 0; i < files.length; i++) {
+        formData.append('files', files[i]);
+    }
+    
+    formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+    
+    // Show progress bars
+    for (let i = 0; i < files.length; i++) {
+        document.getElementById(`progress-${i}`).style.display = 'block';
+    }
+    
+    fetch('/admin/news/media/upload/', {
+        method: 'POST',
+        body: formData,
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showNotification('Media berhasil diupload!', 'success');
+            closeUploadModal();
+            setTimeout(() => location.reload(), 1500);
+        } else {
+            showNotification(data.message || 'Gagal mengupload media', 'error');
+        }
+    })
+    .catch(error => {
+        showNotification('Terjadi kesalahan', 'error');
+    });
+});
+
+// Media actions
+function viewMedia(mediaId) {
+    currentMediaId = mediaId;
+    loadMediaDetails(mediaId);
+    document.getElementById('viewMediaModal').classList.add('show');
+}
+
+function closeViewMediaModal() {
+    document.getElementById('viewMediaModal').classList.remove('show');
+}
+
+function editMedia(mediaId) {
+    currentMediaId = mediaId;
+    loadMediaForEdit(mediaId);
+    document.getElementById('editMediaModal').classList.add('show');
+}
+
+function closeEditMediaModal() {
+    document.getElementById('editMediaModal').classList.remove('show');
+}
+
+function editMediaFromView() {
+    closeViewMediaModal();
+    editMedia(currentMediaId);
+}
+
+function deleteMedia(mediaId) {
+    if (confirm('Apakah Anda yakin ingin menghapus media ini?')) {
+        fetch(`/admin/news/media/${mediaId}/delete/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showNotification('Media berhasil dihapus!', 'success');
+                setTimeout(() => location.reload(), 1500);
+            } else {
+                showNotification(data.message || 'Gagal menghapus media', 'error');
+            }
+        })
+        .catch(error => {
+            showNotification('Terjadi kesalahan', 'error');
+        });
+    }
+}
+
+// Load media details
+function loadMediaDetails(mediaId) {
+    fetch(`/admin/news/media/${mediaId}/`)
+        .then(response => response.json())
+        .then(data => {
+            const detailsHtml = `
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        ${data.file_type === 'image' ? 
+                            `<img src="${data.file_url}" alt="${data.title}" class="w-full rounded-lg">` :
+                            data.file_type === 'video' ?
+                            `<video src="${data.file_url}" controls class="w-full rounded-lg"></video>` :
+                            `<div class="w-full h-64 bg-gray-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-file-alt text-6xl text-gray-400"></i>
+                            </div>`
+                        }
+                    </div>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Judul</label>
+                            <p class="text-gray-900">${data.title}</p>
+                        </div>
+                        
+                        ${data.description ? `
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Deskripsi</label>
+                                <p class="text-gray-600">${data.description}</p>
+                            </div>
+                        ` : ''}
+                        
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Tipe File</label>
+                                <p class="text-gray-600">${data.file_type}</p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Ukuran</label>
+                                <p class="text-gray-600">${data.file_size}</p>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Diupload</label>
+                            <p class="text-gray-600">${new Date(data.created_at).toLocaleDateString('id-ID')}</p>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">URL File</label>
+                            <div class="flex items-center space-x-2">
+                                <input type="text" value="${data.file_url}" class="form-input text-sm" readonly>
+                                <button onclick="copyToClipboard('${data.file_url}')" class="px-3 py-2 bg-gray-500 text-white rounded hover:bg-gray-600">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.getElementById('mediaDetails').innerHTML = detailsHtml;
+        })
+        .catch(error => {
+            showNotification('Gagal memuat detail media', 'error');
+        });
+}
+
+// Load media for editing
+function loadMediaForEdit(mediaId) {
+    fetch(`/admin/news/media/${mediaId}/`)
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('editMediaId').value = data.id;
+            document.getElementById('editMediaTitle').value = data.title;
+            document.getElementById('editMediaDescription').value = data.description || '';
+            document.getElementById('editMediaAlt').value = data.alt_text || '';
+        })
+        .catch(error => {
+            showNotification('Gagal memuat data media', 'error');
+        });
+}
+
+// Edit form submission
+document.getElementById('editMediaForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    const mediaId = document.getElementById('editMediaId').value;
+    
+    fetch(`/admin/news/media/${mediaId}/update/`, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+        },
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showNotification('Media berhasil diupdate!', 'success');
+            closeEditMediaModal();
+            setTimeout(() => location.reload(), 1500);
+        } else {
+            showNotification(data.message || 'Gagal mengupdate media', 'error');
+        }
+    })
+    .catch(error => {
+        showNotification('Terjadi kesalahan', 'error');
+    });
+});
+
+// Selection functions
+function toggleSelection(mediaId) {
+    if (selectedMedia.has(mediaId)) {
+        selectedMedia.delete(mediaId);
+    } else {
+        selectedMedia.add(mediaId);
+    }
+    updateBulkActions();
+}
+
+function updateBulkActions() {
+    const bulkActions = document.getElementById('bulkActions');
+    const selectedCount = document.getElementById('selectedCount');
+    
+    selectedCount.textContent = selectedMedia.size;
+    
+    if (selectedMedia.size > 0) {
+        bulkActions.classList.add('show');
+    } else {
+        bulkActions.classList.remove('show');
+    }
+}
+
+// Bulk actions
+function bulkDelete() {
+    if (selectedMedia.size === 0) return;
+    
+    if (confirm(`Apakah Anda yakin ingin menghapus ${selectedMedia.size} media yang dipilih?`)) {
+        const mediaIds = Array.from(selectedMedia);
+        
+        fetch('/admin/news/media/bulk-delete/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+            },
+            body: JSON.stringify({ media_ids: mediaIds }),
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showNotification(`${data.deleted_count} media berhasil dihapus!`, 'success');
+                setTimeout(() => location.reload(), 1500);
+            } else {
+                showNotification(data.message || 'Gagal menghapus media', 'error');
+            }
+        })
+        .catch(error => {
+            showNotification('Terjadi kesalahan', 'error');
+        });
+    }
+}
+
+function bulkDownload() {
+    if (selectedMedia.size === 0) return;
+    
+    const mediaIds = Array.from(selectedMedia);
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = '/admin/news/media/bulk-download/';
+    
+    const csrfInput = document.createElement('input');
+    csrfInput.type = 'hidden';
+    csrfInput.name = 'csrfmiddlewaretoken';
+    csrfInput.value = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    form.appendChild(csrfInput);
+    
+    mediaIds.forEach(id => {
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'media_ids';
+        input.value = id;
+        form.appendChild(input);
+    });
+    
+    document.body.appendChild(form);
+    form.submit();
+    document.body.removeChild(form);
+}
+
+// Filter functions
+document.getElementById('searchMedia').addEventListener('input', function() {
+    const searchTerm = this.value.toLowerCase();
+    filterMedia();
+});
+
+document.getElementById('filterType').addEventListener('change', filterMedia);
+document.getElementById('filterDate').addEventListener('change', filterMedia);
+
+function filterMedia() {
+    const searchTerm = document.getElementById('searchMedia').value.toLowerCase();
+    const typeFilter = document.getElementById('filterType').value;
+    const dateFilter = document.getElementById('filterDate').value;
+    
+    const mediaItems = document.querySelectorAll('.media-item');
+    
+    mediaItems.forEach(item => {
+        const mediaName = item.dataset.mediaName;
+        const mediaType = item.dataset.mediaType;
+        
+        let showItem = true;
+        
+        // Search filter
+        if (searchTerm && !mediaName.includes(searchTerm)) {
+            showItem = false;
+        }
+        
+        // Type filter
+        if (typeFilter && mediaType !== typeFilter) {
+            showItem = false;
+        }
+        
+        // Date filter (would need additional data attributes for proper implementation)
+        
+        item.style.display = showItem ? '' : 'none';
+    });
+}
+
+function clearFilters() {
+    document.getElementById('searchMedia').value = '';
+    document.getElementById('filterType').value = '';
+    document.getElementById('filterDate').value = '';
+    filterMedia();
+}
+
+// Pagination
+function changePage(page) {
+    const url = new URL(window.location);
+    url.searchParams.set('page', page);
+    window.location = url;
+}
+
+// Utility functions
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(() => {
+        showNotification('URL berhasil disalin!', 'success');
+    });
+}
+
+function showNotification(message, type = 'success') {
+    const colors = {
+        success: 'bg-green-500',
+        error: 'bg-red-500',
+        info: 'bg-blue-500',
+        warning: 'bg-yellow-500'
+    };
+    
+    const notification = document.createElement('div');
+    notification.className = `fixed top-4 right-4 z-50 p-4 rounded-lg text-white ${colors[type]} shadow-lg transform translate-x-full transition-transform duration-300`;
+    notification.textContent = message;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.classList.remove('translate-x-full');
+    }, 100);
+    
+    setTimeout(() => {
+        notification.classList.add('translate-x-full');
+        setTimeout(() => {
+            document.body.removeChild(notification);
+        }, 300);
+    }, 3000);
+}
+
+// Close modals when clicking outside
+document.querySelectorAll('.modal').forEach(modal => {
+    modal.addEventListener('click', function(e) {
+        if (e.target === this) {
+            this.classList.remove('show');
+        }
+    });
+});
+
+// Keyboard shortcuts
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        document.querySelectorAll('.modal.show').forEach(modal => {
+            modal.classList.remove('show');
+        });
+    }
+});
+</script>
+{% endblock %}

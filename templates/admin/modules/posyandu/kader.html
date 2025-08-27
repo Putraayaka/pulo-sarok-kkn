@@ -1,0 +1,661 @@
+{% extends 'admin/base.html' %}
+
+{% block title %}{{ page_title }}{% endblock %}
+{% block page_title %}{{ page_title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .section-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        transition: all 0.3s ease;
+    }
+    .section-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
+    }
+    .section-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 1.5rem;
+    }
+    .section-body {
+        padding: 2rem;
+    }
+    @media (max-width: 768px) {
+        .section-body {
+            padding: 1rem;
+        }
+        .section-header {
+            padding: 1rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50">
+    <div class="container mx-auto px-4 py-6">
+        <!-- Breadcrumb -->
+        <nav class="flex mb-6" aria-label="Breadcrumb">
+            <ol class="inline-flex items-center space-x-1 md:space-x-3">
+                <li class="inline-flex items-center">
+                    <a href="{% url 'custom_admin:dashboard' %}" class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-blue-600">
+                        <i class="fas fa-home mr-2"></i>Dashboard
+                    </a>
+                </li>
+                <li>
+                    <div class="flex items-center">
+                        <i class="fas fa-chevron-right text-gray-400 mx-2"></i>
+                        <span class="text-sm font-medium text-gray-500">Data Posyandu</span>
+                    </div>
+                </li>
+                <li aria-current="page">
+                    <div class="flex items-center">
+                        <i class="fas fa-chevron-right text-gray-400 mx-2"></i>
+                        <span class="text-sm font-medium text-blue-600">Input Kader Posyandu</span>
+                    </div>
+                </li>
+            </ol>
+        </nav>
+
+        <!-- Main Content -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Form Section -->
+            <div class="lg:col-span-1">
+                <div class="section-card">
+                    <div class="section-header">
+                        <h3 class="text-lg font-semibold">
+                            <i class="fas fa-plus mr-2"></i>Tambah/Edit Kader
+                        </h3>
+                    </div>
+                    <div class="section-body">
+                        <form id="kaderForm" class="space-y-4">
+                            <input type="hidden" id="kaderId" value="">
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Penduduk *</label>
+                                <select id="pendudukId" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-transparent" required>
+                                    <option value="">Pilih Penduduk</option>
+                                </select>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Posyandu *</label>
+                                <select id="posyanduId" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-transparent" required>
+                                    <option value="">Pilih Posyandu</option>
+                                </select>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Jabatan *</label>
+                                <select id="jabatan" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-transparent" required>
+                                    <option value="">Pilih Jabatan</option>
+                                    <option value="ketua">Ketua</option>
+                                    <option value="wakil_ketua">Wakil Ketua</option>
+                                    <option value="sekretaris">Sekretaris</option>
+                                    <option value="bendahara">Bendahara</option>
+                                    <option value="anggota">Anggota</option>
+                                </select>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Nomor HP</label>
+                                <input type="text" id="nomorHp" 
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-transparent" 
+                                       placeholder="Nomor HP kader">
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Tanggal Mulai *</label>
+                                <input type="date" id="tanggalMulai" 
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-transparent" 
+                                       required>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Tanggal Selesai</label>
+                                <input type="date" id="tanggalSelesai" 
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Status *</label>
+                                <select id="status" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-transparent" required>
+                                    <option value="aktif">Aktif</option>
+                                    <option value="nonaktif">Non-Aktif</option>
+                                    <option value="cuti">Cuti</option>
+                                </select>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Keterangan</label>
+                                <textarea id="keterangan" rows="3" 
+                                          class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-transparent" 
+                                          placeholder="Keterangan tambahan"></textarea>
+                            </div>
+                            
+                            <div class="flex space-x-3">
+                                <button type="submit" 
+                                        class="flex-1 bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500">
+                                    <i class="fas fa-save mr-2"></i>Simpan
+                                </button>
+                                <button type="button" onclick="resetKaderForm()" 
+                                        class="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-300">
+                                    <i class="fas fa-times mr-2"></i>Batal
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- List Section -->
+            <div class="lg:col-span-2">
+                <div class="section-card">
+                    <div class="section-header">
+                        <h3 class="text-lg font-semibold">
+                            <i class="fas fa-list mr-2"></i>Daftar Kader Posyandu
+                        </h3>
+                    </div>
+                    <div class="section-body">
+                        <!-- Search and Filter -->
+                        <div class="flex flex-col md:flex-row gap-4 mb-6">
+                            <div class="flex-1">
+                                <div class="relative">
+                                    <input type="text" id="kaderSearch" 
+                                           placeholder="Cari kader..." 
+                                           class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <i class="fas fa-search text-gray-400"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <select id="filterPosyandu" class="px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+                                    <option value="">Semua Posyandu</option>
+                                </select>
+                            </div>
+                            <div>
+                                <select id="filterStatus" class="px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+                                    <option value="">Semua Status</option>
+                                    <option value="aktif">Aktif</option>
+                                    <option value="nonaktif">Non-Aktif</option>
+                                    <option value="cuti">Cuti</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <!-- Table -->
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama</th>
+                                        <th class="hidden md:table-cell px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Posyandu</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jabatan</th>
+                                        <th class="hidden lg:table-cell px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. HP</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="kaderTableBody" class="bg-white divide-y divide-gray-200">
+                                    <!-- Dynamic content will be loaded here -->
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <!-- Pagination -->
+                        <div id="kaderPagination" class="mt-4 flex items-center justify-between">
+                            <!-- Dynamic pagination will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div id="deleteModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+        <div class="mt-3 text-center">
+            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
+                <i class="fas fa-exclamation-triangle text-red-600"></i>
+            </div>
+            <h3 class="text-lg leading-6 font-medium text-gray-900 mt-2">Konfirmasi Hapus</h3>
+            <div class="mt-2 px-7 py-3">
+                <p class="text-sm text-gray-500">Apakah Anda yakin ingin menghapus kader ini? Tindakan ini tidak dapat dibatalkan.</p>
+            </div>
+            <div class="items-center px-4 py-3 flex space-x-3">
+                <button id="confirmDelete" 
+                        class="px-4 py-2 bg-red-500 text-white text-base font-medium rounded-md shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-300">
+                    Ya, Hapus
+                </button>
+                <button onclick="closeDeleteModal()" 
+                        class="px-4 py-2 bg-gray-500 text-white text-base font-medium rounded-md shadow-sm hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-300">
+                    Batal
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let currentKaderPage = 1;
+let deleteItemId = null;
+
+// Initialize
+document.addEventListener('DOMContentLoaded', function() {
+    loadDropdownData();
+    loadKaderData();
+    initializeEventListeners();
+});
+
+function initializeEventListeners() {
+    // Form submission
+    document.getElementById('kaderForm').addEventListener('submit', handleKaderSubmit);
+    
+    // Search and filters
+    document.getElementById('kaderSearch').addEventListener('input', debounce(function() {
+        currentKaderPage = 1;
+        loadKaderData();
+    }, 300));
+    
+    document.getElementById('filterPosyandu').addEventListener('change', function() {
+        currentKaderPage = 1;
+        loadKaderData();
+    });
+    
+    document.getElementById('filterStatus').addEventListener('change', function() {
+        currentKaderPage = 1;
+        loadKaderData();
+    });
+    
+    // Delete confirmation
+    document.getElementById('confirmDelete').addEventListener('click', confirmDelete);
+}
+
+function loadDropdownData() {
+    // Load penduduk options
+    fetch('/pulosarok/posyandu/get-residents-for-posyandu/')
+        .then(response => response.json())
+        .then(data => {
+            const pendudukSelect = document.getElementById('pendudukId');
+            data.residents.forEach(resident => {
+                const option = document.createElement('option');
+                option.value = resident.id;
+                option.textContent = `${resident.nama} (${resident.nik})`;
+                pendudukSelect.appendChild(option);
+            });
+        })
+        .catch(error => console.error('Error loading residents:', error));
+    
+    // Load posyandu options
+    fetch('/pulosarok/posyandu/get-posyandu-locations/')
+        .then(response => response.json())
+        .then(data => {
+            const posyanduSelects = [
+                document.getElementById('posyanduId'),
+                document.getElementById('filterPosyandu')
+            ];
+            
+            data.locations.forEach(location => {
+                posyanduSelects.forEach(select => {
+                    const option = document.createElement('option');
+                    option.value = location.id;
+                    option.textContent = location.name;
+                    select.appendChild(option);
+                });
+            });
+        })
+        .catch(error => console.error('Error loading posyandu locations:', error));
+}
+
+function loadKaderData() {
+    const search = document.getElementById('kaderSearch').value;
+    const posyanduId = document.getElementById('filterPosyandu').value;
+    const status = document.getElementById('filterStatus').value;
+    
+    showLoading();
+    
+    let url = `/pulosarok/posyandu/api/kader/?page=${currentKaderPage}`;
+    if (search) url += `&search=${search}`;
+    if (posyanduId) url += `&posyandu_id=${posyanduId}`;
+    if (status) url += `&status=${status}`;
+    
+    fetch(url)
+        .then(response => response.json())
+        .then(data => {
+            const tableBody = document.getElementById('kaderTableBody');
+            tableBody.innerHTML = '';
+            
+            if (data.results && data.results.length > 0) {
+                data.results.forEach(item => {
+                    const row = document.createElement('tr');
+                    row.className = 'hover:bg-gray-50';
+                    row.innerHTML = `
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm font-medium text-gray-900">${item.nama}</div>
+                            <div class="text-sm text-gray-500 md:hidden">${item.posyandu}</div>
+                        </td>
+                        <td class="hidden md:table-cell px-6 py-4 whitespace-nowrap text-sm text-gray-900">${item.posyandu}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${item.jabatan}</td>
+                        <td class="hidden lg:table-cell px-6 py-4 whitespace-nowrap text-sm text-gray-900">${item.nomor_hp || '-'}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(item.status)}">
+                                ${item.status}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <div class="flex space-x-2">
+                                <button onclick="editKader(${item.id})" 
+                                        class="text-indigo-600 hover:text-indigo-900" 
+                                        title="Edit">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button onclick="deleteKader(${item.id})" 
+                                        class="text-red-600 hover:text-red-900" 
+                                        title="Hapus">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+            } else {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="px-6 py-8 text-center text-gray-500">
+                            <div class="flex flex-col items-center">
+                                <i class="fas fa-inbox text-4xl mb-2"></i>
+                                <p>Belum ada data kader</p>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }
+            
+            // Update pagination
+            updatePagination('kaderPagination', data.pagination, 'loadKaderData');
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showToast('Gagal memuat data kader', 'error');
+        })
+        .finally(() => {
+            hideLoading();
+        });
+}
+
+function getStatusColor(status) {
+    switch(status.toLowerCase()) {
+        case 'aktif': return 'bg-green-100 text-green-800';
+        case 'nonaktif': return 'bg-red-100 text-red-800';
+        case 'cuti': return 'bg-yellow-100 text-yellow-800';
+        default: return 'bg-gray-100 text-gray-800';
+    }
+}
+
+function resetKaderForm() {
+    document.getElementById('kaderForm').reset();
+    document.getElementById('kaderId').value = '';
+    document.getElementById('status').value = 'aktif';
+}
+
+function editKader(id) {
+    showLoading();
+    fetch(`/pulosarok/posyandu/api/kader/${id}/`)
+        .then(response => response.json())
+        .then(data => {
+            const kader = data.data;
+            document.getElementById('kaderId').value = kader.id;
+            document.getElementById('pendudukId').value = kader.penduduk_id;
+            document.getElementById('posyanduId').value = kader.posyandu_id;
+            document.getElementById('jabatan').value = kader.jabatan;
+            document.getElementById('nomorHp').value = kader.nomor_hp || '';
+            document.getElementById('tanggalMulai').value = kader.tanggal_mulai;
+            document.getElementById('tanggalSelesai').value = kader.tanggal_selesai || '';
+            document.getElementById('status').value = kader.status;
+            document.getElementById('keterangan').value = kader.keterangan || '';
+            
+            // Scroll to form
+            document.getElementById('kaderForm').scrollIntoView({ behavior: 'smooth' });
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showToast('Gagal memuat data kader', 'error');
+        })
+        .finally(() => {
+            hideLoading();
+        });
+}
+
+function deleteKader(id) {
+    deleteItemId = id;
+    document.getElementById('deleteModal').classList.remove('hidden');
+}
+
+function closeDeleteModal() {
+    document.getElementById('deleteModal').classList.add('hidden');
+    deleteItemId = null;
+}
+
+function confirmDelete() {
+    if (deleteItemId) {
+        showLoading();
+        
+        fetch(`/pulosarok/posyandu/api/kader/${deleteItemId}/delete/`, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showToast(data.message, 'success');
+                loadKaderData();
+            } else {
+                showToast(data.message || 'Terjadi kesalahan', 'error');
+            }
+            closeDeleteModal();
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showToast('Terjadi kesalahan saat menghapus data', 'error');
+            closeDeleteModal();
+        })
+        .finally(() => {
+            hideLoading();
+        });
+    }
+}
+
+function handleKaderSubmit(e) {
+    e.preventDefault();
+    
+    if (!validateForm(e.target)) {
+        showToast('Mohon lengkapi semua field yang wajib diisi', 'error');
+        return;
+    }
+    
+    const formData = {
+        penduduk_id: document.getElementById('pendudukId').value,
+        posyandu_id: document.getElementById('posyanduId').value,
+        jabatan: document.getElementById('jabatan').value,
+        nomor_hp: document.getElementById('nomorHp').value,
+        tanggal_mulai: document.getElementById('tanggalMulai').value,
+        tanggal_selesai: document.getElementById('tanggalSelesai').value,
+        status: document.getElementById('status').value,
+        keterangan: document.getElementById('keterangan').value
+    };
+    
+    const kaderId = document.getElementById('kaderId').value;
+    const url = kaderId ? 
+        `/pulosarok/posyandu/api/kader/${kaderId}/update/` : 
+        '/pulosarok/posyandu/api/kader/create/';
+    const method = kaderId ? 'PUT' : 'POST';
+    
+    showLoading();
+    
+    fetch(url, {
+        method: method,
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify(formData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showToast(data.message, 'success');
+            resetKaderForm();
+            loadKaderData();
+        } else {
+            showToast(data.message || 'Terjadi kesalahan', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showToast('Terjadi kesalahan saat menyimpan data', 'error');
+    })
+    .finally(() => {
+        hideLoading();
+    });
+}
+
+// Utility functions
+function updatePagination(containerId, pagination, loadFunction) {
+    const container = document.getElementById(containerId);
+    if (!pagination) return;
+    
+    let paginationHTML = `
+        <div class="flex items-center justify-between">
+            <div class="text-sm text-gray-700">
+                Menampilkan halaman ${pagination.current_page} dari ${pagination.total_pages} (${pagination.total_items} total item)
+            </div>
+            <div class="flex space-x-2">
+    `;
+    
+    if (pagination.has_previous) {
+        paginationHTML += `<button onclick="changePage(${pagination.current_page - 1}, '${loadFunction}')" class="px-3 py-1 border border-gray-300 rounded-md text-sm hover:bg-gray-50">Sebelumnya</button>`;
+    }
+    
+    if (pagination.has_next) {
+        paginationHTML += `<button onclick="changePage(${pagination.current_page + 1}, '${loadFunction}')" class="px-3 py-1 border border-gray-300 rounded-md text-sm hover:bg-gray-50">Selanjutnya</button>`;
+    }
+    
+    paginationHTML += `
+            </div>
+        </div>
+    `;
+    
+    container.innerHTML = paginationHTML;
+}
+
+function changePage(page, functionName) {
+    currentKaderPage = page;
+    loadKaderData();
+}
+
+function showLoading() {
+    // Create loading overlay
+    if (!document.getElementById('loadingOverlay')) {
+        const overlay = document.createElement('div');
+        overlay.id = 'loadingOverlay';
+        overlay.className = 'fixed inset-0 bg-gray-600 bg-opacity-50 z-50 flex items-center justify-center';
+        overlay.innerHTML = `
+            <div class="bg-white rounded-lg p-6 shadow-xl">
+                <div class="flex items-center space-x-3">
+                    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                    <span class="text-gray-700 font-medium">Memproses...</span>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(overlay);
+    }
+}
+
+function hideLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) {
+        overlay.remove();
+    }
+}
+
+function showToast(message, type = 'info') {
+    const toast = document.createElement('div');
+    toast.className = `fixed top-4 right-4 p-4 rounded-md shadow-lg z-50 ${
+        type === 'success' ? 'bg-green-100 border border-green-400 text-green-700' :
+        type === 'error' ? 'bg-red-100 border border-red-400 text-red-700' :
+        'bg-blue-100 border border-blue-400 text-blue-700'
+    }`;
+    toast.innerHTML = `
+        <div class="flex items-center">
+            <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'} mr-2"></i>
+            <span>${message}</span>
+            <button onclick="this.parentElement.parentElement.remove()" class="ml-3 text-sm">×</button>
+        </div>
+    `;
+    
+    document.body.appendChild(toast);
+    
+    // Auto remove after 5 seconds
+    setTimeout(() => {
+        if (toast.parentElement) {
+            toast.remove();
+        }
+    }, 5000);
+}
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+function validateForm(formElement) {
+    const requiredFields = formElement.querySelectorAll('[required]');
+    let isValid = true;
+    
+    requiredFields.forEach(field => {
+        if (!field.value.trim()) {
+            field.classList.add('border-red-500');
+            isValid = false;
+        } else {
+            field.classList.remove('border-red-500');
+        }
+    });
+    
+    return isValid;
+}
+
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+</script>
+{% endblock %}

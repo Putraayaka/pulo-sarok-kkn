@@ -1,0 +1,322 @@
+{% extends 'admin/base.html' %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block page_title %}Dashboard Admin{% endblock %}
+
+{% block content %}
+<div class="p-6">
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <!-- Total Penduduk -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-blue-100 text-blue-600">
+                    <i class="fas fa-users text-2xl"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-600">Total Penduduk</p>
+                    <p class="text-2xl font-semibold text-gray-900" id="total-penduduk">-</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Total Dusun -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-green-100 text-green-600">
+                    <i class="fas fa-map-marker-alt text-2xl"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-600">Total Dusun</p>
+                    <p class="text-2xl font-semibold text-gray-900" id="total-dusun">-</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Total Organisasi -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-purple-100 text-purple-600">
+                    <i class="fas fa-users text-2xl"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-600">Total Organisasi</p>
+                    <p class="text-2xl font-semibold text-gray-900" id="total-organisasi">-</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Total UMKM -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-yellow-100 text-yellow-600">
+                    <i class="fas fa-store text-2xl"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-600">Total UMKM</p>
+                    <p class="text-2xl font-semibold text-gray-900" id="total-umkm">-</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Demographics Chart -->
+        <div class="lg:col-span-2">
+            <div class="bg-white rounded-lg shadow p-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">
+                    <i class="fas fa-chart-pie mr-2 text-blue-600"></i>
+                    Demografi Penduduk
+                </h3>
+                
+                <!-- Gender Distribution -->
+                <div class="mb-6">
+                    <h4 class="text-md font-medium text-gray-700 mb-3">Distribusi Jenis Kelamin</h4>
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <div class="w-4 h-4 bg-blue-500 rounded mr-3"></div>
+                                <span class="text-sm text-gray-600">Laki-laki</span>
+                            </div>
+                            <div class="flex items-center">
+                                <span class="text-sm font-medium text-gray-900 mr-2" id="male-count">-</span>
+                                <span class="text-sm text-gray-500">(<span id="male-percentage">-</span>%)</span>
+                            </div>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div class="bg-blue-500 h-2 rounded-full" id="male-bar" style="width: 0%"></div>
+                        </div>
+                        
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <div class="w-4 h-4 bg-pink-500 rounded mr-3"></div>
+                                <span class="text-sm text-gray-600">Perempuan</span>
+                            </div>
+                            <div class="flex items-center">
+                                <span class="text-sm font-medium text-gray-900 mr-2" id="female-count">-</span>
+                                <span class="text-sm text-gray-500">(<span id="female-percentage">-</span>%)</span>
+                            </div>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div class="bg-pink-500 h-2 rounded-full" id="female-bar" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Age Distribution -->
+                <div>
+                    <h4 class="text-md font-medium text-gray-700 mb-3">Distribusi Usia</h4>
+                    <div class="grid grid-cols-3 gap-4">
+                        <div class="text-center p-4 bg-green-50 rounded-lg">
+                            <div class="text-2xl font-bold text-green-600" id="age-0-17">-</div>
+                            <div class="text-sm text-gray-600">0-17 Tahun</div>
+                        </div>
+                        <div class="text-center p-4 bg-blue-50 rounded-lg">
+                            <div class="text-2xl font-bold text-blue-600" id="age-18-60">-</div>
+                            <div class="text-sm text-gray-600">18-60 Tahun</div>
+                        </div>
+                        <div class="text-center p-4 bg-purple-50 rounded-lg">
+                            <div class="text-2xl font-bold text-purple-600" id="age-60-plus">-</div>
+                            <div class="text-sm text-gray-600">60+ Tahun</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Recent Activities -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">
+                <i class="fas fa-clock mr-2 text-green-600"></i>
+                Aktivitas Terbaru
+            </h3>
+            
+            <div id="recent-activities" class="space-y-4">
+                <!-- Activities will be loaded here -->
+                <div class="flex items-center justify-center py-8">
+                    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Quick Actions -->
+    <div class="mt-8">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">
+            <i class="fas fa-bolt mr-2 text-yellow-600"></i>
+            Aksi Cepat
+        </h3>
+        
+        <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+            <a href="{% url 'custom_admin:module_view' 'references' %}" class="bg-white rounded-lg shadow p-4 hover:shadow-md transition-shadow duration-200 text-center">
+                <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-2">
+                    <i class="fas fa-user-plus text-blue-600 text-xl"></i>
+                </div>
+                <p class="text-sm font-medium text-gray-900">Tambah Penduduk</p>
+            </a>
+            
+            <a href="{% url 'custom_admin:module_view' 'organization' %}" class="bg-white rounded-lg shadow p-4 hover:shadow-md transition-shadow duration-200 text-center">
+                <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mx-auto mb-2">
+                    <i class="fas fa-users text-purple-600 text-xl"></i>
+                </div>
+                <p class="text-sm font-medium text-gray-900">Kelola Organisasi</p>
+            </a>
+            
+            <a href="{% url 'custom_admin:module_view' 'business' %}" class="bg-white rounded-lg shadow p-4 hover:shadow-md transition-shadow duration-200 text-center">
+                <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center mx-auto mb-2">
+                    <i class="fas fa-store text-yellow-600 text-xl"></i>
+                </div>
+                <p class="text-sm font-medium text-gray-900">Kelola UMKM</p>
+            </a>
+            
+            <a href="{% url 'custom_admin:module_view' 'news' %}" class="bg-white rounded-lg shadow p-4 hover:shadow-md transition-shadow duration-200 text-center">
+                <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mx-auto mb-2">
+                    <i class="fas fa-newspaper text-green-600 text-xl"></i>
+                </div>
+                <p class="text-sm font-medium text-gray-900">Tulis Berita</p>
+            </a>
+            
+            <a href="{% url 'custom_admin:module_view' 'letters' %}" class="bg-white rounded-lg shadow p-4 hover:shadow-md transition-shadow duration-200 text-center">
+                <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center mx-auto mb-2">
+                    <i class="fas fa-envelope text-red-600 text-xl"></i>
+                </div>
+                <p class="text-sm font-medium text-gray-900">Buat Surat</p>
+            </a>
+            
+            <a href="{% url 'custom_admin:module_view' 'core' %}" class="bg-white rounded-lg shadow p-4 hover:shadow-md transition-shadow duration-200 text-center">
+                <div class="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center mx-auto mb-2">
+                    <i class="fas fa-cog text-gray-600 text-xl"></i>
+                </div>
+                <p class="text-sm font-medium text-gray-900">Pengaturan</p>
+            </a>
+        </div>
+    </div>
+    
+    <!-- System Info -->
+    <div class="mt-8 bg-white rounded-lg shadow p-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">
+            <i class="fas fa-server mr-2 text-gray-600"></i>
+            Informasi Sistem
+        </h3>
+        
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div class="text-center">
+                <div class="text-2xl font-bold text-blue-600" id="total-users">-</div>
+                <div class="text-sm text-gray-600">Total Pengguna</div>
+            </div>
+            <div class="text-center">
+                <div class="text-2xl font-bold text-green-600" id="active-users">-</div>
+                <div class="text-sm text-gray-600">Pengguna Aktif</div>
+            </div>
+            <div class="text-center">
+                <div class="text-2xl font-bold text-purple-600" id="total-records">-</div>
+                <div class="text-sm text-gray-600">Total Data</div>
+            </div>
+            <div class="text-center">
+                <div class="flex items-center justify-center">
+                    <div class="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
+                    <span class="text-sm font-medium text-gray-900">Online</span>
+                </div>
+                <div class="text-sm text-gray-600">Status Server</div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Load dashboard data
+    async function loadDashboardData() {
+        try {
+            // Load statistics
+            const statsResponse = await fetch('{% url "custom_admin:dashboard_stats_api" %}');
+            const statsData = await statsResponse.json();
+            
+            // Update stats cards
+            document.getElementById('total-penduduk').textContent = statsData.total_penduduk.toLocaleString();
+            document.getElementById('total-dusun').textContent = statsData.total_dusun.toLocaleString();
+            document.getElementById('total-organisasi').textContent = statsData.total_organisasi.toLocaleString();
+            document.getElementById('total-umkm').textContent = statsData.total_umkm.toLocaleString();
+            
+            // Update gender distribution
+            document.getElementById('male-count').textContent = statsData.male_count.toLocaleString();
+            document.getElementById('female-count').textContent = statsData.female_count.toLocaleString();
+            document.getElementById('male-percentage').textContent = statsData.male_percentage;
+            document.getElementById('female-percentage').textContent = statsData.female_percentage;
+            
+            // Update progress bars
+            document.getElementById('male-bar').style.width = statsData.male_percentage + '%';
+            document.getElementById('female-bar').style.width = statsData.female_percentage + '%';
+            
+            // Update age distribution
+            document.getElementById('age-0-17').textContent = statsData.age_0_17.toLocaleString();
+            document.getElementById('age-18-60').textContent = statsData.age_18_60.toLocaleString();
+            document.getElementById('age-60-plus').textContent = statsData.age_60_plus.toLocaleString();
+            
+        } catch (error) {
+            console.error('Error loading dashboard stats:', error);
+        }
+        
+        try {
+            // Load recent activities
+            const activitiesResponse = await fetch('{% url "custom_admin:recent_activities_api" %}');
+            const activitiesData = await activitiesResponse.json();
+            
+            const activitiesContainer = document.getElementById('recent-activities');
+            
+            if (activitiesData.activities && activitiesData.activities.length > 0) {
+                activitiesContainer.innerHTML = activitiesData.activities.map(activity => `
+                    <div class="flex items-start space-x-3">
+                        <div class="flex-shrink-0">
+                            <div class="w-8 h-8 ${activity.color} rounded-full flex items-center justify-center">
+                                <i class="${activity.icon} text-sm"></i>
+                            </div>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-sm text-gray-900">${activity.description}</p>
+                            <p class="text-xs text-gray-500">${activity.time_ago}</p>
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                activitiesContainer.innerHTML = `
+                    <div class="text-center py-8">
+                        <i class="fas fa-inbox text-gray-400 text-3xl mb-2"></i>
+                        <p class="text-gray-500">Belum ada aktivitas terbaru</p>
+                    </div>
+                `;
+            }
+            
+        } catch (error) {
+            console.error('Error loading recent activities:', error);
+            document.getElementById('recent-activities').innerHTML = `
+                <div class="text-center py-8">
+                    <i class="fas fa-exclamation-triangle text-red-400 text-3xl mb-2"></i>
+                    <p class="text-red-500">Gagal memuat aktivitas</p>
+                </div>
+            `;
+        }
+        
+        try {
+            // Load system info
+            const systemResponse = await fetch('{% url "custom_admin:system_info_api" %}');
+            const systemData = await systemResponse.json();
+            
+            document.getElementById('total-users').textContent = systemData.total_users.toLocaleString();
+            document.getElementById('active-users').textContent = systemData.active_users.toLocaleString();
+            document.getElementById('total-records').textContent = systemData.total_records.toLocaleString();
+            
+        } catch (error) {
+            console.error('Error loading system info:', error);
+        }
+    }
+    
+    // Load data when page loads
+    document.addEventListener('DOMContentLoaded', loadDashboardData);
+    
+    // Refresh data every 5 minutes
+    setInterval(loadDashboardData, 300000);
+</script>
+{% endblock %}

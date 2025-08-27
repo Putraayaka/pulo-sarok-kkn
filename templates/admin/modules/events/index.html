@@ -1,0 +1,612 @@
+{% extends 'admin/base.html' %}
+
+{% block title %}Events Dashboard{% endblock %}
+
+{% block page_title %}Dashboard Events{% endblock %}
+
+{% block content %}
+<div class="p-4 sm:p-6">
+    <!-- Header Section -->
+    <div class="bg-white rounded-lg shadow-sm border p-4 sm:p-6 mb-6">
+        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+            <div>
+                <h2 class="text-xl sm:text-2xl font-bold text-gray-900">Dashboard Events</h2>
+                <p class="text-gray-600 mt-1 text-sm sm:text-base">Overview acara dan kegiatan desa</p>
+            </div>
+            <div class="flex flex-col sm:flex-row gap-2 sm:gap-3">
+                <a href="{% url 'events:events_list' %}" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors duration-200 text-sm sm:text-base">
+                    <i class="fas fa-list mr-2"></i>
+                    Lihat Semua Events
+                </a>
+                <a href="{% url 'events:events_calendar' %}" class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors duration-200 text-sm sm:text-base">
+                    <i class="fas fa-calendar mr-2"></i>
+                    Kalender Events
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Statistics Cards -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6">
+        <div class="bg-white rounded-lg shadow-sm border p-4 sm:p-6">
+            <div class="flex items-center">
+                <div class="p-2 sm:p-3 rounded-full bg-blue-100 text-blue-600">
+                    <i class="fas fa-calendar-alt text-lg sm:text-2xl"></i>
+                </div>
+                <div class="ml-3 sm:ml-4">
+                    <p class="text-xs sm:text-sm font-medium text-gray-600">Total Events</p>
+                    <p class="text-lg sm:text-2xl font-semibold text-gray-900" id="total-events">-</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow-sm border p-4 sm:p-6">
+            <div class="flex items-center">
+                <div class="p-2 sm:p-3 rounded-full bg-green-100 text-green-600">
+                    <i class="fas fa-check-circle text-lg sm:text-2xl"></i>
+                </div>
+                <div class="ml-3 sm:ml-4">
+                    <p class="text-xs sm:text-sm font-medium text-gray-600">Events Aktif</p>
+                    <p class="text-lg sm:text-2xl font-semibold text-gray-900" id="active-events">-</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow-sm border p-4 sm:p-6">
+            <div class="flex items-center">
+                <div class="p-2 sm:p-3 rounded-full bg-yellow-100 text-yellow-600">
+                    <i class="fas fa-users text-lg sm:text-2xl"></i>
+                </div>
+                <div class="ml-3 sm:ml-4">
+                    <p class="text-xs sm:text-sm font-medium text-gray-600">Total Peserta</p>
+                    <p class="text-lg sm:text-2xl font-semibold text-gray-900" id="total-participants">-</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow-sm border p-4 sm:p-6">
+            <div class="flex items-center">
+                <div class="p-2 sm:p-3 rounded-full bg-purple-100 text-purple-600">
+                    <i class="fas fa-calendar-week text-lg sm:text-2xl"></i>
+                </div>
+                <div class="ml-3 sm:ml-4">
+                    <p class="text-xs sm:text-sm font-medium text-gray-600">Bulan Ini</p>
+                    <p class="text-lg sm:text-2xl font-semibold text-gray-900" id="monthly-events">-</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Charts Section -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <!-- Category Distribution Chart -->
+        <div class="bg-white rounded-lg shadow-sm border p-4 sm:p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Events per Kategori</h3>
+            <div class="h-64">
+                <canvas id="categoryChart"></canvas>
+            </div>
+        </div>
+        
+        <!-- Status Distribution Chart -->
+        <div class="bg-white rounded-lg shadow-sm border p-4 sm:p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Status Events</h3>
+            <div class="h-64">
+                <canvas id="statusChart"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Recent Events and Upcoming Events -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <!-- Recent Events -->
+        <div class="bg-white rounded-lg shadow-sm border p-4 sm:p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-semibold text-gray-900">Events Terbaru</h3>
+                <a href="{% url 'events:events_list' %}" class="text-blue-600 hover:text-blue-800 text-sm">Lihat Semua</a>
+            </div>
+            <div id="recent-events" class="space-y-3">
+                <div class="text-center py-8">
+                    <i class="fas fa-spinner fa-spin text-2xl text-gray-400 mb-2"></i>
+                    <p class="text-gray-500">Memuat data...</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Upcoming Events -->
+        <div class="bg-white rounded-lg shadow-sm border p-4 sm:p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-semibold text-gray-900">Events Mendatang</h3>
+                <a href="{% url 'events:events_calendar' %}" class="text-blue-600 hover:text-blue-800 text-sm">Lihat Kalender</a>
+            </div>
+            <div id="upcoming-events" class="space-y-3">
+                <div class="text-center py-8">
+                    <i class="fas fa-spinner fa-spin text-2xl text-gray-400 mb-2"></i>
+                    <p class="text-gray-500">Memuat data...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Quick Actions -->
+    <div class="bg-white rounded-lg shadow-sm border p-4 sm:p-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">Aksi Cepat</h3>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <a href="{% url 'events:events_categories' %}" class="flex items-center p-4 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-colors duration-200">
+                <div class="p-2 bg-blue-100 text-blue-600 rounded-lg mr-3">
+                    <i class="fas fa-tags"></i>
+                </div>
+                <div>
+                    <h4 class="font-medium text-gray-900">Kelola Kategori</h4>
+                    <p class="text-sm text-gray-500">Tambah/edit kategori events</p>
+                </div>
+            </a>
+            
+            <a href="{% url 'events:events_participants' %}" class="flex items-center p-4 border border-gray-200 rounded-lg hover:border-green-300 hover:bg-green-50 transition-colors duration-200">
+                <div class="p-2 bg-green-100 text-green-600 rounded-lg mr-3">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div>
+                    <h4 class="font-medium text-gray-900">Kelola Peserta</h4>
+                    <p class="text-sm text-gray-500">Lihat dan kelola peserta</p>
+                </div>
+            </a>
+            
+            <a href="{% url 'events:events_reports' %}" class="flex items-center p-4 border border-gray-200 rounded-lg hover:border-purple-300 hover:bg-purple-50 transition-colors duration-200">
+                <div class="p-2 bg-purple-100 text-purple-600 rounded-lg mr-3">
+                    <i class="fas fa-chart-bar"></i>
+                </div>
+                <div>
+                    <h4 class="font-medium text-gray-900">Laporan</h4>
+                    <p class="text-sm text-gray-500">Analisis dan laporan events</p>
+                </div>
+            </a>
+            
+            <a href="#" onclick="openCreateEventModal()" class="flex items-center p-4 border border-gray-200 rounded-lg hover:border-orange-300 hover:bg-orange-50 transition-colors duration-200">
+                <div class="p-2 bg-orange-100 text-orange-600 rounded-lg mr-3">
+                    <i class="fas fa-plus"></i>
+                </div>
+                <div>
+                    <h4 class="font-medium text-gray-900">Tambah Event</h4>
+                    <p class="text-sm text-gray-500">Buat event baru</p>
+                </div>
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Create Event Modal -->
+<div id="create-event-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+    <div class="relative top-4 sm:top-10 mx-auto p-4 sm:p-5 border w-11/12 sm:w-4/5 lg:w-3/4 xl:w-2/3 shadow-lg rounded-md bg-white max-h-screen overflow-y-auto">
+        <div class="mt-3">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-semibold text-gray-900">Tambah Event Baru</h3>
+                <button onclick="closeCreateEventModal()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            
+            <form id="create-event-form">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="space-y-4">
+                        <div>
+                            <label for="event_title" class="block text-sm font-medium text-gray-700 mb-1">Judul Event *</label>
+                            <input type="text" id="event_title" name="title" required 
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm">
+                        </div>
+                        
+                        <div>
+                            <label for="event_category" class="block text-sm font-medium text-gray-700 mb-1">Kategori *</label>
+                            <select id="event_category" name="category" required 
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm">
+                                <option value="">Pilih Kategori</option>
+                            </select>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label for="event_start_date" class="block text-sm font-medium text-gray-700 mb-1">Tanggal Mulai *</label>
+                                <input type="date" id="event_start_date" name="start_date" required 
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm">
+                            </div>
+                            
+                            <div>
+                                <label for="event_end_date" class="block text-sm font-medium text-gray-700 mb-1">Tanggal Selesai *</label>
+                                <input type="date" id="event_end_date" name="end_date" required 
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm">
+                            </div>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label for="event_start_time" class="block text-sm font-medium text-gray-700 mb-1">Waktu Mulai *</label>
+                                <input type="time" id="event_start_time" name="start_time" required 
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm">
+                            </div>
+                            
+                            <div>
+                                <label for="event_end_time" class="block text-sm font-medium text-gray-700 mb-1">Waktu Selesai *</label>
+                                <input type="time" id="event_end_time" name="end_time" required 
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm">
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label for="event_location" class="block text-sm font-medium text-gray-700 mb-1">Lokasi *</label>
+                            <input type="text" id="event_location" name="location" required 
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm">
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <label for="event_description" class="block text-sm font-medium text-gray-700 mb-1">Deskripsi Event *</label>
+                            <textarea id="event_description" name="description" rows="4" required 
+                                      class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"></textarea>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label for="event_max_participants" class="block text-sm font-medium text-gray-700 mb-1">Maksimal Peserta</label>
+                                <input type="number" id="event_max_participants" name="max_participants" min="0" 
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm">
+                            </div>
+                            
+                            <div>
+                                <label for="event_cost" class="block text-sm font-medium text-gray-700 mb-1">Biaya (Rp)</label>
+                                <input type="number" id="event_cost" name="cost" min="0" 
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm">
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label for="event_contact_person" class="block text-sm font-medium text-gray-700 mb-1">Contact Person</label>
+                            <input type="text" id="event_contact_person" name="contact_person" 
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm">
+                        </div>
+                        
+                        <div>
+                            <label for="event_contact_phone" class="block text-sm font-medium text-gray-700 mb-1">No. HP Contact</label>
+                            <input type="text" id="event_contact_phone" name="contact_phone" 
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm">
+                        </div>
+                        
+                        <div>
+                            <label for="event_status" class="block text-sm font-medium text-gray-700 mb-1">Status *</label>
+                            <select id="event_status" name="status" required 
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm">
+                                <option value="draft">Draft</option>
+                                <option value="published">Published</option>
+                                <option value="ongoing">Berlangsung</option>
+                                <option value="completed">Selesai</option>
+                                <option value="cancelled">Dibatalkan</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex flex-col sm:flex-row justify-end gap-3 mt-6 pt-6 border-t">
+                    <button type="button" onclick="closeCreateEventModal()" class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 text-sm">
+                        Batal
+                    </button>
+                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm">
+                        <i class="fas fa-save mr-2"></i>
+                        Simpan Event
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Global variables
+    let categoryChart, statusChart;
+    
+    // Initialize
+    document.addEventListener('DOMContentLoaded', function() {
+        loadDashboardStats();
+        loadRecentEvents();
+        loadUpcomingEvents();
+        loadCategories();
+        initializeCharts();
+    });
+    
+    function loadDashboardStats() {
+        fetch('/pulosarok/events/api/stats/')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('total-events').textContent = data.total_events || '0';
+                document.getElementById('active-events').textContent = data.active_events || '0';
+                document.getElementById('total-participants').textContent = data.total_participants || '0';
+                document.getElementById('monthly-events').textContent = data.monthly_events || '0';
+                
+                // Update charts if data available
+                if (data.category_stats) {
+                    updateCategoryChart(data.category_stats);
+                }
+                if (data.status_stats) {
+                    updateStatusChart(data.status_stats);
+                }
+            })
+            .catch(error => {
+                console.error('Error loading stats:', error);
+                showNotification('Gagal memuat statistik dashboard', 'error');
+            });
+    }
+    
+    function loadRecentEvents() {
+        fetch('/pulosarok/events/api/events/?per_page=5')
+            .then(response => response.json())
+            .then(data => {
+                const container = document.getElementById('recent-events');
+                
+                if (data.results && data.results.length > 0) {
+                    let html = '';
+                    data.results.forEach(event => {
+                        html += `
+                            <div class="flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:bg-gray-50">
+                                <div class="flex-1">
+                                    <h4 class="font-medium text-gray-900 text-sm">${event.title}</h4>
+                                    <p class="text-xs text-gray-500">${event.start_date} • ${event.category}</p>
+                                </div>
+                                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                                    event.status === 'published' ? 'bg-green-100 text-green-800' :
+                                    event.status === 'ongoing' ? 'bg-blue-100 text-blue-800' :
+                                    event.status === 'completed' ? 'bg-gray-100 text-gray-800' :
+                                    event.status === 'draft' ? 'bg-yellow-100 text-yellow-800' :
+                                    'bg-red-100 text-red-800'
+                                }">
+                                    ${event.status.charAt(0).toUpperCase() + event.status.slice(1)}
+                                </span>
+                            </div>
+                        `;
+                    });
+                    container.innerHTML = html;
+                } else {
+                    container.innerHTML = '<p class="text-gray-500 text-center py-4">Belum ada events</p>';
+                }
+            })
+            .catch(error => {
+                console.error('Error loading recent events:', error);
+                document.getElementById('recent-events').innerHTML = '<p class="text-red-500 text-center py-4">Gagal memuat data</p>';
+            });
+    }
+    
+    function loadUpcomingEvents() {
+        const today = new Date().toISOString().split('T')[0];
+        fetch(`/pulosarok/events/api/events/?date_from=${today}&per_page=5`)
+            .then(response => response.json())
+            .then(data => {
+                const container = document.getElementById('upcoming-events');
+                
+                if (data.results && data.results.length > 0) {
+                    let html = '';
+                    data.results.forEach(event => {
+                        html += `
+                            <div class="flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:bg-gray-50">
+                                <div class="flex-1">
+                                    <h4 class="font-medium text-gray-900 text-sm">${event.title}</h4>
+                                    <p class="text-xs text-gray-500">${event.start_date} • ${event.location}</p>
+                                </div>
+                                <a href="/pulosarok/events/list/" class="text-blue-600 hover:text-blue-800 text-xs">
+                                    Detail
+                                </a>
+                            </div>
+                        `;
+                    });
+                    container.innerHTML = html;
+                } else {
+                    container.innerHTML = '<p class="text-gray-500 text-center py-4">Tidak ada events mendatang</p>';
+                }
+            })
+            .catch(error => {
+                console.error('Error loading upcoming events:', error);
+                document.getElementById('upcoming-events').innerHTML = '<p class="text-red-500 text-center py-4">Gagal memuat data</p>';
+            });
+    }
+    
+    function loadCategories() {
+        fetch('/pulosarok/events/api/categories/')
+            .then(response => response.json())
+            .then(data => {
+                const select = document.getElementById('event_category');
+                select.innerHTML = '<option value="">Pilih Kategori</option>';
+                
+                if (data.results) {
+                    data.results.forEach(category => {
+                        select.innerHTML += `<option value="${category.id}">${category.name}</option>`;
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error loading categories:', error);
+            });
+    }
+    
+    function initializeCharts() {
+        // Initialize charts with empty data
+        const categoryCtx = document.getElementById('categoryChart').getContext('2d');
+        const statusCtx = document.getElementById('statusChart').getContext('2d');
+        
+        categoryChart = new Chart(categoryCtx, {
+            type: 'doughnut',
+            data: {
+                labels: [],
+                datasets: [{
+                    data: [],
+                    backgroundColor: [
+                        '#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6',
+                        '#06B6D4', '#84CC16', '#F97316', '#EC4899', '#6366F1'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+        
+        statusChart = new Chart(statusCtx, {
+            type: 'bar',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Jumlah Events',
+                    data: [],
+                    backgroundColor: '#3B82F6'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    }
+    
+    function updateCategoryChart(data) {
+        if (categoryChart && data.length > 0) {
+            const labels = data.map(item => item.name);
+            const values = data.map(item => item.event_count);
+            
+            categoryChart.data.labels = labels;
+            categoryChart.data.datasets[0].data = values;
+            categoryChart.update();
+        }
+    }
+    
+    function updateStatusChart(data) {
+        if (statusChart && data.length > 0) {
+            const labels = data.map(item => {
+                const status = item.status;
+                return status === 'published' ? 'Published' :
+                       status === 'ongoing' ? 'Berlangsung' :
+                       status === 'completed' ? 'Selesai' :
+                       status === 'draft' ? 'Draft' :
+                       status === 'cancelled' ? 'Dibatalkan' : status;
+            });
+            const values = data.map(item => item.count);
+            
+            statusChart.data.labels = labels;
+            statusChart.data.datasets[0].data = values;
+            statusChart.update();
+        }
+    }
+    
+    // Modal functions
+    function openCreateEventModal() {
+        document.getElementById('create-event-modal').classList.remove('hidden');
+    }
+    
+    function closeCreateEventModal() {
+        document.getElementById('create-event-modal').classList.add('hidden');
+        document.getElementById('create-event-form').reset();
+    }
+    
+    // Form submission
+    document.getElementById('create-event-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(e.target);
+        const data = Object.fromEntries(formData);
+        
+        // Validate required fields
+        if (!data.title || !data.category || !data.start_date || !data.end_date || 
+            !data.start_time || !data.end_time || !data.location || !data.description || !data.status) {
+            showNotification('Mohon lengkapi semua field yang wajib diisi', 'error');
+            return;
+        }
+        
+        // Submit form
+        fetch('/pulosarok/events/api/events/create/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(result => {
+            if (result.success) {
+                showNotification('Event berhasil dibuat!', 'success');
+                closeCreateEventModal();
+                loadDashboardStats();
+                loadRecentEvents();
+                loadUpcomingEvents();
+            } else {
+                showNotification(result.error || 'Gagal membuat event', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error creating event:', error);
+            showNotification('Gagal membuat event', 'error');
+        });
+    });
+    
+    // Utility functions
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    
+    function showNotification(message, type = 'info') {
+        const notification = document.createElement('div');
+        notification.className = `fixed top-4 right-4 z-50 p-4 rounded-md shadow-lg ${
+            type === 'success' ? 'bg-green-500 text-white' :
+            type === 'error' ? 'bg-red-500 text-white' :
+            type === 'warning' ? 'bg-yellow-500 text-white' :
+            'bg-blue-500 text-white'
+        }`;
+        notification.innerHTML = `
+            <div class="flex items-center">
+                <i class="fas ${
+                    type === 'success' ? 'fa-check-circle' :
+                    type === 'error' ? 'fa-exclamation-circle' :
+                    type === 'warning' ? 'fa-exclamation-triangle' :
+                    'fa-info-circle'
+                } mr-2"></i>
+                <span>${message}</span>
+                <button onclick="this.parentElement.parentElement.remove()" class="ml-4 text-white hover:text-gray-200">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        `;
+        
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            if (notification.parentElement) {
+                notification.remove();
+            }
+        }, 5000);
+    }
+</script>
+{% endblock %}

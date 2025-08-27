@@ -1,0 +1,923 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block title %}Create New Letter - {{ block.super }}{% endblock %}
+
+{% block extrahead %}
+    {{ block.super }}
+    <!-- Quill Editor -->
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+    <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
+    
+    <!-- Select2 for better dropdowns -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Custom Styles -->
+    <style>
+        .letter-form-container {
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 30px;
+            margin: 20px 0;
+        }
+        
+        .form-header {
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .form-header h2 {
+            color: #007bff;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .form-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            background: #f8f9fa;
+        }
+        
+        .form-section h4 {
+            color: #495057;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .quill-container {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        #editor {
+            min-height: 300px;
+        }
+        
+        .ai-assistant-toggle {
+            position: fixed;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 1000;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 50px 0 0 50px;
+            padding: 15px 10px;
+            cursor: pointer;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .ai-assistant-toggle:hover {
+            background: #0056b3;
+            transform: translateY(-50%) translateX(-5px);
+        }
+        
+        .ai-assistant-panel {
+            position: fixed;
+            right: -400px;
+            top: 0;
+            width: 380px;
+            height: 100vh;
+            background: white;
+            box-shadow: -2px 0 10px rgba(0,0,0,0.1);
+            z-index: 999;
+            transition: right 0.3s ease;
+            overflow-y: auto;
+        }
+        
+        .ai-assistant-panel.active {
+            right: 0;
+        }
+        
+        .ai-header {
+            background: #007bff;
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .ai-content {
+            padding: 20px;
+        }
+        
+        .ai-suggestions {
+            margin-bottom: 25px;
+        }
+        
+        .suggestion-item {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            padding: 12px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .suggestion-item:hover {
+            background: #e9ecef;
+            border-color: #007bff;
+        }
+        
+        .template-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        
+        .template-buttons .btn {
+            flex: 1;
+            min-width: 100px;
+        }
+        
+        .ai-actions {
+            margin-top: 20px;
+        }
+        
+        .ai-actions .btn {
+            width: 100%;
+            margin-bottom: 8px;
+        }
+        
+        .form-actions {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 30px;
+            text-align: center;
+        }
+        
+        .form-actions .btn {
+            margin: 0 10px;
+            min-width: 120px;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .status-draft { background: #6c757d; }
+        .status-submitted { background: #007bff; }
+        .status-approved { background: #28a745; }
+        .status-rejected { background: #dc3545; }
+        
+        .priority-indicator {
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+        
+        .priority-low { background: #d4edda; color: #155724; }
+        .priority-medium { background: #fff3cd; color: #856404; }
+        .priority-high { background: #f8d7da; color: #721c24; }
+        
+        .ai-writing-assistant {
+            border-top: 1px solid #dee2e6;
+            padding-top: 15px;
+        }
+        
+        .tone-selector {
+            margin-top: 8px;
+        }
+        
+        .loading-spinner {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .validation-result {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 6px;
+            display: none;
+        }
+        
+        .validation-success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        
+        .validation-error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        
+        .character-count {
+            text-align: right;
+            font-size: 0.9em;
+            color: #6c757d;
+            margin-top: 5px;
+        }
+        
+        .auto-save-indicator {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #28a745;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            display: none;
+            z-index: 1001;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Auto-save indicator -->
+    <div class="auto-save-indicator" id="auto-save-indicator">
+        <i class="fas fa-check"></i> Auto-saved
+    </div>
+    
+    <!-- AI Assistant Toggle -->
+    <button class="ai-assistant-toggle" onclick="toggleAIPanel()" title="AI Assistant">
+        <i class="fas fa-robot fa-lg"></i>
+    </button>
+    
+    <div class="letter-form-container">
+        <div class="form-header">
+            <h2>
+                <i class="fas fa-plus-circle"></i>
+                Create New Letter
+            </h2>
+            <p class="text-muted mb-0">Create a new official letter with AI assistance</p>
+        </div>
+        
+        <form id="letter-form" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            <!-- Basic Information Section -->
+            <div class="form-section">
+                <h4><i class="fas fa-info-circle"></i> Basic Information</h4>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="id_letter_type" class="form-label">Letter Type *</label>
+                            <select class="form-select" id="id_letter_type" name="letter_type" required>
+                                <option value="">Select letter type...</option>
+                                {% for type in letter_types %}
+                                    <option value="{{ type.id }}">{{ type.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="id_applicant" class="form-label">Applicant *</label>
+                            <select class="form-select" id="id_applicant" name="applicant" required>
+                                <option value="">Select applicant...</option>
+                                {% for resident in residents %}
+                                    <option value="{{ resident.id }}">{{ resident.full_name }} - {{ resident.nik }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="id_subject" class="form-label">Subject *</label>
+                            <input type="text" class="form-control" id="id_subject" name="subject" required placeholder="Enter letter subject...">
+                            <div class="character-count" id="subject-count">0/200 characters</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="mb-3">
+                            <label for="id_priority" class="form-label">Priority</label>
+                            <select class="form-select" id="id_priority" name="priority">
+                                <option value="low">Low</option>
+                                <option value="medium" selected>Medium</option>
+                                <option value="high">High</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="mb-3">
+                            <label for="id_status" class="form-label">Status</label>
+                            <select class="form-select" id="id_status" name="status">
+                                <option value="draft" selected>Draft</option>
+                                <option value="submitted">Submitted</option>
+                                <option value="approved">Approved</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Content Section -->
+            <div class="form-section">
+                <h4><i class="fas fa-edit"></i> Letter Content</h4>
+                <div class="mb-3">
+                    <label for="editor" class="form-label">Content *</label>
+                    <div class="quill-container">
+                        <div id="editor"></div>
+                    </div>
+                    <input type="hidden" id="id_content" name="content">
+                    <div class="character-count" id="content-count">0 characters</div>
+                </div>
+                
+                <!-- AI Validation Result -->
+                <div class="validation-result" id="validation-result"></div>
+            </div>
+            
+            <!-- Recipients Section -->
+            <div class="form-section">
+                <h4><i class="fas fa-users"></i> Recipients & Distribution</h4>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="id_recipient_name" class="form-label">Recipient Name</label>
+                            <input type="text" class="form-control" id="id_recipient_name" name="recipient_name" placeholder="Enter recipient name...">
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="id_recipient_address" class="form-label">Recipient Address</label>
+                            <textarea class="form-control" id="id_recipient_address" name="recipient_address" rows="2" placeholder="Enter recipient address..."></textarea>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="id_cc_recipients" class="form-label">CC Recipients</label>
+                            <textarea class="form-control" id="id_cc_recipients" name="cc_recipients" rows="2" placeholder="Enter CC recipients (one per line)..."></textarea>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="id_delivery_method" class="form-label">Delivery Method</label>
+                            <select class="form-select" id="id_delivery_method" name="delivery_method">
+                                <option value="hand_delivery">Hand Delivery</option>
+                                <option value="post">Post</option>
+                                <option value="email">Email</option>
+                                <option value="courier">Courier</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Attachments Section -->
+            <div class="form-section">
+                <h4><i class="fas fa-paperclip"></i> Attachments</h4>
+                <div class="mb-3">
+                    <label for="id_attachments" class="form-label">Upload Files</label>
+                    <input type="file" class="form-control" id="id_attachments" name="attachments" multiple accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
+                    <div class="form-text">Supported formats: PDF, DOC, DOCX, JPG, PNG. Max size: 10MB per file.</div>
+                </div>
+            </div>
+            
+            <!-- Additional Information -->
+            <div class="form-section">
+                <h4><i class="fas fa-sticky-note"></i> Additional Information</h4>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="id_notes" class="form-label">Internal Notes</label>
+                            <textarea class="form-control" id="id_notes" name="notes" rows="3" placeholder="Internal notes (not visible in the letter)..."></textarea>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="id_tags" class="form-label">Tags</label>
+                            <input type="text" class="form-control" id="id_tags" name="tags" placeholder="Enter tags separated by commas...">
+                            <div class="form-text">Use tags to categorize and search letters easily.</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="id_requires_signature" name="requires_signature">
+                            <label class="form-check-label" for="id_requires_signature">
+                                Requires Digital Signature
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="id_auto_number" name="auto_number" checked>
+                            <label class="form-check-label" for="id_auto_number">
+                                Auto-generate Letter Number
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="id_ai_validate" name="ai_validate" checked>
+                            <label class="form-check-label" for="id_ai_validate">
+                                Validate with AI
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Form Actions -->
+            <div class="form-actions">
+                <button type="button" class="btn btn-secondary" onclick="saveDraft()">
+                    <i class="fas fa-save"></i> Save as Draft
+                </button>
+                <button type="button" class="btn btn-info" onclick="previewLetter()">
+                    <i class="fas fa-eye"></i> Preview
+                </button>
+                <button type="button" class="btn btn-warning" onclick="validateWithAI()">
+                    <i class="fas fa-robot"></i> Validate with AI
+                </button>
+                <button type="submit" class="btn btn-success">
+                    <i class="fas fa-paper-plane"></i> Submit Letter
+                </button>
+                <a href="{% url 'letters:admin_list' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-times"></i> Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+    
+    <!-- AI Assistant Panel -->
+    <div class="ai-assistant-panel" id="ai-assistant-panel">
+        <div class="ai-header">
+            <h5><i class="fas fa-robot"></i> AI Assistant</h5>
+            <button type="button" class="btn-close" onclick="toggleAIPanel()"></button>
+        </div>
+        <div class="ai-content">
+            <div class="ai-suggestions" id="ai-suggestions">
+                <h6>AI Suggestions</h6>
+                <div class="suggestion-list" id="suggestion-list">
+                    <p class="text-muted">Ketik konten untuk mendapatkan saran AI...</p>
+                </div>
+            </div>
+            
+            <div class="ai-templates">
+                <h6>Quick Templates</h6>
+                <div class="template-buttons">
+                    <button class="btn btn-sm btn-outline-primary" onclick="applyTemplate('formal')">
+                        <i class="fas fa-file-alt"></i> Formal
+                    </button>
+                    <button class="btn btn-sm btn-outline-primary" onclick="applyTemplate('invitation')">
+                        <i class="fas fa-envelope"></i> Undangan
+                    </button>
+                    <button class="btn btn-sm btn-outline-primary" onclick="applyTemplate('announcement')">
+                        <i class="fas fa-bullhorn"></i> Pengumuman
+                    </button>
+                    <button class="btn btn-sm btn-outline-primary" onclick="applyTemplate('certificate')">
+                        <i class="fas fa-certificate"></i> Sertifikat
+                    </button>
+                    <button class="btn btn-sm btn-outline-primary" onclick="applyTemplate('recommendation')">
+                        <i class="fas fa-thumbs-up"></i> Rekomendasi
+                    </button>
+                </div>
+            </div>
+            
+            <div class="ai-actions">
+                <h6>AI Actions</h6>
+                <button class="btn btn-sm btn-success" onclick="improveContent()">
+                    <i class="fas fa-magic"></i> Improve
+                </button>
+                <button class="btn btn-sm btn-info" onclick="summarizeContent()">
+                    <i class="fas fa-compress"></i> Summarize
+                </button>
+                <button class="btn btn-sm btn-warning" onclick="checkGrammar()">
+                    <i class="fas fa-spell-check"></i> Check Grammar
+                </button>
+                <button class="btn btn-sm btn-primary" onclick="generateContent()">
+                    <i class="fas fa-wand-magic-sparkles"></i> Generate
+                </button>
+                <button class="btn btn-sm btn-secondary" onclick="translateContent()">
+                    <i class="fas fa-language"></i> Translate
+                </button>
+            </div>
+            
+            <div class="ai-writing-assistant mt-3">
+                <h6>Writing Assistant</h6>
+                <div class="input-group mb-2">
+                    <input type="text" class="form-control form-control-sm" id="ai-prompt" placeholder="Describe what you want to write...">
+                    <button class="btn btn-outline-primary btn-sm" onclick="generateFromPrompt()">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+                <div class="tone-selector">
+                    <small class="text-muted">Tone:</small>
+                    <select class="form-select form-select-sm" id="writing-tone">
+                        <option value="formal">Formal</option>
+                        <option value="friendly">Friendly</option>
+                        <option value="professional">Professional</option>
+                        <option value="casual">Casual</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="loading-spinner" id="ai-loading">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="mt-2">AI is thinking...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript -->
+<script>
+    let quill;
+    let autoSaveTimer;
+    
+    // Initialize Quill editor
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize Quill
+        quill = new Quill('#editor', {
+            theme: 'snow',
+            modules: {
+                toolbar: [
+                    [{ 'header': [1, 2, 3, false] }],
+                    ['bold', 'italic', 'underline', 'strike'],
+                    [{ 'color': [] }, { 'background': [] }],
+                    [{ 'align': [] }],
+                    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                    ['blockquote', 'code-block'],
+                    ['link', 'image'],
+                    ['clean']
+                ]
+            },
+            placeholder: 'Start writing your letter content here...'
+        });
+        
+        // Initialize Select2
+        $('#id_letter_type, #id_applicant').select2({
+            theme: 'bootstrap-5',
+            width: '100%'
+        });
+        
+        // Auto-save functionality
+        quill.on('text-change', function() {
+            clearTimeout(autoSaveTimer);
+            autoSaveTimer = setTimeout(autoSave, 3000);
+            updateCharacterCount();
+            
+            // Get AI suggestions if content is substantial
+            const text = quill.getText().trim();
+            if (text.length > 50) {
+                debounce(getAISuggestions, 2000)();
+            }
+        });
+        
+        // Character count for subject
+        document.getElementById('id_subject').addEventListener('input', function() {
+            const count = this.value.length;
+            document.getElementById('subject-count').textContent = `${count}/200 characters`;
+        });
+        
+        // Form submission
+        document.getElementById('letter-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            submitForm();
+        });
+    });
+    
+    // Toggle AI Panel
+    function toggleAIPanel() {
+        const panel = document.getElementById('ai-assistant-panel');
+        panel.classList.toggle('active');
+    }
+    
+    // Auto-save function
+    function autoSave() {
+        const formData = new FormData(document.getElementById('letter-form'));
+        formData.set('content', quill.root.innerHTML);
+        formData.set('status', 'draft');
+        
+        fetch('{% url "letters:letter_create_api" %}', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showAutoSaveIndicator();
+            }
+        })
+        .catch(error => console.error('Auto-save error:', error));
+    }
+    
+    // Show auto-save indicator
+    function showAutoSaveIndicator() {
+        const indicator = document.getElementById('auto-save-indicator');
+        indicator.style.display = 'block';
+        setTimeout(() => {
+            indicator.style.display = 'none';
+        }, 2000);
+    }
+    
+    // Update character count
+    function updateCharacterCount() {
+        const text = quill.getText();
+        document.getElementById('content-count').textContent = `${text.length} characters`;
+    }
+    
+    // Get AI suggestions
+    function getAISuggestions() {
+        const content = quill.getText().trim();
+        if (content.length < 50) return;
+        
+        fetch('{% url "letters:letter_ai_validate_api" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: JSON.stringify({ content: content })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success && data.suggestions) {
+                displaySuggestions(data.suggestions);
+            }
+        })
+        .catch(error => console.error('AI suggestions error:', error));
+    }
+    
+    // Display AI suggestions
+    function displaySuggestions(suggestions) {
+        const container = document.getElementById('suggestion-list');
+        container.innerHTML = '';
+        
+        suggestions.forEach(suggestion => {
+            const item = document.createElement('div');
+            item.className = 'suggestion-item';
+            item.innerHTML = `
+                <strong>${suggestion.type}:</strong> ${suggestion.text}
+                <button class="btn btn-sm btn-outline-primary float-end" onclick="applySuggestion('${suggestion.text}')">
+                    Apply
+                </button>
+            `;
+            container.appendChild(item);
+        });
+    }
+    
+    // Apply suggestion
+    function applySuggestion(suggestion) {
+        const currentContent = quill.root.innerHTML;
+        quill.root.innerHTML = currentContent + '<p>' + suggestion + '</p>';
+    }
+    
+    // Apply template
+    function applyTemplate(templateType) {
+        fetch(`{% url "letters:letter_apply_template_api" %}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: JSON.stringify({ 
+                template_type: templateType,
+                letter_type: document.getElementById('id_letter_type').value
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                quill.root.innerHTML = data.content;
+                if (data.subject) {
+                    document.getElementById('id_subject').value = data.subject;
+                }
+            }
+        })
+        .catch(error => console.error('Template error:', error));
+    }
+    
+    // AI Actions
+    function improveContent() {
+        const content = quill.root.innerHTML;
+        aiAction('improve', content);
+    }
+    
+    function summarizeContent() {
+        const content = quill.getText();
+        aiAction('summarize', content);
+    }
+    
+    function checkGrammar() {
+        const content = quill.getText();
+        aiAction('validate', content);
+    }
+    
+    function generateContent() {
+        const letterType = document.getElementById('id_letter_type').value;
+        const subject = document.getElementById('id_subject').value;
+        aiAction('generate', '', { letter_type: letterType, subject: subject });
+    }
+    
+    function translateContent() {
+        const content = quill.getText();
+        aiAction('translate', content);
+    }
+    
+    function generateFromPrompt() {
+        const prompt = document.getElementById('ai-prompt').value;
+        const tone = document.getElementById('writing-tone').value;
+        if (!prompt.trim()) return;
+        
+        aiAction('generate', prompt, { tone: tone });
+    }
+    
+    // Generic AI action function
+    function aiAction(action, content, params = {}) {
+        showAILoading(true);
+        
+        const endpoint = {
+            'improve': '{% url "letters:letter_ai_improve_api" %}',
+            'summarize': '{% url "letters:letter_ai_summarize_api" %}',
+            'validate': '{% url "letters:letter_ai_validate_api" %}',
+            'generate': '{% url "letters:letter_ai_generate_api" %}',
+            'translate': '{% url "letters:letter_ai_validate_api" %}'
+        }[action];
+        
+        fetch(endpoint, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: JSON.stringify({ content: content, ...params })
+        })
+        .then(response => response.json())
+        .then(data => {
+            showAILoading(false);
+            if (data.success) {
+                handleAIResponse(action, data);
+            } else {
+                alert('AI action failed: ' + (data.error || 'Unknown error'));
+            }
+        })
+        .catch(error => {
+            showAILoading(false);
+            console.error('AI action error:', error);
+        });
+    }
+    
+    // Handle AI response
+    function handleAIResponse(action, data) {
+        switch(action) {
+            case 'improve':
+            case 'generate':
+                if (data.content) {
+                    quill.root.innerHTML = data.content;
+                }
+                break;
+            case 'summarize':
+                if (data.summary) {
+                    alert('Summary: ' + data.summary);
+                }
+                break;
+            case 'validate':
+                showValidationResult(data);
+                break;
+        }
+    }
+    
+    // Show AI loading
+    function showAILoading(show) {
+        document.getElementById('ai-loading').style.display = show ? 'block' : 'none';
+    }
+    
+    // Show validation result
+    function showValidationResult(data) {
+        const result = document.getElementById('validation-result');
+        result.style.display = 'block';
+        
+        if (data.is_valid) {
+            result.className = 'validation-result validation-success';
+            result.innerHTML = `
+                <h6><i class="fas fa-check-circle"></i> Validation Passed</h6>
+                <p>${data.message || 'Content is valid and well-structured.'}</p>
+            `;
+        } else {
+            result.className = 'validation-result validation-error';
+            result.innerHTML = `
+                <h6><i class="fas fa-exclamation-triangle"></i> Validation Issues</h6>
+                <p>${data.message || 'Content needs improvement.'}</p>
+                ${data.suggestions ? '<ul>' + data.suggestions.map(s => '<li>' + s + '</li>').join('') + '</ul>' : ''}
+            `;
+        }
+    }
+    
+    // Form actions
+    function saveDraft() {
+        document.getElementById('id_status').value = 'draft';
+        submitForm();
+    }
+    
+    function previewLetter() {
+        const content = quill.root.innerHTML;
+        const subject = document.getElementById('id_subject').value;
+        
+        const previewWindow = window.open('', '_blank');
+        previewWindow.document.write(`
+            <html>
+                <head>
+                    <title>Letter Preview</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; margin: 40px; }
+                        .header { text-align: center; margin-bottom: 30px; }
+                        .subject { font-weight: bold; margin: 20px 0; }
+                        .content { line-height: 1.6; }
+                    </style>
+                </head>
+                <body>
+                    <div class="header">
+                        <h2>PEMERINTAH DESA PULOSAROK</h2>
+                        <p>Kecamatan Cibadak, Kabupaten Sukabumi</p>
+                    </div>
+                    <div class="subject">Perihal: ${subject}</div>
+                    <div class="content">${content}</div>
+                </body>
+            </html>
+        `);
+    }
+    
+    function validateWithAI() {
+        const content = quill.getText();
+        if (!content.trim()) {
+            alert('Please enter some content first.');
+            return;
+        }
+        checkGrammar();
+    }
+    
+    function submitForm() {
+        // Set content from Quill editor
+        document.getElementById('id_content').value = quill.root.innerHTML;
+        
+        const formData = new FormData(document.getElementById('letter-form'));
+        
+        fetch('{% url "letters:letter_create_api" %}', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Letter created successfully!');
+                window.location.href = '{% url "letters:admin_list" %}';
+            } else {
+                alert('Error: ' + (data.error || 'Unknown error'));
+            }
+        })
+        .catch(error => {
+            console.error('Submit error:', error);
+            alert('An error occurred while submitting the form.');
+        });
+    }
+    
+    // Debounce function
+    function debounce(func, wait) {
+        let timeout;
+        return function executedFunction(...args) {
+            const later = () => {
+                clearTimeout(timeout);
+                func(...args);
+            };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+        };
+    }
+</script>
+{% endblock %}

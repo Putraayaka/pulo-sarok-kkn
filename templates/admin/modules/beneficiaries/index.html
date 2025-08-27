@@ -1,0 +1,235 @@
+{% extends 'admin/base.html' %}
+
+{% block title %}Dashboard Penerima Bantuan{% endblock %}
+{% block page_title %}Dashboard Penerima Bantuan{% endblock %}
+
+{% block extra_css %}
+<style>
+    .stat-card {
+        transition: transform 0.2s;
+    }
+    .stat-card:hover {
+        transform: translateY(-2px);
+    }
+    .chart-container {
+        position: relative;
+        height: 300px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="p-6">
+    <!-- Header Section -->
+    <div class="mb-8">
+        <div class="flex justify-between items-center">
+            <div>
+                <h1 class="text-2xl font-bold text-gray-900">Dashboard Penerima Bantuan</h1>
+                <p class="text-gray-600 mt-1">Kelola dan pantau data penerima bantuan sosial</p>
+            </div>
+            <div class="flex space-x-3">
+                <button class="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-lg flex items-center">
+                    <i class="fas fa-plus mr-2"></i>Tambah Data Baru
+                </button>
+                <button class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center">
+                    <i class="fas fa-download mr-2"></i>Export Data
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div class="stat-card bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-blue-100">
+                    <i class="fas fa-users text-blue-600 text-xl"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-600">Total Penerima</p>
+                    <p class="text-2xl font-bold text-gray-900">{{ total_penerima|default:0 }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="stat-card bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-green-100">
+                    <i class="fas fa-hand-holding-heart text-green-600 text-xl"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-600">Bantuan Aktif</p>
+                    <p class="text-2xl font-bold text-gray-900">{{ bantuan_aktif|default:0 }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="stat-card bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-yellow-100">
+                    <i class="fas fa-clock text-yellow-600 text-xl"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-600">Menunggu Verifikasi</p>
+                    <p class="text-2xl font-bold text-gray-900">{{ menunggu_verifikasi|default:0 }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="stat-card bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-red-100">
+                    <i class="fas fa-exclamation-triangle text-red-600 text-xl"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-600">Perlu Perhatian</p>
+                    <p class="text-2xl font-bold text-gray-900">{{ perlu_perhatian|default:0 }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Section -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <!-- Grafik Jenis Bantuan -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Distribusi Jenis Bantuan</h3>
+            <div class="chart-container">
+                <canvas id="jenisbantuanChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Grafik Taraf Kehidupan -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Distribusi Taraf Kehidupan</h3>
+            <div class="chart-container">
+                <canvas id="tarafkehidupanChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activities -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Aktivitas Terbaru -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-semibold text-gray-900">Aktivitas Terbaru</h3>
+                <a href="#" class="text-primary-600 hover:text-primary-700 text-sm font-medium">Lihat Semua</a>
+            </div>
+            <div class="space-y-4">
+                {% for activity in recent_activities|slice:":5" %}
+                <div class="flex items-start space-x-3">
+                    <div class="flex-shrink-0">
+                        <div class="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center">
+                            <i class="fas fa-{{ activity.icon }} text-primary-600 text-xs"></i>
+                        </div>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm text-gray-900">{{ activity.description }}</p>
+                        <p class="text-xs text-gray-500">{{ activity.created_at|timesince }} yang lalu</p>
+                    </div>
+                </div>
+                {% empty %}
+                <p class="text-gray-500 text-sm">Belum ada aktivitas terbaru</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Aksi Cepat</h3>
+            <div class="grid grid-cols-2 gap-4">
+                <a href="{% url 'beneficiaries:taraf_kehidupan' %}" class="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                    <div class="text-center">
+                        <i class="fas fa-users text-2xl text-blue-600 mb-2"></i>
+                        <p class="text-sm font-medium text-gray-900">Data Taraf Kehidupan</p>
+                    </div>
+                </a>
+                <a href="{% url 'beneficiaries:data_bantuan' %}" class="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                    <div class="text-center">
+                        <i class="fas fa-hand-holding-heart text-2xl text-green-600 mb-2"></i>
+                        <p class="text-sm font-medium text-gray-900">Data Bantuan</p>
+                    </div>
+                </a>
+                <a href="{% url 'beneficiaries:upload_dokumen' %}" class="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                    <div class="text-center">
+                        <i class="fas fa-upload text-2xl text-purple-600 mb-2"></i>
+                        <p class="text-sm font-medium text-gray-900">Upload Dokumen</p>
+                    </div>
+                </a>
+                <a href="{% url 'beneficiaries:membuat_berita' %}" class="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                    <div class="text-center">
+                        <i class="fas fa-newspaper text-2xl text-yellow-600 mb-2"></i>
+                        <p class="text-sm font-medium text-gray-900">Buat Berita</p>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Grafik Jenis Bantuan
+    const jenisbantuanCtx = document.getElementById('jenisbantuanChart').getContext('2d');
+    const jenisbantuanChart = new Chart(jenisbantuanCtx, {
+        type: 'doughnut',
+        data: {
+            labels: {{ jenis_bantuan_labels|safe }},
+            datasets: [{
+                data: {{ jenis_bantuan_data|safe }},
+                backgroundColor: [
+                    '#3B82F6',
+                    '#10B981',
+                    '#F59E0B',
+                    '#EF4444',
+                    '#8B5CF6'
+                ],
+                borderWidth: 2,
+                borderColor: '#ffffff'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+
+    // Grafik Taraf Kehidupan
+    const tarafkehidupanCtx = document.getElementById('tarafkehidupanChart').getContext('2d');
+    const tarafkehidupanChart = new Chart(tarafkehidupanCtx, {
+        type: 'bar',
+        data: {
+            labels: {{ taraf_kehidupan_labels|safe }},
+            datasets: [{
+                label: 'Jumlah Keluarga',
+                data: {{ taraf_kehidupan_data|safe }},
+                backgroundColor: '#3B82F6',
+                borderColor: '#2563EB',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}
