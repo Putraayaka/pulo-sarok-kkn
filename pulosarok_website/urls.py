@@ -34,6 +34,7 @@ urlpatterns = [
     path('pulosarok/documents/', include('documents.urls')),
     path('pulosarok/news/', include('news.urls')),
     path('pulosarok/letters/', include('letters.urls')),
+    path('pulosarok/tourism/', include('tourism.urls')),
     # Note: services app doesn't exist yet, but templates are ready
     # path('pulosarok/services/', include('services.urls')),
 ]

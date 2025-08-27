@@ -184,11 +184,11 @@ class Command(BaseCommand):
         
         penduduks = []
         
-        # Create 10 penduduk per dusun
+        # Create 15 penduduk per dusun (150 total for 10 dusuns)
         for dusun in dusuns:
             dusun_lorongs = [l for l in lorongs if l.dusun == dusun]
             
-            for i in range(10):
+            for i in range(15):
                 # Generate random birth date (age between 1-80 years)
                 age = random.randint(1, 80)
                 birth_date = date.today() - timedelta(days=age*365 + random.randint(0, 365))
@@ -236,9 +236,9 @@ class Command(BaseCommand):
         """Create disability data for some residents"""
         disability_types = list(DisabilitasType.objects.all())
         
-        # Create disability data for about 10% of population
-        disabled_count = int(len(penduduks) * 0.1)
-        disabled_residents = random.sample(penduduks, disabled_count)
+        # Create disability data for about 25% of population (minimum 30 records)
+        disabled_count = max(30, int(len(penduduks) * 0.25))
+        disabled_residents = random.sample(penduduks, min(disabled_count, len(penduduks)))
         
         disability_data_list = []
         

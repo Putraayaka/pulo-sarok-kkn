@@ -155,13 +155,7 @@
                     <i class="fas fa-chevron-right text-gray-400"></i>
                 </a>
                 
-                <div class="border-t pt-3 mt-4">
-                    <button onclick="generateDummyData()" 
-                            class="w-full flex items-center justify-center p-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors">
-                        <i class="fas fa-database mr-2"></i>
-                        <span class="font-medium">Generate Data Dummy</span>
-                    </button>
-                </div>
+
             </div>
         </div>
     </div>
@@ -350,6 +344,21 @@
                         </tbody>
                     </table>
                 </div>
+                
+                <!-- Pagination for Dusun -->
+                <div id="dusun-pagination" class="flex items-center justify-between mt-6">
+                    <div class="flex items-center text-sm text-gray-700">
+                        <span id="dusun-info">Menampilkan 0 dari 0 data</span>
+                    </div>
+                    <div class="flex space-x-2">
+                        <button id="dusun-prev" class="px-3 py-2 text-sm bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50" disabled>
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <button id="dusun-next" class="px-3 py-2 text-sm bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50" disabled>
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
             </div>
 
             <!-- Lorong Tab -->
@@ -382,6 +391,21 @@
                             <!-- Dynamic content will be loaded here -->
                         </tbody>
                     </table>
+                </div>
+                
+                <!-- Pagination for Lorong -->
+                <div id="lorong-pagination" class="flex items-center justify-between mt-6">
+                    <div class="flex items-center text-sm text-gray-700">
+                        <span id="lorong-info">Menampilkan 0 dari 0 data</span>
+                    </div>
+                    <div class="flex space-x-2">
+                        <button id="lorong-prev" class="px-3 py-2 text-sm bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50" disabled>
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <button id="lorong-next" class="px-3 py-2 text-sm bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50" disabled>
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -577,57 +601,64 @@ function loadStatistics() {
     fetch('{% url "references:references_stats" %}')
         .then(response => response.json())
         .then(data => {
-            // Update basic counts
-            document.getElementById('total-penduduk').textContent = data.basic_stats.total_penduduk;
-            document.getElementById('total-dusun').textContent = data.basic_stats.total_dusun;
-            document.getElementById('total-lorong').textContent = data.basic_stats.total_lorong;
-            document.getElementById('total-disabilitas').textContent = data.basic_stats.total_disabilitas;
+            // Update basic counts with null checks
+            document.getElementById('total-penduduk').textContent = data.basic_stats?.total_penduduk || 0;
+            document.getElementById('total-dusun').textContent = data.basic_stats?.total_dusun || 0;
+            document.getElementById('total-lorong').textContent = data.basic_stats?.total_lorong || 0;
+            document.getElementById('total-disabilitas').textContent = data.basic_stats?.total_disabilitas || 0;
             
             // Update demographics
-            const totalPenduduk = data.basic_stats.total_penduduk;
-            if (totalPenduduk > 0) {
-                const malePercentage = Math.round((data.demographics.male_count / totalPenduduk) * 100);
-                const femalePercentage = Math.round((data.demographics.female_count / totalPenduduk) * 100);
+            const totalPenduduk = data.basic_stats?.total_penduduk || 0;
+            if (totalPenduduk > 0 && data.demographics) {
+                const maleCount = data.demographics.male_count || 0;
+                const femaleCount = data.demographics.female_count || 0;
+                const malePercentage = Math.round((maleCount / totalPenduduk) * 100);
+                const femalePercentage = Math.round((femaleCount / totalPenduduk) * 100);
                 
                 document.getElementById('male-percentage').textContent = malePercentage + '%';
                 document.getElementById('female-percentage').textContent = femalePercentage + '%';
                 
                 // Update age groups
-                const ageGroups = data.demographics.age_groups;
-                const totalAgeGroup = ageGroups.anak + ageGroups.dewasa + ageGroups.lansia;
+                const ageGroups = data.demographics.age_groups || {};
+                const anakCount = ageGroups.anak || 0;
+                const dewasaCount = ageGroups.dewasa || 0;
+                const lansiaCount = ageGroups.lansia || 0;
+                const totalAgeGroup = anakCount + dewasaCount + lansiaCount;
                 
-                document.getElementById('anak-count').textContent = ageGroups.anak + ' orang';
-                document.getElementById('dewasa-count').textContent = ageGroups.dewasa + ' orang';
-                document.getElementById('lansia-count').textContent = ageGroups.lansia + ' orang';
+                document.getElementById('anak-count').textContent = anakCount + ' orang';
+                document.getElementById('dewasa-count').textContent = dewasaCount + ' orang';
+                document.getElementById('lansia-count').textContent = lansiaCount + ' orang';
                 
                 if (totalAgeGroup > 0) {
-                    document.getElementById('anak-bar').style.width = Math.round((ageGroups.anak / totalAgeGroup) * 100) + '%';
-                    document.getElementById('dewasa-bar').style.width = Math.round((ageGroups.dewasa / totalAgeGroup) * 100) + '%';
-                    document.getElementById('lansia-bar').style.width = Math.round((ageGroups.lansia / totalAgeGroup) * 100) + '%';
+                    document.getElementById('anak-bar').style.width = Math.round((anakCount / totalAgeGroup) * 100) + '%';
+                    document.getElementById('dewasa-bar').style.width = Math.round((dewasaCount / totalAgeGroup) * 100) + '%';
+                    document.getElementById('lansia-bar').style.width = Math.round((lansiaCount / totalAgeGroup) * 100) + '%';
                 }
             }
             
             // Update recent activity
-            document.getElementById('recent-residents').textContent = data.recent_activity.new_penduduk;
-            document.getElementById('recent-disabilities').textContent = data.recent_activity.new_disabilitas;
+            const recentActivity = data.recent_activity || {};
+            document.getElementById('recent-residents').textContent = recentActivity.new_penduduk || 0;
+            document.getElementById('recent-disabilities').textContent = recentActivity.new_disabilitas || 0;
             
             // Update disability statistics
-            document.getElementById('total-disability-count').textContent = data.basic_stats.total_disabilitas;
-            const disabilityPercentage = totalPenduduk > 0 ? Math.round((data.basic_stats.total_disabilitas / totalPenduduk) * 100) : 0;
+            const totalDisabilitas = data.basic_stats?.total_disabilitas || 0;
+            document.getElementById('total-disability-count').textContent = totalDisabilitas;
+            const disabilityPercentage = totalPenduduk > 0 ? Math.round((totalDisabilitas / totalPenduduk) * 100) : 0;
             document.getElementById('disability-population-percentage').textContent = disabilityPercentage + '%';
             document.getElementById('disability-percentage').textContent = disabilityPercentage + '% dari populasi';
             
             // Update population by dusun chart
-            renderDusunPopulationChart(data.population_by_dusun);
+            renderDusunPopulationChart(data.population_by_dusun || []);
             
             // Update disability types chart
-            renderDisabilityTypesChart(data.disability.by_type);
+            renderDisabilityTypesChart(data.disability?.by_type || []);
             
             // Update religion chart
-            renderReligionChart(data.distributions.religion);
+            renderReligionChart(data.distributions?.religion || []);
             
             // Update education chart
-            renderEducationChart(data.distributions.education);
+            renderEducationChart(data.distributions?.education || []);
         })
         .catch(error => {
             console.error('Error loading statistics:', error);
@@ -638,16 +669,17 @@ function loadStatistics() {
     fetch('{% url "references:dashboard_summary" %}')
         .then(response => response.json())
         .then(data => {
-            // Update enhanced statistics
-            document.getElementById('avg-population').textContent = `Rata-rata ${data.avg_population_per_dusun} penduduk`;
-            document.getElementById('avg-houses').textContent = `Rata-rata ${data.avg_houses_per_lorong} rumah`;
-            document.getElementById('average-age').textContent = data.average_age;
-            document.getElementById('penduduk-growth').textContent = `+${data.new_residents_month} bulan ini`;
-            document.getElementById('needs-assistance-count').textContent = data.needs_assistance_count;
+            // Update enhanced statistics with null checks
+            document.getElementById('avg-population').textContent = `Rata-rata ${data.avg_population_per_dusun || 0} penduduk`;
+            document.getElementById('avg-houses').textContent = `Rata-rata ${data.avg_houses_per_lorong || 0} rumah`;
+            document.getElementById('average-age').textContent = data.average_age || 0;
+            document.getElementById('penduduk-growth').textContent = `+${data.new_residents_month || 0} bulan ini`;
+            document.getElementById('needs-assistance-count').textContent = data.needs_assistance_count || 0;
             
             // Calculate growth rate
-            const totalPenduduk = data.total_penduduk;
-            const growthRate = totalPenduduk > 0 ? Math.round((data.new_residents_month / totalPenduduk) * 100 * 12) : 0; // Annualized
+            const totalPenduduk = data.total_penduduk || 0;
+            const newResidentsMonth = data.new_residents_month || 0;
+            const growthRate = totalPenduduk > 0 ? Math.round((newResidentsMonth / totalPenduduk) * 100 * 12) : 0; // Annualized
             document.getElementById('growth-rate').textContent = growthRate + '%';
         })
         .catch(error => {
@@ -769,18 +801,7 @@ function renderEducationChart(data) {
     });
 }
 
-// Generate dummy data function
-function generateDummyData() {
-    if (confirm('Apakah Anda yakin ingin generate data dummy? Ini akan membuat data contoh untuk testing.')) {
-        showToast('Sedang generate data dummy...', 'info');
-        
-        // Note: This would call a Django management command
-        // For now, we'll show a message
-        setTimeout(() => {
-            showToast('Fitur generate data dummy sedang dalam pengembangan. Silakan jalankan: python manage.py create_dummy_references', 'info');
-        }, 1000);
-    }
-}
+
 
 // Tab switching functionality
 function switchTab(tabName) {
@@ -900,7 +921,7 @@ function loadPendudukData() {
 // Load Dusun data
 function loadDusunData() {
     const search = document.getElementById('dusun-search').value;
-    const url = `{% url "references:dusun_list" %}?search=${encodeURIComponent(search)}`;
+    const url = `{% url "references:dusun_list" %}?page=${currentPage}&search=${encodeURIComponent(search)}`;
     
     fetch(url)
         .then(response => response.json())
@@ -927,6 +948,8 @@ function loadDusunData() {
                 `;
                 tbody.insertAdjacentHTML('beforeend', row);
             });
+            
+            updatePagination('dusun', data.pagination);
         })
         .catch(error => {
             console.error('Error loading dusun data:', error);
@@ -936,7 +959,7 @@ function loadDusunData() {
 // Load Lorong data
 function loadLorongData() {
     const search = document.getElementById('lorong-search').value;
-    const url = `{% url "references:lorong_list" %}?search=${encodeURIComponent(search)}`;
+    const url = `{% url "references:lorong_list" %}?page=${currentPage}&search=${encodeURIComponent(search)}`;
     
     fetch(url)
         .then(response => response.json())
@@ -964,6 +987,8 @@ function loadLorongData() {
                 `;
                 tbody.insertAdjacentHTML('beforeend', row);
             });
+            
+            updatePagination('lorong', data.pagination);
         })
         .catch(error => {
             console.error('Error loading lorong data:', error);
@@ -1396,6 +1421,30 @@ function setupPaginationHandlers() {
     document.getElementById('disabilitas-data-next').addEventListener('click', () => {
         currentPage++;
         loadDisabilitasData();
+    });
+    
+    document.getElementById('dusun-prev').addEventListener('click', () => {
+        if (currentPage > 1) {
+            currentPage--;
+            loadDusunData();
+        }
+    });
+    
+    document.getElementById('dusun-next').addEventListener('click', () => {
+        currentPage++;
+        loadDusunData();
+    });
+    
+    document.getElementById('lorong-prev').addEventListener('click', () => {
+        if (currentPage > 1) {
+            currentPage--;
+            loadLorongData();
+        }
+    });
+    
+    document.getElementById('lorong-next').addEventListener('click', () => {
+        currentPage++;
+        loadLorongData();
     });
 }
 

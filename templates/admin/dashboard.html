@@ -234,26 +234,26 @@
             const statsResponse = await fetch('{% url "custom_admin:dashboard_stats_api" %}');
             const statsData = await statsResponse.json();
             
-            // Update stats cards
-            document.getElementById('total-penduduk').textContent = statsData.total_penduduk.toLocaleString();
-            document.getElementById('total-dusun').textContent = statsData.total_dusun.toLocaleString();
-            document.getElementById('total-organisasi').textContent = statsData.total_organisasi.toLocaleString();
-            document.getElementById('total-umkm').textContent = statsData.total_umkm.toLocaleString();
+            // Update stats cards with null checks
+            document.getElementById('total-penduduk').textContent = (statsData.total_penduduk || 0).toLocaleString();
+            document.getElementById('total-dusun').textContent = (statsData.total_dusun || 0).toLocaleString();
+            document.getElementById('total-organisasi').textContent = (statsData.total_organisasi || 0).toLocaleString();
+            document.getElementById('total-umkm').textContent = (statsData.total_umkm || 0).toLocaleString();
             
-            // Update gender distribution
-            document.getElementById('male-count').textContent = statsData.male_count.toLocaleString();
-            document.getElementById('female-count').textContent = statsData.female_count.toLocaleString();
-            document.getElementById('male-percentage').textContent = statsData.male_percentage;
-            document.getElementById('female-percentage').textContent = statsData.female_percentage;
+            // Update gender distribution with null checks
+            document.getElementById('male-count').textContent = (statsData.male_count || 0).toLocaleString();
+            document.getElementById('female-count').textContent = (statsData.female_count || 0).toLocaleString();
+            document.getElementById('male-percentage').textContent = statsData.male_percentage || 0;
+            document.getElementById('female-percentage').textContent = statsData.female_percentage || 0;
             
-            // Update progress bars
-            document.getElementById('male-bar').style.width = statsData.male_percentage + '%';
-            document.getElementById('female-bar').style.width = statsData.female_percentage + '%';
+            // Update progress bars with null checks
+            document.getElementById('male-bar').style.width = (statsData.male_percentage || 0) + '%';
+            document.getElementById('female-bar').style.width = (statsData.female_percentage || 0) + '%';
             
-            // Update age distribution
-            document.getElementById('age-0-17').textContent = statsData.age_0_17.toLocaleString();
-            document.getElementById('age-18-60').textContent = statsData.age_18_60.toLocaleString();
-            document.getElementById('age-60-plus').textContent = statsData.age_60_plus.toLocaleString();
+            // Update age distribution with null checks
+            document.getElementById('age-0-17').textContent = (statsData.age_0_17 || 0).toLocaleString();
+            document.getElementById('age-18-60').textContent = (statsData.age_18_60 || 0).toLocaleString();
+            document.getElementById('age-60-plus').textContent = (statsData.age_60_plus || 0).toLocaleString();
             
         } catch (error) {
             console.error('Error loading dashboard stats:', error);
@@ -304,9 +304,9 @@
             const systemResponse = await fetch('{% url "custom_admin:system_info_api" %}');
             const systemData = await systemResponse.json();
             
-            document.getElementById('total-users').textContent = systemData.total_users.toLocaleString();
-            document.getElementById('active-users').textContent = systemData.active_users.toLocaleString();
-            document.getElementById('total-records').textContent = systemData.total_records.toLocaleString();
+            document.getElementById('total-users').textContent = (systemData.total_users || 0).toLocaleString();
+            document.getElementById('active-users').textContent = (systemData.active_users || 0).toLocaleString();
+            document.getElementById('total-records').textContent = (systemData.total_records || 0).toLocaleString();
             
         } catch (error) {
             console.error('Error loading system info:', error);

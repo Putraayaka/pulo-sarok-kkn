@@ -232,7 +232,7 @@
             <p class="text-gray-600 mt-1">Kelola semua berita di website</p>
         </div>
         <div class="flex space-x-3">
-            <a href="{% url 'news:admin_create' %}" class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg transition duration-200 flex items-center">
+            <a href="{% url "news:news_create_view" %}" class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg transition duration-200 flex items-center">
                 <i class="fas fa-plus mr-2"></i>Tambah Berita
             </a>
             <button onclick="toggleBulkActions()" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-3 rounded-lg transition duration-200">
@@ -455,7 +455,7 @@
                     <i class="fas fa-newspaper text-4xl mb-4 text-gray-300"></i>
                     <h3 class="text-lg font-medium mb-2">Belum ada berita</h3>
                     <p class="text-sm">Mulai dengan menambahkan berita pertama Anda.</p>
-                    <a href="{% url 'news:admin_create' %}" class="inline-block mt-4 bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg transition duration-200">
+                    <a href="{% url "news:news_create_view" %}" class="inline-block mt-4 bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg transition duration-200">
                         <i class="fas fa-plus mr-2"></i>Tambah Berita
                     </a>
                 </div>
@@ -607,7 +607,7 @@ function bulkPublish() {
     if (selectedNews.length === 0) return;
     
     if (confirm(`Apakah Anda yakin ingin mempublikasikan ${selectedNews.length} berita?`)) {
-        fetch('{% url "news:admin_bulk_publish" %}', {
+        fetch('#', { // TODO: Implement bulk publish endpoint
             method: 'POST',
             headers: {
                 'X-CSRFToken': '{{ csrf_token }}',
@@ -634,7 +634,7 @@ function bulkDraft() {
     if (selectedNews.length === 0) return;
     
     if (confirm(`Apakah Anda yakin ingin mengubah ${selectedNews.length} berita menjadi draft?`)) {
-        fetch('{% url "news:admin_bulk_draft" %}', {
+        fetch('#', { // TODO: Implement bulk draft endpoint
             method: 'POST',
             headers: {
                 'X-CSRFToken': '{{ csrf_token }}',
@@ -661,7 +661,7 @@ function bulkDelete() {
     if (selectedNews.length === 0) return;
     
     if (confirm(`Apakah Anda yakin ingin menghapus ${selectedNews.length} berita? Tindakan ini tidak dapat dibatalkan.`)) {
-        fetch('{% url "news:admin_bulk_delete" %}', {
+        fetch('#', { // TODO: Implement bulk delete endpoint
             method: 'POST',
             headers: {
                 'X-CSRFToken': '{{ csrf_token }}',
