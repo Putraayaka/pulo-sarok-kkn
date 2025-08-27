@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Admin Panel{% endblock %} - Pulosarok</title>
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Custom Tailwind Config -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            200: '#bfdbfe',
+                            300: '#93c5fd',
+                            400: '#60a5fa',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                            800: '#1e40af',
+                            900: '#1e3a8a'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="bg-gray-50">
+    <div class="flex h-screen bg-gray-50">
+        <!-- Sidebar -->
+        <div id="sidebar" class="fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform -translate-x-full transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0 lg:flex lg:flex-col">
+        <div class="flex items-center justify-center h-16 bg-primary-600">
+            <h1 class="text-white text-xl font-bold">
+                <i class="fas fa-building mr-2"></i>Admin Pulosarok
+            </h1>
+        </div>
+        
+        <nav class="mt-5 px-2 flex-1 overflow-y-auto">
+            <div class="space-y-1 pb-6">
+                <!-- Dashboard -->
+                <a href="{% url 'custom_admin:dashboard' %}" class="{% if request.resolver_match.url_name == 'dashboard' %}bg-primary-100 text-primary-700{% else %}text-gray-600 hover:bg-gray-50 hover:text-gray-900{% endif %} group flex items-center px-2 py-2 text-sm font-medium rounded-md">
+                    <i class="fas fa-tachometer-alt mr-3 text-lg"></i>
+                    Dashboard
+                </a>
+                
+                <!-- Data Referensi -->
+                <div class="space-y-1">
+                    <button type="button" class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group w-full flex items-center pl-2 pr-1 py-2 text-left text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500" onclick="toggleSubmenu('references-menu')">
+                        <i class="fas fa-database mr-3 text-lg"></i>
+                        <span class="flex-1">Data Referensi</span>
+                        <i class="fas fa-chevron-right transform transition-transform duration-200" id="references-icon"></i>
+                    </button>
+                    <div class="space-y-1 pl-6 hidden" id="references-menu">
+                        <a href="{% url 'references:dusun_admin' %}" class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-sm rounded-md">
+                            <i class="fas fa-map-marker-alt mr-2"></i>Input Data Dusun
+                        </a>
+                        <a href="{% url 'references:lorong_admin' %}" class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-sm rounded-md">
+                            <i class="fas fa-road mr-2"></i>Input Data Lorong
+                        </a>
+                        <a href="{% url 'references:penduduk_admin' %}" class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-sm rounded-md">
+                            <i class="fas fa-users mr-2"></i>Input Data Penduduk
+                        </a>
+                        <a href="{% url 'references:disabilitas_admin' %}" class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-sm rounded-md">
+                            <i class="fas fa-wheelchair mr-2"></i>Input Data Disabilitas
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Profil Desa -->
+                <div class="space-y-1">
+                    <button type="button" class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group w-full flex items-center pl-2 pr-1 py-2 text-left text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500" onclick="toggleSubmenu('village-profile-menu')">
+                        <i class="fas fa-home mr-3 text-lg"></i>
+                        <span class="flex-1">Profil Desa</span>
+                        <i class="fas fa-chevron-right transform transition-transform duration-200" id="village-profile-icon"></i>
+                    </button>
+                    <div class="space-y-1 pl-6 hidden" id="village-profile-menu">
+                        <a href="{% url 'village_profile:village_profile_admin' %}" class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-sm rounded-md">
+                            <i class="fas fa-bullseye mr-2"></i>Input Visi Misi Desa
+                        </a>
+                        <a href="{% url 'village_profile:village_profile_admin' %}#sejarah" class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-sm rounded-md">
+                            <i class="fas fa-history mr-2"></i>Input Sejarah Desa
+                        </a>
+                        <a href="{% url 'village_profile:village_profile_admin' %}#geografis" class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-sm rounded-md">
+                            <i class="fas fa-map mr-2"></i>Input Data Geografis
+                        </a>
+                        <a href="{% url 'village_profile:village_profile_admin' %}#galeri" class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-sm rounded-md">
+                            <i class="fas fa-images mr-2"></i>Kelola Peta Desa
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Organisasi -->
+                <div class="space-y-1">
+                    <button type="button" class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group w-full flex items-center pl-2 pr-1 py-2 text-left text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500" onclick="toggleSubmenu('organization-menu')">
+                        <i class="fas fa-users mr-3 text-lg"></i>
+                        <span class="flex-1">Organisasi</span>
+                        <i class="fas fa-chevron-right transform transition-transform duration-200" id="organization-icon"></i>
+                    </button>
+                    <div class="space-y-1 pl-6 hidden" id="organization-menu">
+                        <a href="{% url 'organization:struktur_organisasi' %}" class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-sm rounded-md">
+                            <i class="fas fa-sitemap mr-2"></i>Struktur Organisasi
+                        </a>
+                        <a href="{% url 'organization:data_anggota' %}" class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-sm rounded-md">
+                            <i class="fas fa-user-friends mr-2"></i>Data Anggota
+                        </a>
+                        <a href="{% url 'organization:data_jabatan' %}" class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-sm rounded-md">
+                            <i class="fas fa-user-tie mr-2"></i>Data Jabatan
+                        </a>
+                        <a href="{% url 'organization:periode_kepengurusan' %}" class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-sm rounded-md">
+                            <i class="fas fa-calendar-alt mr-2"></i>Periode Kepengurusan
+                        </a>
+                        <a href="{% url 'organization:galeri_kegiatan' %}" class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-sm rounded-md">
+                            <i class="fas fa-images mr-2"></i>Galeri Kegiatan
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Bidang Usaha -->
+                <div class="space-y-1">
+                    <button type="button" class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group w-full flex items-center pl-2 pr-1 py-2 text-left text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500" onclick="toggleSubmenu('business-menu')">
+                        <i class="fas fa-store mr-3 text-lg"></i>
+                        <span class="flex-1">Bidang Usaha</span>
+                        <i class="fas fa-chevron-right transform transition-transform duration-200" id="business-icon"></i>
+                    </button>
+                    <div class="space-y-1 pl-6 hidden" id="business-menu">
+                        <a href="{% url 'business:koperasi' %}" class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-sm rounded-md">
+                            <i class="fas fa-handshake mr-2"></i>Koperasi Merah Putih
+                        </a>
+                        <a href="{% url 'business:bumg' %}" class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-sm rounded-md">
+                            <i class="fas fa-building mr-2"></i>BUMG
+                        </a>
+                        <a href="{% url 'business:ukm' %}" class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-sm rounded-md">
+                            <i class="fas fa-chart-line mr-2"></i>Input Data UKM
+                        </a>
+                        <a href="{% url 'business:aset' %}" class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-sm rounded-md">
+                            <i class="fas fa-boxes mr-2"></i>Input Data Aset
+                        </a>
+                        <a href="{% url 'business:jasa' %}" class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-sm rounded-md">
+                            <i class="fas fa-tools mr-2"></i>Layanan Jasa
+                        </a>
+                        <a href="{% url 'business:category' %}" class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-sm rounded-md">
+                            <i class="fas fa-tags mr-2"></i>Kelola Kategori
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Data Posyandu -->
+                <div class="space-y-1">
+                    <button type="button" class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group w-full flex items-center pl-2 pr-1 py-2 text-left text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500" onclick="toggleSubmenu('posyandu-menu')">
+                        <i class="fas fa-heartbeat mr-3 text-lg"></i>
+                        <span class="flex-1">Data Posyandu</span>
+                        <i class="fas fa-chevron-right transform transition-transform duration-200" id="posyandu-icon"></i>
+                    </button>
+                    <div class="space-y-1 pl-6 hidden" id="posyandu-menu">
+                        <a href="{% url 'posyandu:kader_admin' %}" class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-sm rounded-md">
+                            <i class="fas fa-user-nurse mr-2"></i>Input Kader Posyandu
+                        </a>
+                        <a href="{% url 'posyandu:ibu_hamil_admin' %}" class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-sm rounded-md">
+                            <i class="fas fa-user-plus mr-2"></i>Input Data Ibu Hamil
+                        </a>
+                        <a href="{% url 'posyandu:view_balita' %}" class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-sm rounded-md">
+                            <i class="fas fa-baby mr-2"></i>View Data Balita
+                        </a>
+                        <a href="{% url 'posyandu:view_lansia' %}" class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-sm rounded-md">
+                            <i class="fas fa-user-friends mr-2"></i>View Data Lansia
+                        </a>
+                        <a href="{% url 'posyandu:stunting_admin' %}" class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-sm rounded-md">
+                            <i class="fas fa-child mr-2"></i>Input Data Stunting
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Events -->
+                <div class="space-y-1">
+                    <button type="button" class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group w-full flex items-center pl-2 pr-1 py-2 text-left text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500" onclick="toggleSubmenu('events-menu')">
+                        <i class="fas fa-calendar-alt mr-3 text-lg"></i>
+                        <span class="flex-1">Events</span>
+                        <i class="fas fa-chevron-right transform transition-transform duration-200" id="events-icon"></i>
+                    </button>
+                    <div class="space-y-1 pl-6 hidden" id="events-menu">
+                        <a href="{% url 'events:events_dashboard' %}" class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-sm rounded-md">
+                            <i class="fas fa-tachometer-alt mr-2"></i>Dashboard Events
+                        </a>
+                        <a href="{% url 'events:events_list' %}" class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-sm rounded-md">
+                            <i class="fas fa-list mr-2"></i>Daftar Events
+                        </a>
+                        <a href="{% url 'events:events_calendar' %}" class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-sm rounded-md">
+                            <i class="fas fa-calendar mr-2"></i>Kalender Events
+                        </a>
+                        <a href="{% url 'events:events_categories' %}" class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-sm rounded-md">
+                            <i class="fas fa-tags mr-2"></i>Kategori Events
+                        </a>
+                        <a href="{% url 'events:events_participants' %}" class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-sm rounded-md">
+                            <i class="fas fa-users mr-2"></i>Peserta Events
+                        </a>
+                        <a href="{% url 'events:events_reports' %}" class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-sm rounded-md">
+                            <i class="fas fa-chart-bar mr-2"></i>Laporan Events
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Berita -->
+                <div class="space-y-1">
+                    <button type="button" class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group w-full flex items-center pl-2 pr-1 py-2 text-left text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500" onclick="toggleSubmenu('news-menu')">
+                        <i class="fas fa-newspaper mr-3 text-lg"></i>
+                        <span class="flex-1">Berita</span>
+                        <i class="fas fa-chevron-right transform transition-transform duration-200" id="news-icon"></i>
+                    </button>
+                    <div class="space-y-1 pl-6 hidden" id="news-menu">
+                        <a href="{% url 'custom_admin:module_view' 'news' %}" class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-sm rounded-md">
+                            <i class="fas fa-tachometer-alt mr-2"></i>Dashboard Berita
+                        </a>
+                        <a href="{% url 'news:news_create_view' %}" class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-sm rounded-md">
+                            <i class="fas fa-plus mr-2"></i>Tambah Berita
+                        </a>
+                        <a href="{% url 'news:news_list_view' %}" class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-sm rounded-md">
+                            <i class="fas fa-list mr-2"></i>Daftar Berita
+                        </a>
+                        <a href="{% url 'news:news_category_view' %}" class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-sm rounded-md">
+                            <i class="fas fa-tags mr-2"></i>Kategori Berita
+                        </a>
+                        <a href="{% url 'news:news_media_view' %}" class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-sm rounded-md">
+                            <i class="fas fa-images mr-2"></i>Galeri Media
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Surat Menyurat -->
+                <div class="space-y-1">
+                    <button type="button" class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group w-full flex items-center pl-2 pr-1 py-2 text-left text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500" onclick="toggleSubmenu('letters-menu')">
+                        <i class="fas fa-envelope mr-3 text-lg"></i>
+                        <span class="flex-1">Surat Menyurat</span>
+                        <i class="fas fa-chevron-right transform transition-transform duration-200" id="letters-icon"></i>
+                    </button>
+                    <div class="space-y-1 pl-6 hidden" id="letters-menu">
+                        <a href="{% url 'custom_admin:module_view' 'letters' %}" class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-sm rounded-md">
+                            <i class="fas fa-file-alt mr-2"></i>Surat Keterangan
+                        </a>
+                        <a href="{% url 'custom_admin:module_view' 'documents' %}" class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-sm rounded-md">
+                            <i class="fas fa-folder mr-2"></i>Dokumen
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Penerima Bantuan -->
+                <div class="space-y-1">
+                    <button type="button" class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group w-full flex items-center pl-2 pr-1 py-2 text-left text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500" onclick="toggleSubmenu('beneficiaries-menu')">
+                        <i class="fas fa-hand-holding-heart mr-3 text-lg"></i>
+                        <span class="flex-1">Data Penerima Bantuan</span>
+                        <i class="fas fa-chevron-right transform transition-transform duration-200" id="beneficiaries-icon"></i>
+                    </button>
+                    <div class="space-y-1 pl-6 hidden" id="beneficiaries-menu">
+                        <a href="{% url 'beneficiaries:beneficiaries_dashboard' %}" class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-sm rounded-md">
+                            <i class="fas fa-tachometer-alt mr-2"></i>Dashboard
+                        </a>
+                        <a href="{% url 'beneficiaries:taraf_kehidupan_page' %}" class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-sm rounded-md">
+                            <i class="fas fa-users mr-2"></i>Input Data Taraf Kehidupan
+                        </a>
+                        <a href="{% url 'beneficiaries:data_bantuan_page' %}" class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-sm rounded-md">
+                            <i class="fas fa-hand-holding-heart mr-2"></i>Input Data Bantuan
+                        </a>
+                        <a href="{% url 'beneficiaries:upload_dokumen_page' %}" class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-sm rounded-md">
+                            <i class="fas fa-upload mr-2"></i>Upload Dokumen Gampong
+                        </a>
+                        <a href="{% url 'beneficiaries:membuat_berita_page' %}" class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-sm rounded-md">
+                            <i class="fas fa-newspaper mr-2"></i>Membuat Berita
+                        </a>
+                        <a href="{% url 'beneficiaries:membuat_surat_page' %}" class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-sm rounded-md">
+                            <i class="fas fa-envelope mr-2"></i>Membuat Surat
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Pengaturan -->
+                <div class="border-t border-gray-200 mt-6 pt-6">
+                    <a href="{% url 'custom_admin:module_view' 'core' %}" class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-sm font-medium rounded-md">
+                        <i class="fas fa-cog mr-3 text-lg"></i>
+                        Pengaturan
+                    </a>
+                    
+                    <a href="{% url 'custom_admin:profile' %}" class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-sm font-medium rounded-md">
+                        <i class="fas fa-user mr-3 text-lg"></i>
+                        Profil Admin
+                    </a>
+                    
+                    <a href="{% url 'custom_admin:logout' %}" class="text-red-600 hover:bg-red-50 hover:text-red-900 group flex items-center px-2 py-2 text-sm font-medium rounded-md">
+                        <i class="fas fa-sign-out-alt mr-3 text-lg"></i>
+                        Logout
+                    </a>
+                </div>
+            </div>
+        </nav>
+        </div>
+        
+        <!-- Mobile menu overlay -->
+        <div id="sidebar-overlay" class="fixed inset-0 z-40 bg-gray-600 bg-opacity-75 hidden lg:hidden" onclick="toggleSidebar()"></div>
+        
+        <!-- Main content -->
+        <div class="flex-1 flex flex-col overflow-hidden">
+        <!-- Top navigation -->
+        <div class="bg-white shadow-sm border-b border-gray-200 flex-shrink-0">
+            <div class="px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between h-16">
+                    <div class="flex items-center">
+                        <!-- Mobile menu button -->
+                        <button type="button" class="lg:hidden -ml-0.5 -mt-0.5 h-12 w-12 inline-flex items-center justify-center rounded-md text-gray-500 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary-500" onclick="toggleSidebar()">
+                            <i class="fas fa-bars text-lg"></i>
+                        </button>
+                        
+                        <!-- Page title -->
+                        <div class="ml-4 lg:ml-0">
+                            <h1 class="text-lg font-semibold text-gray-900">{% block page_title %}Dashboard{% endblock %}</h1>
+                            {% if page_subtitle %}
+                                <p class="text-sm text-gray-500">{{ page_subtitle }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center space-x-4">
+                        <!-- Search -->
+                        <div class="relative hidden md:block">
+                            <input type="text" id="global-search" placeholder="Cari..." class="w-64 pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fas fa-search text-gray-400"></i>
+                            </div>
+                        </div>
+                        
+                        <!-- User menu -->
+                        <div class="relative">
+                            <button type="button" class="flex items-center text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500" onclick="toggleUserMenu()">
+                                <div class="h-8 w-8 bg-primary-600 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-user text-white text-sm"></i>
+                                </div>
+                                <span class="ml-2 text-gray-700 hidden md:block">{{ user.username }}</span>
+                                <i class="fas fa-chevron-down ml-1 text-gray-400 hidden md:block"></i>
+                            </button>
+                            
+                            <div id="user-menu" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
+                                <a href="{% url 'custom_admin:profile' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                    <i class="fas fa-user mr-2"></i>Profil
+                                </a>
+                                <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                    <i class="fas fa-cog mr-2"></i>Pengaturan
+                                </a>
+                                <div class="border-t border-gray-100"></div>
+                                <a href="{% url 'custom_admin:logout' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                    <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Page content -->
+        <main class="flex-1 overflow-y-auto">
+            {% if messages %}
+                <div class="p-4">
+                    {% for message in messages %}
+                        <div class="{% if message.tags == 'error' %}bg-red-100 border border-red-400 text-red-700{% elif message.tags == 'success' %}bg-green-100 border border-green-400 text-green-700{% elif message.tags == 'warning' %}bg-yellow-100 border border-yellow-400 text-yellow-700{% else %}bg-blue-100 border border-blue-400 text-blue-700{% endif %} px-4 py-3 rounded mb-4">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+            
+            {% block content %}{% endblock %}
+        </main>
+        </div>
+    </div>
+    
+    <!-- Scripts -->
+    <script>
+        // Toggle sidebar for mobile
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            
+            sidebar.classList.toggle('-translate-x-full');
+            overlay.classList.toggle('hidden');
+        }
+        
+        // Toggle submenu
+        function toggleSubmenu(menuId) {
+            const menu = document.getElementById(menuId);
+            const icon = document.getElementById(menuId.replace('-menu', '-icon'));
+            
+            menu.classList.toggle('hidden');
+            icon.classList.toggle('rotate-90');
+        }
+        
+        // Toggle user menu
+        function toggleUserMenu() {
+            const menu = document.getElementById('user-menu');
+            menu.classList.toggle('hidden');
+        }
+        
+        // Close user menu when clicking outside
+        document.addEventListener('click', function(event) {
+            const userMenu = document.getElementById('user-menu');
+            const userButton = event.target.closest('button');
+            
+            if (!userButton || !userButton.onclick || userButton.onclick.toString().indexOf('toggleUserMenu') === -1) {
+                userMenu.classList.add('hidden');
+            }
+        });
+        
+        // Global search functionality
+        document.getElementById('global-search').addEventListener('input', function(e) {
+            const query = e.target.value.trim();
+            if (query.length > 2) {
+                // Implement search functionality here
+                console.log('Searching for:', query);
+            }
+        });
+    </script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

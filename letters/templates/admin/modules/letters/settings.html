@@ -1,0 +1,1355 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block title %}Letter Settings - {{ block.super }}{% endblock %}
+
+{% block extrahead %}
+    {{ block.super }}
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Color Picker -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/themes/classic.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/pickr.min.js"></script>
+    
+    <!-- Custom Styles -->
+    <style>
+        .settings-container {
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin: 20px 0;
+        }
+        
+        .settings-header {
+            background: linear-gradient(135deg, #6f42c1 0%, #e83e8c 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 10px 10px 0 0;
+        }
+        
+        .settings-header h1 {
+            margin: 0;
+            font-size: 1.8em;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .settings-nav {
+            background: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+            padding: 0;
+        }
+        
+        .settings-nav .nav-tabs {
+            border: none;
+            margin: 0;
+        }
+        
+        .settings-nav .nav-link {
+            border: none;
+            border-radius: 0;
+            background: transparent;
+            color: #6c757d;
+            padding: 15px 25px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .settings-nav .nav-link:hover {
+            background: rgba(0,123,255,0.1);
+            color: #007bff;
+        }
+        
+        .settings-nav .nav-link.active {
+            background: #007bff;
+            color: white;
+        }
+        
+        .settings-content {
+            padding: 30px;
+        }
+        
+        .setting-section {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 25px;
+            margin-bottom: 25px;
+            border-left: 4px solid #007bff;
+        }
+        
+        .setting-section h4 {
+            color: #495057;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .setting-item {
+            background: white;
+            border-radius: 6px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border: 1px solid #dee2e6;
+            transition: all 0.3s ease;
+        }
+        
+        .setting-item:hover {
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .setting-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        .setting-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .setting-title {
+            font-weight: 600;
+            color: #495057;
+            margin: 0;
+        }
+        
+        .setting-description {
+            color: #6c757d;
+            font-size: 0.9em;
+            margin-bottom: 15px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 8px;
+        }
+        
+        .form-control, .form-select {
+            border-radius: 8px;
+            border: 2px solid #e9ecef;
+            padding: 12px 15px;
+            transition: all 0.3s ease;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 0 0.2rem rgba(0,123,255,0.25);
+        }
+        
+        .form-switch {
+            padding-left: 2.5em;
+        }
+        
+        .form-switch .form-check-input {
+            width: 2em;
+            height: 1em;
+            margin-left: -2.5em;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='rgba%280,0,0,0.25%29'/%3e%3c/svg%3e");
+            background-position: left center;
+            background-size: contain;
+            border-radius: 2em;
+            transition: background-position .15s ease-in-out;
+        }
+        
+        .form-switch .form-check-input:checked {
+            background-position: right center;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='rgba%28255,255,255,1.0%29'/%3e%3c/svg%3e");
+        }
+        
+        .color-picker-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .color-preview {
+            width: 40px;
+            height: 40px;
+            border-radius: 6px;
+            border: 2px solid #dee2e6;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .color-preview:hover {
+            border-color: #007bff;
+            transform: scale(1.1);
+        }
+        
+        .letterhead-preview {
+            background: white;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            padding: 30px;
+            margin: 20px 0;
+            text-align: center;
+            font-family: 'Times New Roman', serif;
+        }
+        
+        .letterhead-preview h2 {
+            margin: 0;
+            font-size: 1.5em;
+        }
+        
+        .letterhead-preview p {
+            margin: 5px 0;
+            color: #6c757d;
+        }
+        
+        .number-format-preview {
+            background: #e3f2fd;
+            border: 1px solid #bbdefb;
+            border-radius: 6px;
+            padding: 15px;
+            margin-top: 10px;
+            font-family: monospace;
+            font-weight: bold;
+            color: #1976d2;
+        }
+        
+        .api-status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 15px;
+            border-radius: 6px;
+            margin-top: 10px;
+        }
+        
+        .api-status.connected {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        
+        .api-status.disconnected {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        
+        .api-status.testing {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+        }
+        
+        .usage-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .usage-stat {
+            background: white;
+            border-radius: 6px;
+            padding: 15px;
+            text-align: center;
+            border: 1px solid #dee2e6;
+        }
+        
+        .usage-stat .number {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #007bff;
+        }
+        
+        .usage-stat .label {
+            font-size: 0.85em;
+            color: #6c757d;
+            margin-top: 5px;
+        }
+        
+        .signature-preview {
+            background: white;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 15px 0;
+            text-align: center;
+        }
+        
+        .signature-preview.valid {
+            border-color: #28a745;
+            background: #f8fff9;
+        }
+        
+        .signature-preview.invalid {
+            border-color: #dc3545;
+            background: #fff8f8;
+        }
+        
+        .certificate-info {
+            background: #f8f9fa;
+            border-radius: 6px;
+            padding: 15px;
+            margin-top: 10px;
+        }
+        
+        .certificate-info .row {
+            margin-bottom: 10px;
+        }
+        
+        .certificate-info .row:last-child {
+            margin-bottom: 0;
+        }
+        
+        .backup-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 10px;
+        }
+        
+        .backup-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .backup-icon {
+            width: 40px;
+            height: 40px;
+            background: #007bff;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .backup-details h6 {
+            margin: 0;
+            color: #495057;
+        }
+        
+        .backup-details small {
+            color: #6c757d;
+        }
+        
+        .backup-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .form-actions {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 0 0 10px 10px;
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            border-radius: 25px;
+            padding: 10px 25px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+        
+        .loading-content {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+        
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #007bff;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .alert {
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .alert-success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        
+        .alert-warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+        }
+        
+        .alert-danger {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <form method="post" enctype="multipart/form-data" id="settingsForm">
+        {% csrf_token %}
+        
+        <div class="settings-container">
+            <!-- Header -->
+            <div class="settings-header">
+                <h1><i class="fas fa-cogs"></i> Letter Management Settings</h1>
+                <p class="mb-0">Configure your letter management system</p>
+            </div>
+            
+            <!-- Navigation Tabs -->
+            <div class="settings-nav">
+                <ul class="nav nav-tabs" id="settingsTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="general-tab" data-bs-toggle="tab" data-bs-target="#general" type="button" role="tab">
+                            <i class="fas fa-cog"></i> General
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="letterhead-tab" data-bs-toggle="tab" data-bs-target="#letterhead" type="button" role="tab">
+                            <i class="fas fa-heading"></i> Letterhead
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="numbering-tab" data-bs-toggle="tab" data-bs-target="#numbering" type="button" role="tab">
+                            <i class="fas fa-list-ol"></i> Numbering
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="ai-tab" data-bs-toggle="tab" data-bs-target="#ai" type="button" role="tab">
+                            <i class="fas fa-robot"></i> AI Settings
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="signature-tab" data-bs-toggle="tab" data-bs-target="#signature" type="button" role="tab">
+                            <i class="fas fa-signature"></i> Digital Signature
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="backup-tab" data-bs-toggle="tab" data-bs-target="#backup" type="button" role="tab">
+                            <i class="fas fa-database"></i> Backup
+                        </button>
+                    </li>
+                </ul>
+            </div>
+            
+            <!-- Tab Content -->
+            <div class="settings-content">
+                <div class="tab-content" id="settingsTabContent">
+                    <!-- General Settings -->
+                    <div class="tab-pane fade show active" id="general" role="tabpanel">
+                        <div class="setting-section">
+                            <h4><i class="fas fa-info-circle"></i> Village Information</h4>
+                            
+                            <div class="setting-item">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label class="form-label" for="id_village_name">Village Name *</label>
+                                            {{ form.village_name }}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label class="form-label" for="id_village_head_name">Village Head Name *</label>
+                                            {{ form.village_head_name }}
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="form-group">
+                                            <label class="form-label" for="id_village_address">Village Address *</label>
+                                            {{ form.village_address }}
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label class="form-label" for="id_village_phone">Phone</label>
+                                            {{ form.village_phone }}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label class="form-label" for="id_village_email">Email</label>
+                                            {{ form.village_email }}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label class="form-label" for="id_village_website">Website</label>
+                                            {{ form.village_website }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="setting-section">
+                            <h4><i class="fas fa-toggle-on"></i> System Features</h4>
+                            
+                            <div class="setting-item">
+                                <div class="setting-header">
+                                    <h5 class="setting-title">Auto Letter Numbering</h5>
+                                    <div class="form-check form-switch">
+                                        {{ form.enable_auto_numbering }}
+                                    </div>
+                                </div>
+                                <p class="setting-description">Automatically generate letter numbers based on configured format</p>
+                            </div>
+                            
+                            <div class="setting-item">
+                                <div class="setting-header">
+                                    <h5 class="setting-title">AI Validation</h5>
+                                    <div class="form-check form-switch">
+                                        {{ form.enable_ai_validation }}
+                                    </div>
+                                </div>
+                                <p class="setting-description">Enable AI-powered letter content validation and suggestions</p>
+                            </div>
+                            
+                            <div class="setting-item">
+                                <div class="setting-header">
+                                    <h5 class="setting-title">Digital Signatures</h5>
+                                    <div class="form-check form-switch">
+                                        {{ form.enable_digital_signature }}
+                                    </div>
+                                </div>
+                                <p class="setting-description">Enable digital signing of letters for authenticity</p>
+                            </div>
+                            
+                            <div class="setting-item">
+                                <div class="setting-header">
+                                    <h5 class="setting-title">PDF Export</h5>
+                                    <div class="form-check form-switch">
+                                        {{ form.enable_pdf_export }}
+                                    </div>
+                                </div>
+                                <p class="setting-description">Allow exporting letters to PDF format</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Letterhead Settings -->
+                    <div class="tab-pane fade" id="letterhead" role="tabpanel">
+                        <div class="setting-section">
+                            <h4><i class="fas fa-image"></i> Letterhead Design</h4>
+                            
+                            <div class="setting-item">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label class="form-label" for="id_letterhead_logo">Logo</label>
+                                            {{ form.letterhead_logo }}
+                                            <small class="form-text text-muted">Upload village logo (PNG, JPG, max 2MB)</small>
+                                        </div>
+                                        
+                                        <div class="form-group">
+                                            <label class="form-label">Primary Color</label>
+                                            <div class="color-picker-container">
+                                                <div class="color-preview" id="primary-color-preview" style="background-color: #007bff;"></div>
+                                                {{ form.letterhead_primary_color }}
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="form-group">
+                                            <label class="form-label">Secondary Color</label>
+                                            <div class="color-picker-container">
+                                                <div class="color-preview" id="secondary-color-preview" style="background-color: #6c757d;"></div>
+                                                {{ form.letterhead_secondary_color }}
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="form-group">
+                                            <label class="form-label" for="id_letterhead_font">Font Family</label>
+                                            {{ form.letterhead_font }}
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-6">
+                                        <div class="letterhead-preview" id="letterhead-preview">
+                                            <h2 id="preview-village-name">PEMERINTAH DESA PULOSAROK</h2>
+                                            <p id="preview-village-address">Kecamatan Cibadak, Kabupaten Sukabumi, Jawa Barat</p>
+                                            <p>Kode Pos: 43351 | Telp: (0266) 123456</p>
+                                            <p>Email: info@pulosarok.desa.id | Website: www.pulosarok.desa.id</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Numbering Settings -->
+                    <div class="tab-pane fade" id="numbering" role="tabpanel">
+                        <div class="setting-section">
+                            <h4><i class="fas fa-hashtag"></i> Letter Numbering Format</h4>
+                            
+                            <div class="setting-item">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label class="form-label" for="id_letter_number_format">Number Format *</label>
+                                            {{ form.letter_number_format }}
+                                            <small class="form-text text-muted">
+                                                Available variables: {number}, {month}, {year}, {type_code}<br>
+                                                Example: {number}/{type_code}/{month}/{year}
+                                            </small>
+                                        </div>
+                                        
+                                        <div class="form-group">
+                                            <label class="form-label" for="id_letter_number_start">Starting Number</label>
+                                            {{ form.letter_number_start }}
+                                        </div>
+                                        
+                                        <div class="form-group">
+                                            <label class="form-label" for="id_letter_number_reset">Reset Period</label>
+                                            {{ form.letter_number_reset }}
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-6">
+                                        <div class="number-format-preview" id="number-preview">
+                                            <strong>Preview:</strong><br>
+                                            001/SKT/01/2024
+                                        </div>
+                                        
+                                        <div class="mt-3">
+                                            <button type="button" class="btn btn-outline-primary" onclick="previewNumberFormat()">
+                                                <i class="fas fa-eye"></i> Update Preview
+                                            </button>
+                                            <button type="button" class="btn btn-outline-warning" onclick="resetNumbering()">
+                                                <i class="fas fa-redo"></i> Reset Numbering
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- AI Settings -->
+                    <div class="tab-pane fade" id="ai" role="tabpanel">
+                        <div class="setting-section">
+                            <h4><i class="fas fa-key"></i> API Configuration</h4>
+                            
+                            <div class="setting-item">
+                                <div class="row">
+                                    <div class="col-md-8">
+                                        <div class="form-group">
+                                            <label class="form-label" for="id_gemini_api_key">Gemini API Key *</label>
+                                            {{ form.gemini_api_key }}
+                                            <small class="form-text text-muted">Get your API key from Google AI Studio</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label class="form-label">&nbsp;</label>
+                                            <button type="button" class="btn btn-outline-primary w-100" onclick="testAPIConnection()">
+                                                <i class="fas fa-plug"></i> Test Connection
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div id="api-status" class="api-status disconnected">
+                                    <i class="fas fa-times-circle"></i>
+                                    <span>API connection not tested</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="setting-section">
+                            <h4><i class="fas fa-sliders-h"></i> AI Behavior</h4>
+                            
+                            <div class="setting-item">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label class="form-label" for="id_ai_validation_threshold">Validation Threshold</label>
+                                            {{ form.ai_validation_threshold }}
+                                            <small class="form-text text-muted">Minimum confidence score (0.0 - 1.0)</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label class="form-label" for="id_ai_max_suggestions">Max Suggestions</label>
+                                            {{ form.ai_max_suggestions }}
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label class="form-label" for="id_ai_language">Default Language</label>
+                                    {{ form.ai_language }}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="setting-section">
+                            <h4><i class="fas fa-chart-bar"></i> Usage Statistics</h4>
+                            
+                            <div class="usage-stats">
+                                <div class="usage-stat">
+                                    <div class="number" id="total-requests">0</div>
+                                    <div class="label">Total Requests</div>
+                                </div>
+                                <div class="usage-stat">
+                                    <div class="number" id="monthly-requests">0</div>
+                                    <div class="label">This Month</div>
+                                </div>
+                                <div class="usage-stat">
+                                    <div class="number" id="success-rate">0%</div>
+                                    <div class="label">Success Rate</div>
+                                </div>
+                                <div class="usage-stat">
+                                    <div class="number" id="avg-response-time">0ms</div>
+                                    <div class="label">Avg Response</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Digital Signature Settings -->
+                    <div class="tab-pane fade" id="signature" role="tabpanel">
+                        <div class="setting-section">
+                            <h4><i class="fas fa-certificate"></i> Certificate Management</h4>
+                            
+                            <div class="setting-item">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label class="form-label" for="id_signature_certificate">Certificate File</label>
+                                            {{ form.signature_certificate }}
+                                            <small class="form-text text-muted">Upload .p12 or .pfx certificate file</small>
+                                        </div>
+                                        
+                                        <div class="form-group">
+                                            <label class="form-label" for="id_signature_password">Certificate Password</label>
+                                            {{ form.signature_password }}
+                                        </div>
+                                        
+                                        <div class="form-group">
+                                            <label class="form-label" for="id_signature_reason">Default Signing Reason</label>
+                                            {{ form.signature_reason }}
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-6">
+                                        <div class="signature-preview valid" id="signature-preview">
+                                            <i class="fas fa-certificate fa-3x mb-3"></i>
+                                            <h5>Digital Certificate</h5>
+                                            <p class="mb-0">Certificate status will appear here</p>
+                                        </div>
+                                        
+                                        <div class="mt-3">
+                                            <button type="button" class="btn btn-outline-primary" onclick="validateCertificate()">
+                                                <i class="fas fa-check-circle"></i> Validate Certificate
+                                            </button>
+                                            <button type="button" class="btn btn-outline-info" onclick="generateTestSignature()">
+                                                <i class="fas fa-pen"></i> Test Signature
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="setting-section">
+                            <h4><i class="fas fa-info-circle"></i> Certificate Information</h4>
+                            
+                            <div class="certificate-info" id="certificate-info">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <strong>Subject:</strong> <span id="cert-subject">Not loaded</span>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <strong>Issuer:</strong> <span id="cert-issuer">Not loaded</span>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <strong>Valid From:</strong> <span id="cert-valid-from">Not loaded</span>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <strong>Valid Until:</strong> <span id="cert-valid-until">Not loaded</span>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <strong>Serial Number:</strong> <span id="cert-serial">Not loaded</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Backup Settings -->
+                    <div class="tab-pane fade" id="backup" role="tabpanel">
+                        <div class="setting-section">
+                            <h4><i class="fas fa-download"></i> Backup & Export</h4>
+                            
+                            <div class="setting-item">
+                                <div class="setting-header">
+                                    <h5 class="setting-title">Automatic Backup</h5>
+                                    <div class="form-check form-switch">
+                                        {{ form.enable_auto_backup }}
+                                    </div>
+                                </div>
+                                <p class="setting-description">Automatically backup letter data and settings</p>
+                                
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label class="form-label" for="id_backup_frequency">Backup Frequency</label>
+                                            {{ form.backup_frequency }}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label class="form-label" for="id_backup_retention">Retention Period (days)</label>
+                                            {{ form.backup_retention }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="setting-section">
+                            <h4><i class="fas fa-history"></i> Recent Backups</h4>
+                            
+                            <div id="backup-list">
+                                <!-- Backup items will be loaded here -->
+                                <div class="backup-item">
+                                    <div class="backup-info">
+                                        <div class="backup-icon">
+                                            <i class="fas fa-file-archive"></i>
+                                        </div>
+                                        <div class="backup-details">
+                                            <h6>Full Backup - January 2024</h6>
+                                            <small>Created on Jan 15, 2024 at 02:00 AM | Size: 15.2 MB</small>
+                                        </div>
+                                    </div>
+                                    <div class="backup-actions">
+                                        <button class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-download"></i> Download
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-success">
+                                            <i class="fas fa-undo"></i> Restore
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-danger">
+                                            <i class="fas fa-trash"></i> Delete
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-3">
+                                <button type="button" class="btn btn-primary" onclick="createBackup()">
+                                    <i class="fas fa-plus"></i> Create Backup Now
+                                </button>
+                                <button type="button" class="btn btn-outline-info" onclick="exportSettings()">
+                                    <i class="fas fa-file-export"></i> Export Settings
+                                </button>
+                                <button type="button" class="btn btn-outline-warning" onclick="importSettings()">
+                                    <i class="fas fa-file-import"></i> Import Settings
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Form Actions -->
+            <div class="form-actions">
+                <button type="submit" class="btn btn-success btn-lg">
+                    <i class="fas fa-save"></i> Save Settings
+                </button>
+                <button type="button" class="btn btn-warning btn-lg" onclick="resetToDefaults()">
+                    <i class="fas fa-undo"></i> Reset to Defaults
+                </button>
+                <button type="button" class="btn btn-info btn-lg" onclick="exportConfiguration()">
+                    <i class="fas fa-file-export"></i> Export Config
+                </button>
+                <a href="{% url 'letters:admin_dashboard' %}" class="btn btn-outline-dark btn-lg">
+                    <i class="fas fa-arrow-left"></i> Back to Dashboard
+                </a>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loading-overlay">
+    <div class="loading-content">
+        <div class="spinner"></div>
+        <p id="loading-text">Processing...</p>
+    </div>
+</div>
+
+<!-- JavaScript -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize color pickers
+        initializeColorPickers();
+        
+        // Load usage statistics
+        loadUsageStatistics();
+        
+        // Update letterhead preview
+        updateLettereheadPreview();
+        
+        // Update number format preview
+        updateNumberFormatPreview();
+        
+        // Form change listeners
+        document.querySelectorAll('input, select, textarea').forEach(element => {
+            element.addEventListener('change', function() {
+                if (this.id.includes('village_')) {
+                    updateLettereheadPreview();
+                }
+                if (this.id.includes('letterhead_')) {
+                    updateLettereheadPreview();
+                }
+                if (this.id.includes('letter_number_')) {
+                    updateNumberFormatPreview();
+                }
+            });
+        });
+    });
+    
+    function initializeColorPickers() {
+        // Primary color picker
+        const primaryPicker = Pickr.create({
+            el: '#primary-color-preview',
+            theme: 'classic',
+            default: '#007bff',
+            components: {
+                preview: true,
+                opacity: true,
+                hue: true,
+                interaction: {
+                    hex: true,
+                    rgba: true,
+                    input: true,
+                    save: true
+                }
+            }
+        });
+        
+        primaryPicker.on('save', (color) => {
+            const hexColor = color.toHEXA().toString();
+            document.getElementById('id_letterhead_primary_color').value = hexColor;
+            updateLettereheadPreview();
+        });
+        
+        // Secondary color picker
+        const secondaryPicker = Pickr.create({
+            el: '#secondary-color-preview',
+            theme: 'classic',
+            default: '#6c757d',
+            components: {
+                preview: true,
+                opacity: true,
+                hue: true,
+                interaction: {
+                    hex: true,
+                    rgba: true,
+                    input: true,
+                    save: true
+                }
+            }
+        });
+        
+        secondaryPicker.on('save', (color) => {
+            const hexColor = color.toHEXA().toString();
+            document.getElementById('id_letterhead_secondary_color').value = hexColor;
+            updateLettereheadPreview();
+        });
+    }
+    
+    function updateLettereheadPreview() {
+        const villageName = document.getElementById('id_village_name').value || 'PEMERINTAH DESA PULOSAROK';
+        const villageAddress = document.getElementById('id_village_address').value || 'Kecamatan Cibadak, Kabupaten Sukabumi, Jawa Barat';
+        const primaryColor = document.getElementById('id_letterhead_primary_color').value || '#007bff';
+        
+        document.getElementById('preview-village-name').textContent = villageName.toUpperCase();
+        document.getElementById('preview-village-name').style.color = primaryColor;
+        document.getElementById('preview-village-address').textContent = villageAddress;
+    }
+    
+    function updateNumberFormatPreview() {
+        const format = document.getElementById('id_letter_number_format').value || '{number}/{type_code}/{month}/{year}';
+        const startNumber = document.getElementById('id_letter_number_start').value || '1';
+        
+        // Generate preview
+        const preview = format
+            .replace('{number}', String(startNumber).padStart(3, '0'))
+            .replace('{type_code}', 'SKT')
+            .replace('{month}', '01')
+            .replace('{year}', new Date().getFullYear());
+        
+        document.getElementById('number-preview').innerHTML = `<strong>Preview:</strong><br>${preview}`;
+    }
+    
+    function previewNumberFormat() {
+        updateNumberFormatPreview();
+    }
+    
+    function resetNumbering() {
+        if (confirm('Are you sure you want to reset the letter numbering? This will start numbering from the beginning.')) {
+            showLoading('Resetting numbering...');
+            
+            fetch('{% url "letters:reset_numbering_api" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                hideLoading();
+                if (data.success) {
+                    showAlert('Numbering reset successfully!', 'success');
+                } else {
+                    showAlert('Failed to reset numbering: ' + (data.error || 'Unknown error'), 'danger');
+                }
+            })
+            .catch(error => {
+                hideLoading();
+                console.error('Reset numbering error:', error);
+                showAlert('An error occurred while resetting numbering.', 'danger');
+            });
+        }
+    }
+    
+    function testAPIConnection() {
+        const apiKey = document.getElementById('id_gemini_api_key').value;
+        if (!apiKey.trim()) {
+            showAlert('Please enter an API key first.', 'warning');
+            return;
+        }
+        
+        const statusDiv = document.getElementById('api-status');
+        statusDiv.className = 'api-status testing';
+        statusDiv.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span>Testing connection...</span>';
+        
+        fetch('{% url "letters:test_api_connection" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: JSON.stringify({ api_key: apiKey })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                statusDiv.className = 'api-status connected';
+                statusDiv.innerHTML = '<i class="fas fa-check-circle"></i> <span>API connection successful</span>';
+            } else {
+                statusDiv.className = 'api-status disconnected';
+                statusDiv.innerHTML = '<i class="fas fa-times-circle"></i> <span>Connection failed: ' + (data.error || 'Unknown error') + '</span>';
+            }
+        })
+        .catch(error => {
+            console.error('API test error:', error);
+            statusDiv.className = 'api-status disconnected';
+            statusDiv.innerHTML = '<i class="fas fa-times-circle"></i> <span>Connection test failed</span>';
+        });
+    }
+    
+    function loadUsageStatistics() {
+        fetch('{% url "letters:api_usage_stats" %}')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                document.getElementById('total-requests').textContent = data.total_requests || '0';
+                document.getElementById('monthly-requests').textContent = data.monthly_requests || '0';
+                document.getElementById('success-rate').textContent = (data.success_rate || 0) + '%';
+                document.getElementById('avg-response-time').textContent = (data.avg_response_time || 0) + 'ms';
+            }
+        })
+        .catch(error => {
+            console.error('Load usage statistics error:', error);
+        });
+    }
+    
+    function validateCertificate() {
+        const certificateFile = document.getElementById('id_signature_certificate').files[0];
+        const password = document.getElementById('id_signature_password').value;
+        
+        if (!certificateFile) {
+            showAlert('Please select a certificate file first.', 'warning');
+            return;
+        }
+        
+        showLoading('Validating certificate...');
+        
+        const formData = new FormData();
+        formData.append('certificate', certificateFile);
+        formData.append('password', password);
+        
+        fetch('{% url "letters:validate_certificate" %}', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            hideLoading();
+            if (data.success) {
+                updateCertificateInfo(data.certificate_info);
+                showAlert('Certificate validated successfully!', 'success');
+            } else {
+                showAlert('Certificate validation failed: ' + (data.error || 'Unknown error'), 'danger');
+            }
+        })
+        .catch(error => {
+            hideLoading();
+            console.error('Certificate validation error:', error);
+            showAlert('An error occurred while validating certificate.', 'danger');
+        });
+    }
+    
+    function updateCertificateInfo(info) {
+        document.getElementById('cert-subject').textContent = info.subject || 'Not available';
+        document.getElementById('cert-issuer').textContent = info.issuer || 'Not available';
+        document.getElementById('cert-valid-from').textContent = info.valid_from || 'Not available';
+        document.getElementById('cert-valid-until').textContent = info.valid_until || 'Not available';
+        document.getElementById('cert-serial').textContent = info.serial_number || 'Not available';
+        
+        const preview = document.getElementById('signature-preview');
+        if (info.is_valid) {
+            preview.className = 'signature-preview valid';
+            preview.innerHTML = `
+                <i class="fas fa-certificate fa-3x mb-3 text-success"></i>
+                <h5>Valid Certificate</h5>
+                <p class="mb-0">Certificate is valid and ready for signing</p>
+            `;
+        } else {
+            preview.className = 'signature-preview invalid';
+            preview.innerHTML = `
+                <i class="fas fa-exclamation-triangle fa-3x mb-3 text-danger"></i>
+                <h5>Invalid Certificate</h5>
+                <p class="mb-0">Certificate validation failed</p>
+            `;
+        }
+    }
+    
+    function generateTestSignature() {
+        showLoading('Generating test signature...');
+        
+        fetch('{% url "letters:test_signature" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            hideLoading();
+            if (data.success) {
+                showAlert('Test signature generated successfully!', 'success');
+            } else {
+                showAlert('Test signature failed: ' + (data.error || 'Unknown error'), 'danger');
+            }
+        })
+        .catch(error => {
+            hideLoading();
+            console.error('Test signature error:', error);
+            showAlert('An error occurred while generating test signature.', 'danger');
+        });
+    }
+    
+    function createBackup() {
+        showLoading('Creating backup...');
+        
+        fetch('{% url "letters:create_backup" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            hideLoading();
+            if (data.success) {
+                showAlert('Backup created successfully!', 'success');
+                // Reload backup list
+                loadBackupList();
+            } else {
+                showAlert('Backup creation failed: ' + (data.error || 'Unknown error'), 'danger');
+            }
+        })
+        .catch(error => {
+            hideLoading();
+            console.error('Create backup error:', error);
+            showAlert('An error occurred while creating backup.', 'danger');
+        });
+    }
+    
+    function loadBackupList() {
+        // Implementation for loading backup list
+        console.log('Loading backup list...');
+    }
+    
+    function exportSettings() {
+        window.open('{% url "letters:export_settings" %}', '_blank');
+    }
+    
+    function importSettings() {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.json';
+        input.onchange = function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const formData = new FormData();
+                formData.append('settings_file', file);
+                
+                showLoading('Importing settings...');
+                
+                fetch('{% url "letters:import_settings" %}', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                    },
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    hideLoading();
+                    if (data.success) {
+                        showAlert('Settings imported successfully!', 'success');
+                        location.reload();
+                    } else {
+                        showAlert('Settings import failed: ' + (data.error || 'Unknown error'), 'danger');
+                    }
+                })
+                .catch(error => {
+                    hideLoading();
+                    console.error('Import settings error:', error);
+                    showAlert('An error occurred while importing settings.', 'danger');
+                });
+            }
+        };
+        input.click();
+    }
+    
+    function resetToDefaults() {
+        if (confirm('Are you sure you want to reset all settings to defaults? This action cannot be undone.')) {
+            showLoading('Resetting to defaults...');
+            
+            fetch('{% url "letters:reset_settings" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                hideLoading();
+                if (data.success) {
+                    showAlert('Settings reset to defaults successfully!', 'success');
+                    location.reload();
+                } else {
+                    showAlert('Reset failed: ' + (data.error || 'Unknown error'), 'danger');
+                }
+            })
+            .catch(error => {
+                hideLoading();
+                console.error('Reset settings error:', error);
+                showAlert('An error occurred while resetting settings.', 'danger');
+            });
+        }
+    }
+    
+    function exportConfiguration() {
+        window.open('{% url "letters:export_configuration" %}', '_blank');
+    }
+    
+    // Utility functions
+    function showLoading(text = 'Processing...') {
+        document.getElementById('loading-text').textContent = text;
+        document.getElementById('loading-overlay').style.display = 'flex';
+    }
+    
+    function hideLoading() {
+        document.getElementById('loading-overlay').style.display = 'none';
+    }
+    
+    function showAlert(message, type) {
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+        alertDiv.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        
+        const container = document.querySelector('.settings-content');
+        container.insertBefore(alertDiv, container.firstChild);
+        
+        // Auto-dismiss after 5 seconds
+        setTimeout(() => {
+            if (alertDiv.parentNode) {
+                alertDiv.remove();
+            }
+        }, 5000);
+    }
+</script>
+{% endblock %}

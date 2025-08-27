@@ -1,0 +1,636 @@
+{% extends 'admin/base.html' %}
+{% load static %}
+
+{% block title %}Dashboard Surat - {{ block.super }}{% endblock %}
+
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+<style>
+    .dashboard-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 15px;
+        padding: 25px;
+        color: white;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border: none;
+    }
+    
+    .dashboard-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+    }
+    
+    .dashboard-card.card-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+    
+    .dashboard-card.card-success {
+        background: linear-gradient(135deg, #56ab2f 0%, #a8e6cf 100%);
+    }
+    
+    .dashboard-card.card-warning {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    }
+    
+    .dashboard-card.card-info {
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    }
+    
+    .dashboard-card.card-danger {
+        background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+    }
+    
+    .dashboard-card.card-dark {
+        background: linear-gradient(135deg, #434343 0%, #000000 100%);
+    }
+    
+    .stat-icon {
+        font-size: 3rem;
+        opacity: 0.8;
+        margin-bottom: 15px;
+    }
+    
+    .stat-number {
+        font-size: 2.5rem;
+        font-weight: bold;
+        margin-bottom: 5px;
+    }
+    
+    .stat-label {
+        font-size: 1rem;
+        opacity: 0.9;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    
+    .chart-container {
+        background: white;
+        border-radius: 15px;
+        padding: 25px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        margin-bottom: 30px;
+    }
+    
+    .recent-activity {
+        background: white;
+        border-radius: 15px;
+        padding: 25px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+    }
+    
+    .activity-item {
+        padding: 15px;
+        border-left: 4px solid #667eea;
+        margin-bottom: 15px;
+        background: #f8f9fa;
+        border-radius: 0 10px 10px 0;
+        transition: all 0.3s ease;
+    }
+    
+    .activity-item:hover {
+        background: #e9ecef;
+        transform: translateX(5px);
+    }
+    
+    .activity-time {
+        color: #6c757d;
+        font-size: 0.9rem;
+    }
+    
+    .quick-actions {
+        background: white;
+        border-radius: 15px;
+        padding: 25px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+    }
+    
+    .quick-action-btn {
+        display: block;
+        width: 100%;
+        padding: 15px;
+        margin-bottom: 10px;
+        border: none;
+        border-radius: 10px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        text-align: center;
+    }
+    
+    .quick-action-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        color: white;
+        text-decoration: none;
+    }
+    
+    .ai-status {
+        background: white;
+        border-radius: 15px;
+        padding: 25px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        margin-bottom: 30px;
+    }
+    
+    .ai-indicator {
+        display: inline-block;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        margin-right: 8px;
+    }
+    
+    .ai-indicator.active {
+        background: #28a745;
+        animation: pulse 2s infinite;
+    }
+    
+    .ai-indicator.inactive {
+        background: #dc3545;
+    }
+    
+    @keyframes pulse {
+        0% { opacity: 1; }
+        50% { opacity: 0.5; }
+        100% { opacity: 1; }
+    }
+    
+    .page-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 40px 0;
+        margin-bottom: 40px;
+        border-radius: 0 0 30px 30px;
+    }
+    
+    .breadcrumb {
+        background: transparent;
+        margin-bottom: 0;
+    }
+    
+    .breadcrumb-item a {
+        color: rgba(255,255,255,0.8);
+    }
+    
+    .breadcrumb-item.active {
+        color: white;
+    }
+    
+    .loading-spinner {
+        display: none;
+        text-align: center;
+        padding: 20px;
+    }
+    
+    .notification {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 1050;
+        min-width: 300px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container-fluid">
+        <div class="row align-items-center">
+            <div class="col-md-6">
+                <h1 class="mb-0">
+                    <i class="fas fa-envelope-open-text me-3"></i>
+                    Dashboard Surat
+                </h1>
+                <p class="mb-0 mt-2 opacity-75">Kelola surat desa dengan sistem AI terintegrasi</p>
+            </div>
+            <div class="col-md-6 text-end">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb justify-content-end">
+                        <li class="breadcrumb-item"><a href="{% url 'admin:index' %}">Admin</a></li>
+                        <li class="breadcrumb-item active">Dashboard Surat</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container-fluid">
+    <!-- AI Status Panel -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="ai-status">
+                <h5 class="mb-3">
+                    <i class="fas fa-robot me-2"></i>
+                    Status AI & Sistem
+                </h5>
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="d-flex align-items-center">
+                            <span class="ai-indicator active" id="ai-status"></span>
+                            <span>Gemini AI: <strong id="ai-status-text">Aktif</strong></span>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="d-flex align-items-center">
+                            <span class="ai-indicator active"></span>
+                            <span>Digital Signature: <strong>Aktif</strong></span>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="d-flex align-items-center">
+                            <span class="ai-indicator active"></span>
+                            <span>Auto Numbering: <strong>Aktif</strong></span>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="d-flex align-items-center">
+                            <span class="ai-indicator active"></span>
+                            <span>PDF Export: <strong>Aktif</strong></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
+            <div class="dashboard-card card-primary">
+                <div class="text-center">
+                    <i class="fas fa-envelope stat-icon"></i>
+                    <div class="stat-number" id="total-letters">{{ stats.total_letters|default:0 }}</div>
+                    <div class="stat-label">Total Surat</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
+            <div class="dashboard-card card-warning">
+                <div class="text-center">
+                    <i class="fas fa-clock stat-icon"></i>
+                    <div class="stat-number" id="pending-letters">{{ stats.pending_letters|default:0 }}</div>
+                    <div class="stat-label">Menunggu</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
+            <div class="dashboard-card card-success">
+                <div class="text-center">
+                    <i class="fas fa-check-circle stat-icon"></i>
+                    <div class="stat-number" id="approved-letters">{{ stats.approved_letters|default:0 }}</div>
+                    <div class="stat-label">Disetujui</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
+            <div class="dashboard-card card-info">
+                <div class="text-center">
+                    <i class="fas fa-robot stat-icon"></i>
+                    <div class="stat-number" id="ai-validated">{{ stats.ai_validated|default:0 }}</div>
+                    <div class="stat-label">AI Validated</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
+            <div class="dashboard-card card-dark">
+                <div class="text-center">
+                    <i class="fas fa-signature stat-icon"></i>
+                    <div class="stat-number" id="digital-signed">{{ stats.digital_signed|default:0 }}</div>
+                    <div class="stat-label">Digital Signed</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
+            <div class="dashboard-card card-danger">
+                <div class="text-center">
+                    <i class="fas fa-times-circle stat-icon"></i>
+                    <div class="stat-number" id="rejected-letters">{{ stats.rejected_letters|default:0 }}</div>
+                    <div class="stat-label">Ditolak</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Charts Section -->
+        <div class="col-lg-8">
+            <!-- Letters by Type Chart -->
+            <div class="chart-container">
+                <h5 class="mb-4">
+                    <i class="fas fa-chart-pie me-2"></i>
+                    Surat Berdasarkan Jenis
+                </h5>
+                <canvas id="letterTypeChart" height="300"></canvas>
+            </div>
+            
+            <!-- Letters by Status Chart -->
+            <div class="chart-container">
+                <h5 class="mb-4">
+                    <i class="fas fa-chart-bar me-2"></i>
+                    Surat Berdasarkan Status (30 Hari Terakhir)
+                </h5>
+                <canvas id="letterStatusChart" height="300"></canvas>
+            </div>
+        </div>
+        
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Quick Actions -->
+            <div class="quick-actions mb-4">
+                <h5 class="mb-4">
+                    <i class="fas fa-bolt me-2"></i>
+                    Aksi Cepat
+                </h5>
+                <a href="{% url 'letters:create' %}" class="quick-action-btn">
+                    <i class="fas fa-plus me-2"></i>
+                    Buat Surat Baru
+                </a>
+                <a href="{% url 'letters:list' %}?status=pending" class="quick-action-btn">
+                    <i class="fas fa-clock me-2"></i>
+                    Surat Menunggu
+                </a>
+                <a href="{% url 'letters:settings' %}" class="quick-action-btn">
+                    <i class="fas fa-cog me-2"></i>
+                    Pengaturan
+                </a>
+                <button class="quick-action-btn" onclick="validateAllPending()">
+                    <i class="fas fa-robot me-2"></i>
+                    Validasi AI Semua
+                </button>
+            </div>
+            
+            <!-- Recent Activity -->
+            <div class="recent-activity">
+                <h5 class="mb-4">
+                    <i class="fas fa-history me-2"></i>
+                    Aktivitas Terbaru
+                </h5>
+                <div id="recent-activities">
+                    {% for activity in recent_activities %}
+                    <div class="activity-item">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <strong>{{ activity.action }}</strong><br>
+                                <small>{{ activity.description }}</small>
+                            </div>
+                            <small class="activity-time">{{ activity.performed_at|timesince }} lalu</small>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="text-center text-muted py-4">
+                        <i class="fas fa-inbox fa-2x mb-3"></i><br>
+                        Belum ada aktivitas
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Loading Spinner -->
+<div class="loading-spinner" id="loading-spinner">
+    <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+    </div>
+    <p class="mt-2">Memproses...</p>
+</div>
+
+<!-- Notification Container -->
+<div id="notification-container"></div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.min.js"></script>
+<script>
+// Chart configurations
+const chartColors = {
+    primary: '#667eea',
+    success: '#56ab2f',
+    warning: '#f093fb',
+    info: '#4facfe',
+    danger: '#fa709a',
+    dark: '#434343'
+};
+
+// Letters by Type Pie Chart
+const letterTypeCtx = document.getElementById('letterTypeChart').getContext('2d');
+const letterTypeChart = new Chart(letterTypeCtx, {
+    type: 'doughnut',
+    data: {
+        labels: {{ letter_types_labels|safe }},
+        datasets: [{
+            data: {{ letter_types_data|safe }},
+            backgroundColor: [
+                chartColors.primary,
+                chartColors.success,
+                chartColors.warning,
+                chartColors.info,
+                chartColors.danger,
+                chartColors.dark
+            ],
+            borderWidth: 0,
+            hoverOffset: 10
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom',
+                labels: {
+                    padding: 20,
+                    usePointStyle: true
+                }
+            }
+        }
+    }
+});
+
+// Letters by Status Line Chart
+const letterStatusCtx = document.getElementById('letterStatusChart').getContext('2d');
+const letterStatusChart = new Chart(letterStatusCtx, {
+    type: 'line',
+    data: {
+        labels: {{ status_chart_labels|safe }},
+        datasets: [
+            {
+                label: 'Draft',
+                data: {{ draft_data|safe }},
+                borderColor: chartColors.dark,
+                backgroundColor: chartColors.dark + '20',
+                tension: 0.4,
+                fill: true
+            },
+            {
+                label: 'Pending',
+                data: {{ pending_data|safe }},
+                borderColor: chartColors.warning,
+                backgroundColor: chartColors.warning + '20',
+                tension: 0.4,
+                fill: true
+            },
+            {
+                label: 'Approved',
+                data: {{ approved_data|safe }},
+                borderColor: chartColors.success,
+                backgroundColor: chartColors.success + '20',
+                tension: 0.4,
+                fill: true
+            }
+        ]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'top'
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    stepSize: 1
+                }
+            }
+        }
+    }
+});
+
+// Real-time updates
+function updateDashboard() {
+    fetch('/letters/api/statistics/')
+        .then(response => response.json())
+        .then(data => {
+            // Update statistics cards
+            document.getElementById('total-letters').textContent = data.total_letters;
+            document.getElementById('pending-letters').textContent = data.pending_letters;
+            document.getElementById('approved-letters').textContent = data.approved_letters;
+            document.getElementById('ai-validated').textContent = data.ai_validated;
+            document.getElementById('digital-signed').textContent = data.digital_signed;
+            document.getElementById('rejected-letters').textContent = data.rejected_letters;
+            
+            // Update AI status
+            updateAIStatus();
+        })
+        .catch(error => {
+            console.error('Error updating dashboard:', error);
+        });
+}
+
+// Update AI status
+function updateAIStatus() {
+    fetch('/letters/api/ai/status/')
+        .then(response => response.json())
+        .then(data => {
+            const statusIndicator = document.getElementById('ai-status');
+            const statusText = document.getElementById('ai-status-text');
+            
+            if (data.is_active) {
+                statusIndicator.className = 'ai-indicator active';
+                statusText.textContent = 'Aktif';
+            } else {
+                statusIndicator.className = 'ai-indicator inactive';
+                statusText.textContent = 'Tidak Aktif';
+            }
+        })
+        .catch(error => {
+            console.error('Error checking AI status:', error);
+        });
+}
+
+// Validate all pending letters with AI
+function validateAllPending() {
+    if (!confirm('Validasi semua surat yang menunggu dengan AI?')) {
+        return;
+    }
+    
+    showLoading();
+    
+    fetch('/letters/api/ai/validate-all/', {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken'),
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        hideLoading();
+        if (data.success) {
+            showNotification('success', `${data.validated_count} surat berhasil divalidasi`);
+            updateDashboard();
+        } else {
+            showNotification('error', data.message || 'Gagal memvalidasi surat');
+        }
+    })
+    .catch(error => {
+        hideLoading();
+        showNotification('error', 'Terjadi kesalahan saat memvalidasi surat');
+        console.error('Error:', error);
+    });
+}
+
+// Utility functions
+function showLoading() {
+    document.getElementById('loading-spinner').style.display = 'block';
+}
+
+function hideLoading() {
+    document.getElementById('loading-spinner').style.display = 'none';
+}
+
+function showNotification(type, message) {
+    const container = document.getElementById('notification-container');
+    const alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
+    const iconClass = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-triangle';
+    
+    const notification = document.createElement('div');
+    notification.className = `alert ${alertClass} alert-dismissible fade show notification`;
+    notification.innerHTML = `
+        <i class="fas ${iconClass} me-2"></i>
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    container.appendChild(notification);
+    
+    // Auto remove after 5 seconds
+    setTimeout(() => {
+        if (notification.parentNode) {
+            notification.remove();
+        }
+    }, 5000);
+}
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+// Initialize dashboard
+document.addEventListener('DOMContentLoaded', function() {
+    updateDashboard();
+    
+    // Update dashboard every 30 seconds
+    setInterval(updateDashboard, 30000);
+});
+</script>
+{% endblock %}

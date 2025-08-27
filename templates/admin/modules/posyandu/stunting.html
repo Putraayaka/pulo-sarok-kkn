@@ -1,0 +1,1004 @@
+{% extends 'admin/base.html' %}
+
+{% block title %}{{ page_title }}{% endblock %}
+{% block page_title %}{{ page_title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .section-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        transition: all 0.3s ease;
+    }
+    .section-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
+    }
+    .section-header {
+        background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+        color: #374151;
+        padding: 1.5rem;
+    }
+    .section-body {
+        padding: 2rem;
+    }
+    .z-score-indicator {
+        padding: 0.25rem 0.75rem;
+        border-radius: 9999px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+    .zscore-normal { background-color: #dcfce7; color: #166534; }
+    .zscore-mild { background-color: #fef3c7; color: #92400e; }
+    .zscore-moderate { background-color: #fed7aa; color: #9a3412; }
+    .zscore-severe { background-color: #fecaca; color: #991b1b; }
+    @media (max-width: 768px) {
+        .section-body {
+            padding: 1rem;
+        }
+        .section-header {
+            padding: 1rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50">
+    <div class="container mx-auto px-4 py-6">
+        <!-- Breadcrumb -->
+        <nav class="flex mb-6" aria-label="Breadcrumb">
+            <ol class="inline-flex items-center space-x-1 md:space-x-3">
+                <li class="inline-flex items-center">
+                    <a href="{% url 'custom_admin:dashboard' %}" class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-blue-600">
+                        <i class="fas fa-home mr-2"></i>Dashboard
+                    </a>
+                </li>
+                <li>
+                    <div class="flex items-center">
+                        <i class="fas fa-chevron-right text-gray-400 mx-2"></i>
+                        <span class="text-sm font-medium text-gray-500">Data Posyandu</span>
+                    </div>
+                </li>
+                <li aria-current="page">
+                    <div class="flex items-center">
+                        <i class="fas fa-chevron-right text-gray-400 mx-2"></i>
+                        <span class="text-sm font-medium text-blue-600">Input Data Stunting</span>
+                    </div>
+                </li>
+            </ol>
+        </nav>
+
+        <!-- Statistics Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-blue-100 text-blue-500">
+                        <i class="fas fa-child text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600">Total Anak</p>
+                        <p class="text-2xl font-semibold text-gray-900" id="totalAnak">0</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-green-100 text-green-500">
+                        <i class="fas fa-check-circle text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600">Normal</p>
+                        <p class="text-2xl font-semibold text-gray-900" id="normal">0</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-yellow-100 text-yellow-500">
+                        <i class="fas fa-exclamation-triangle text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600">Stunting Ringan</p>
+                        <p class="text-2xl font-semibold text-gray-900" id="stuntingRingan">0</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-red-100 text-red-500">
+                        <i class="fas fa-warning text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600">Stunting Berat</p>
+                        <p class="text-2xl font-semibold text-gray-900" id="stuntingBerat">0</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Form Section -->
+            <div class="lg:col-span-1">
+                <div class="section-card">
+                    <div class="section-header">
+                        <h3 class="text-lg font-semibold">
+                            <i class="fas fa-plus mr-2"></i>Input Data Stunting
+                        </h3>
+                    </div>
+                    <div class="section-body">
+                        <form id="stuntingForm" class="space-y-4">
+                            <input type="hidden" id="stuntingId" value="">
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Nama Anak *</label>
+                                <select id="pendudukId" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-transparent" required>
+                                    <option value="">Pilih Anak</option>
+                                </select>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Posyandu *</label>
+                                <select id="posyanduId" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-transparent" required>
+                                    <option value="">Pilih Posyandu</option>
+                                </select>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Tanggal Pengukuran *</label>
+                                <input type="date" id="tanggalPengukuran" 
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-transparent" 
+                                       required>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Umur (Bulan) *</label>
+                                <input type="number" id="umurBulan" min="0" max="60" 
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-transparent" 
+                                       placeholder="Umur dalam bulan" required>
+                            </div>
+                            
+                            <div class="border-t pt-4">
+                                <h4 class="text-sm font-medium text-gray-700 mb-3">Data Antropometri</h4>
+                                
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Tinggi Badan (cm) *</label>
+                                    <input type="number" id="tinggiBadan" step="0.1" min="40" max="120"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-transparent" 
+                                           placeholder="Tinggi badan" required>
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Berat Badan (kg) *</label>
+                                    <input type="number" id="beratBadan" step="0.1" min="2" max="30"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-transparent" 
+                                           placeholder="Berat badan" required>
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Lingkar Kepala (cm)</label>
+                                    <input type="number" id="lingkarKepala" step="0.1" min="30" max="60"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-transparent" 
+                                           placeholder="Lingkar kepala">
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Lingkar Lengan Atas (cm)</label>
+                                    <input type="number" id="lingkarLengan" step="0.1" min="8" max="20"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-transparent" 
+                                           placeholder="Lingkar lengan atas">
+                                </div>
+                            </div>
+                            
+                            <div class="border-t pt-4">
+                                <h4 class="text-sm font-medium text-gray-700 mb-3">Z-Score (Otomatis Terhitung)</h4>
+                                
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">TB/U Z-Score</label>
+                                        <input type="number" id="heightForAgeZscore" step="0.01" readonly
+                                               class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50" 
+                                               placeholder="Akan dihitung otomatis">
+                                    </div>
+                                    
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">BB/U Z-Score</label>
+                                        <input type="number" id="weightForAgeZscore" step="0.01" readonly
+                                               class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50" 
+                                               placeholder="Akan dihitung otomatis">
+                                    </div>
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">BB/TB Z-Score</label>
+                                    <input type="number" id="weightForHeightZscore" step="0.01" readonly
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50" 
+                                           placeholder="Akan dihitung otomatis">
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Status Stunting</label>
+                                <select id="statusStunting" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-transparent" readonly>
+                                    <option value="">Akan ditentukan otomatis</option>
+                                    <option value="normal">Normal (≥ -2 SD)</option>
+                                    <option value="stunting_ringan">Stunting Ringan (-3 SD hingga < -2 SD)</option>
+                                    <option value="stunting_sedang">Stunting Sedang (-3 SD hingga < -2 SD)</option>
+                                    <option value="stunting_berat">Stunting Berat (< -3 SD)</option>
+                                </select>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Riwayat ASI Eksklusif</label>
+                                <select id="riwayatAsi" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+                                    <option value="">Pilih Status ASI</option>
+                                    <option value="ya">Ya (6 bulan penuh)</option>
+                                    <option value="tidak">Tidak</option>
+                                    <option value="tidak_tahu">Tidak Tahu</option>
+                                </select>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Pemberian MPASI</label>
+                                <select id="mpasi" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+                                    <option value="">Status MPASI</option>
+                                    <option value="tepat_waktu">Tepat Waktu (6 bulan)</option>
+                                    <option value="terlalu_dini">Terlalu Dini (< 6 bulan)</option>
+                                    <option value="terlambat">Terlambat (> 6 bulan)</option>
+                                </select>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Riwayat Imunisasi</label>
+                                <select id="riwayatImunisasi" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+                                    <option value="">Status Imunisasi</option>
+                                    <option value="lengkap">Lengkap</option>
+                                    <option value="tidak_lengkap">Tidak Lengkap</option>
+                                    <option value="belum">Belum</option>
+                                </select>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Catatan</label>
+                                <textarea id="catatan" rows="3" 
+                                          class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-transparent" 
+                                          placeholder="Catatan tambahan"></textarea>
+                            </div>
+                            
+                            <div class="flex space-x-3">
+                                <button type="submit" 
+                                        class="flex-1 bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500">
+                                    <i class="fas fa-save mr-2"></i>Simpan
+                                </button>
+                                <button type="button" onclick="resetStuntingForm()" 
+                                        class="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-300">
+                                    <i class="fas fa-times mr-2"></i>Batal
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- List Section -->
+            <div class="lg:col-span-2">
+                <div class="section-card">
+                    <div class="section-header">
+                        <h3 class="text-lg font-semibold">
+                            <i class="fas fa-list mr-2"></i>Data Stunting
+                        </h3>
+                    </div>
+                    <div class="section-body">
+                        <!-- Search and Filter -->
+                        <div class="flex flex-col md:flex-row gap-4 mb-6">
+                            <div class="flex-1">
+                                <div class="relative">
+                                    <input type="text" id="stuntingSearch" 
+                                           placeholder="Cari data stunting..." 
+                                           class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <i class="fas fa-search text-gray-400"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <select id="filterPosyandu" class="px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+                                    <option value="">Semua Posyandu</option>
+                                </select>
+                            </div>
+                            <div>
+                                <select id="filterStatus" class="px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+                                    <option value="">Semua Status</option>
+                                    <option value="normal">Normal</option>
+                                    <option value="stunting_ringan">Stunting Ringan</option>
+                                    <option value="stunting_sedang">Stunting Sedang</option>
+                                    <option value="stunting_berat">Stunting Berat</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <!-- Table -->
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama</th>
+                                        <th class="hidden md:table-cell px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Posyandu</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Umur</th>
+                                        <th class="hidden lg:table-cell px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">TB/BB</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="stuntingTableBody" class="bg-white divide-y divide-gray-200">
+                                    <!-- Dynamic content will be loaded here -->
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <!-- Pagination -->
+                        <div id="stuntingPagination" class="mt-4 flex items-center justify-between">
+                            <!-- Dynamic pagination will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Z-Score Calculator Modal -->
+        <div id="zscoreModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+            <div class="relative top-10 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white">
+                <div class="mt-3">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg leading-6 font-medium text-gray-900">Kalkulator Z-Score</h3>
+                        <button onclick="closeZscoreModal()" class="text-gray-400 hover:text-gray-600">
+                            <i class="fas fa-times text-xl"></i>
+                        </button>
+                    </div>
+                    <div id="zscoreContent" class="space-y-4">
+                        <!-- Z-score calculation details will be shown here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div id="deleteModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+        <div class="mt-3 text-center">
+            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
+                <i class="fas fa-exclamation-triangle text-red-600"></i>
+            </div>
+            <h3 class="text-lg leading-6 font-medium text-gray-900 mt-2">Konfirmasi Hapus</h3>
+            <div class="mt-2 px-7 py-3">
+                <p class="text-sm text-gray-500">Apakah Anda yakin ingin menghapus data stunting ini? Tindakan ini tidak dapat dibatalkan.</p>
+            </div>
+            <div class="items-center px-4 py-3 flex space-x-3">
+                <button id="confirmDelete" 
+                        class="px-4 py-2 bg-red-500 text-white text-base font-medium rounded-md shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-300">
+                    Ya, Hapus
+                </button>
+                <button onclick="closeDeleteModal()" 
+                        class="px-4 py-2 bg-gray-500 text-white text-base font-medium rounded-md shadow-sm hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-300">
+                    Batal
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let currentStuntingPage = 1;
+let deleteItemId = null;
+
+// Initialize
+document.addEventListener('DOMContentLoaded', function() {
+    loadDropdownData();
+    loadStuntingData();
+    loadStatistics();
+    initializeEventListeners();
+    
+    // Set default measurement date to today
+    document.getElementById('tanggalPengukuran').value = new Date().toISOString().split('T')[0];
+});
+
+function initializeEventListeners() {
+    // Form submission
+    document.getElementById('stuntingForm').addEventListener('submit', handleStuntingSubmit);
+    
+    // Search and filters
+    document.getElementById('stuntingSearch').addEventListener('input', debounce(function() {
+        currentStuntingPage = 1;
+        loadStuntingData();
+    }, 300));
+    
+    document.getElementById('filterPosyandu').addEventListener('change', function() {
+        currentStuntingPage = 1;
+        loadStuntingData();
+    });
+    
+    document.getElementById('filterStatus').addEventListener('change', function() {
+        currentStuntingPage = 1;
+        loadStuntingData();
+    });
+    
+    // Auto-calculate Z-scores when anthropometric data changes
+    ['umurBulan', 'tinggiBadan', 'beratBadan'].forEach(fieldId => {
+        document.getElementById(fieldId).addEventListener('input', calculateZScores);
+    });
+    
+    // Delete confirmation
+    document.getElementById('confirmDelete').addEventListener('click', confirmDelete);
+}
+
+function calculateZScores() {
+    const umur = parseInt(document.getElementById('umurBulan').value);
+    const tinggi = parseFloat(document.getElementById('tinggiBadan').value);
+    const berat = parseFloat(document.getElementById('beratBadan').value);
+    
+    if (umur && tinggi && berat) {
+        // Simple Z-score calculation (in real implementation, use WHO growth standards)
+        // This is a simplified version - real calculation would use WHO child growth standards tables
+        
+        // Height-for-age Z-score (simplified)
+        const expectedHeight = 65 + (umur * 1.2); // Simplified linear growth
+        const heightZScore = (tinggi - expectedHeight) / 5; // Simplified SD calculation
+        document.getElementById('heightForAgeZscore').value = heightZScore.toFixed(2);
+        
+        // Weight-for-age Z-score (simplified)
+        const expectedWeight = 3 + (umur * 0.2); // Simplified weight gain
+        const weightZScore = (berat - expectedWeight) / 1.5; // Simplified SD calculation
+        document.getElementById('weightForAgeZscore').value = weightZScore.toFixed(2);
+        
+        // Weight-for-height Z-score (simplified)
+        const expectedWeightForHeight = (tinggi / 10) - 3; // Very simplified BMI-like calculation
+        const weightHeightZScore = (berat - expectedWeightForHeight) / 1.2;
+        document.getElementById('weightForHeightZscore').value = weightHeightZScore.toFixed(2);
+        
+        // Determine stunting status based on height-for-age Z-score
+        let status = '';
+        if (heightZScore >= -2) {
+            status = 'normal';
+        } else if (heightZScore >= -3) {
+            status = 'stunting_ringan';
+        } else {
+            status = 'stunting_berat';
+        }
+        
+        document.getElementById('statusStunting').value = status;
+    }
+}
+
+function loadDropdownData() {
+    // Load children under 5 years old
+    fetch('/pulosarok/posyandu/get-residents-for-posyandu/?age_max=5')
+        .then(response => response.json())
+        .then(data => {
+            const pendudukSelect = document.getElementById('pendudukId');
+            data.residents.forEach(resident => {
+                const option = document.createElement('option');
+                option.value = resident.id;
+                option.textContent = `${resident.nama} (${resident.nik})`;
+                pendudukSelect.appendChild(option);
+            });
+        })
+        .catch(error => console.error('Error loading residents:', error));
+    
+    // Load posyandu options
+    fetch('/pulosarok/posyandu/get-posyandu-locations/')
+        .then(response => response.json())
+        .then(data => {
+            const posyanduSelects = [
+                document.getElementById('posyanduId'),
+                document.getElementById('filterPosyandu')
+            ];
+            
+            data.locations.forEach(location => {
+                posyanduSelects.forEach(select => {
+                    const option = document.createElement('option');
+                    option.value = location.id;
+                    option.textContent = location.name;
+                    select.appendChild(option);
+                });
+            });
+        })
+        .catch(error => console.error('Error loading posyandu locations:', error));
+}
+
+function loadStatistics() {
+    fetch('/pulosarok/posyandu/api/stunting/statistics/')
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('totalAnak').textContent = data.total || 0;
+            document.getElementById('normal').textContent = data.normal || 0;
+            document.getElementById('stuntingRingan').textContent = data.stunting_ringan || 0;
+            document.getElementById('stuntingBerat').textContent = data.stunting_berat || 0;
+        })
+        .catch(error => console.error('Error loading statistics:', error));
+}
+
+function loadStuntingData() {
+    const search = document.getElementById('stuntingSearch').value;
+    const posyanduId = document.getElementById('filterPosyandu').value;
+    const status = document.getElementById('filterStatus').value;
+    
+    showLoading();
+    
+    let url = `/pulosarok/posyandu/api/stunting/?page=${currentStuntingPage}`;
+    if (search) url += `&search=${search}`;
+    if (posyanduId) url += `&posyandu_id=${posyanduId}`;
+    if (status) url += `&status=${status}`;
+    
+    fetch(url)
+        .then(response => response.json())
+        .then(data => {
+            const tableBody = document.getElementById('stuntingTableBody');
+            tableBody.innerHTML = '';
+            
+            if (data.results && data.results.length > 0) {
+                data.results.forEach(item => {
+                    const row = document.createElement('tr');
+                    row.className = 'hover:bg-gray-50';
+                    
+                    const age = `${item.umur_bulan} bulan`;
+                    const heightWeight = `${item.tinggi_badan}cm / ${item.berat_badan}kg`;
+                    
+                    row.innerHTML = `
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm font-medium text-gray-900">${item.nama}</div>
+                            <div class="text-sm text-gray-500">${item.jenis_kelamin === 'L' ? 'Laki-laki' : 'Perempuan'}</div>
+                            <div class="text-sm text-gray-500 md:hidden">${item.posyandu}</div>
+                        </td>
+                        <td class="hidden md:table-cell px-6 py-4 whitespace-nowrap text-sm text-gray-900">${item.posyandu}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${age}</td>
+                        <td class="hidden lg:table-cell px-6 py-4 whitespace-nowrap text-sm text-gray-900">${heightWeight}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="z-score-indicator ${getStatusClass(item.status_stunting)}">
+                                ${getStatusText(item.status_stunting)}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <div class="flex space-x-2">
+                                <button onclick="viewZScore(${item.id})" 
+                                        class="text-blue-600 hover:text-blue-900" 
+                                        title="Lihat Z-Score">
+                                    <i class="fas fa-calculator"></i>
+                                </button>
+                                <button onclick="editStunting(${item.id})" 
+                                        class="text-indigo-600 hover:text-indigo-900" 
+                                        title="Edit">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button onclick="deleteStunting(${item.id})" 
+                                        class="text-red-600 hover:text-red-900" 
+                                        title="Hapus">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+            } else {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="px-6 py-8 text-center text-gray-500">
+                            <div class="flex flex-col items-center">
+                                <i class="fas fa-inbox text-4xl mb-2"></i>
+                                <p>Belum ada data stunting</p>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }
+            
+            // Update pagination
+            updatePagination('stuntingPagination', data.pagination, 'loadStuntingData');
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showToast('Gagal memuat data stunting', 'error');
+        })
+        .finally(() => {
+            hideLoading();
+        });
+}
+
+function getStatusClass(status) {
+    switch(status) {
+        case 'normal': return 'zscore-normal';
+        case 'stunting_ringan': return 'zscore-mild';
+        case 'stunting_sedang': return 'zscore-moderate';
+        case 'stunting_berat': return 'zscore-severe';
+        default: return 'zscore-normal';
+    }
+}
+
+function getStatusText(status) {
+    switch(status) {
+        case 'normal': return 'Normal';
+        case 'stunting_ringan': return 'Stunting Ringan';
+        case 'stunting_sedang': return 'Stunting Sedang';
+        case 'stunting_berat': return 'Stunting Berat';
+        default: return 'Belum Diukur';
+    }
+}
+
+function resetStuntingForm() {
+    document.getElementById('stuntingForm').reset();
+    document.getElementById('stuntingId').value = '';
+    document.getElementById('tanggalPengukuran').value = new Date().toISOString().split('T')[0];
+    
+    // Clear calculated fields
+    ['heightForAgeZscore', 'weightForAgeZscore', 'weightForHeightZscore'].forEach(id => {
+        document.getElementById(id).value = '';
+    });
+    document.getElementById('statusStunting').value = '';
+}
+
+function editStunting(id) {
+    showLoading();
+    fetch(`/pulosarok/posyandu/api/stunting/${id}/`)
+        .then(response => response.json())
+        .then(data => {
+            const stunting = data.data;
+            document.getElementById('stuntingId').value = stunting.id;
+            document.getElementById('pendudukId').value = stunting.penduduk_id;
+            document.getElementById('posyanduId').value = stunting.posyandu_id;
+            document.getElementById('tanggalPengukuran').value = stunting.tanggal_pengukuran;
+            document.getElementById('umurBulan').value = stunting.umur_bulan;
+            document.getElementById('tinggiBadan').value = stunting.tinggi_badan;
+            document.getElementById('beratBadan').value = stunting.berat_badan;
+            document.getElementById('lingkarKepala').value = stunting.lingkar_kepala || '';
+            document.getElementById('lingkarLengan').value = stunting.lingkar_lengan || '';
+            document.getElementById('heightForAgeZscore').value = stunting.height_for_age_zscore || '';
+            document.getElementById('weightForAgeZscore').value = stunting.weight_for_age_zscore || '';
+            document.getElementById('weightForHeightZscore').value = stunting.weight_for_height_zscore || '';
+            document.getElementById('statusStunting').value = stunting.status_stunting;
+            document.getElementById('riwayatAsi').value = stunting.riwayat_asi || '';
+            document.getElementById('mpasi').value = stunting.mpasi || '';
+            document.getElementById('riwayatImunisasi').value = stunting.riwayat_imunisasi || '';
+            document.getElementById('catatan').value = stunting.catatan || '';
+            
+            // Scroll to form
+            document.getElementById('stuntingForm').scrollIntoView({ behavior: 'smooth' });
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showToast('Gagal memuat data stunting', 'error');
+        })
+        .finally(() => {
+            hideLoading();
+        });
+}
+
+function viewZScore(id) {
+    showLoading();
+    fetch(`/pulosarok/posyandu/api/stunting/${id}/zscore-detail/`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                renderZScoreDetail(data.zscore_data);
+                document.getElementById('zscoreModal').classList.remove('hidden');
+            } else {
+                showToast('Gagal memuat detail Z-Score', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showToast('Gagal memuat detail Z-Score', 'error');
+        })
+        .finally(() => {
+            hideLoading();
+        });
+}
+
+function renderZScoreDetail(zscoreData) {
+    let zscoreHTML = `
+        <div class="bg-gray-50 p-4 rounded-lg">
+            <h4 class="font-medium text-gray-900 mb-3">${zscoreData.nama}</h4>
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <p class="text-sm text-gray-600">Umur</p>
+                    <p class="font-medium">${zscoreData.umur_bulan} bulan</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-600">Status</p>
+                    <span class="z-score-indicator ${getStatusClass(zscoreData.status_stunting)}">
+                        ${getStatusText(zscoreData.status_stunting)}
+                    </span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="grid grid-cols-3 gap-4">
+            <div class="bg-blue-50 p-3 rounded-lg text-center">
+                <p class="text-sm text-gray-600">TB/U Z-Score</p>
+                <p class="text-xl font-bold text-blue-600">${zscoreData.height_for_age_zscore || '-'}</p>
+                <p class="text-xs text-gray-500">Tinggi/Umur</p>
+            </div>
+            <div class="bg-green-50 p-3 rounded-lg text-center">
+                <p class="text-sm text-gray-600">BB/U Z-Score</p>
+                <p class="text-xl font-bold text-green-600">${zscoreData.weight_for_age_zscore || '-'}</p>
+                <p class="text-xs text-gray-500">Berat/Umur</p>
+            </div>
+            <div class="bg-purple-50 p-3 rounded-lg text-center">
+                <p class="text-sm text-gray-600">BB/TB Z-Score</p>
+                <p class="text-xl font-bold text-purple-600">${zscoreData.weight_for_height_zscore || '-'}</p>
+                <p class="text-xs text-gray-500">Berat/Tinggi</p>
+            </div>
+        </div>
+        
+        <div class="border-t pt-4">
+            <h4 class="font-medium text-gray-900 mb-2">Interpretasi Z-Score</h4>
+            <div class="space-y-2 text-sm">
+                <p><strong>≥ -1 SD:</strong> Normal</p>
+                <p><strong>-2 SD hingga < -1 SD:</strong> Berisiko pendek</p>
+                <p><strong>-3 SD hingga < -2 SD:</strong> Pendek (stunting ringan)</p>
+                <p><strong>< -3 SD:</strong> Sangat pendek (stunting berat)</p>
+            </div>
+        </div>
+        
+        <div class="border-t pt-4">
+            <h4 class="font-medium text-gray-900 mb-2">Data Anthropometri</h4>
+            <div class="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                    <p class="text-gray-600">Tinggi Badan: <strong>${zscoreData.tinggi_badan} cm</strong></p>
+                    <p class="text-gray-600">Berat Badan: <strong>${zscoreData.berat_badan} kg</strong></p>
+                </div>
+                <div>
+                    <p class="text-gray-600">Lingkar Kepala: <strong>${zscoreData.lingkar_kepala || '-'} cm</strong></p>
+                    <p class="text-gray-600">Lingkar Lengan: <strong>${zscoreData.lingkar_lengan || '-'} cm</strong></p>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.getElementById('zscoreContent').innerHTML = zscoreHTML;
+}
+
+function closeZscoreModal() {
+    document.getElementById('zscoreModal').classList.add('hidden');
+}
+
+function deleteStunting(id) {
+    deleteItemId = id;
+    document.getElementById('deleteModal').classList.remove('hidden');
+}
+
+function closeDeleteModal() {
+    document.getElementById('deleteModal').classList.add('hidden');
+    deleteItemId = null;
+}
+
+function confirmDelete() {
+    if (deleteItemId) {
+        showLoading();
+        
+        fetch(`/pulosarok/posyandu/api/stunting/${deleteItemId}/delete/`, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showToast(data.message, 'success');
+                loadStuntingData();
+                loadStatistics();
+            } else {
+                showToast(data.message || 'Terjadi kesalahan', 'error');
+            }
+            closeDeleteModal();
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showToast('Terjadi kesalahan saat menghapus data', 'error');
+            closeDeleteModal();
+        })
+        .finally(() => {
+            hideLoading();
+        });
+    }
+}
+
+function handleStuntingSubmit(e) {
+    e.preventDefault();
+    
+    if (!validateForm(e.target)) {
+        showToast('Mohon lengkapi semua field yang wajib diisi', 'error');
+        return;
+    }
+    
+    const formData = {
+        penduduk_id: document.getElementById('pendudukId').value,
+        posyandu_id: document.getElementById('posyanduId').value,
+        tanggal_pengukuran: document.getElementById('tanggalPengukuran').value,
+        umur_bulan: document.getElementById('umurBulan').value,
+        tinggi_badan: document.getElementById('tinggiBadan').value,
+        berat_badan: document.getElementById('beratBadan').value,
+        lingkar_kepala: document.getElementById('lingkarKepala').value || null,
+        lingkar_lengan: document.getElementById('lingkarLengan').value || null,
+        height_for_age_zscore: document.getElementById('heightForAgeZscore').value || null,
+        weight_for_age_zscore: document.getElementById('weightForAgeZscore').value || null,
+        weight_for_height_zscore: document.getElementById('weightForHeightZscore').value || null,
+        status_stunting: document.getElementById('statusStunting').value,
+        riwayat_asi: document.getElementById('riwayatAsi').value,
+        mpasi: document.getElementById('mpasi').value,
+        riwayat_imunisasi: document.getElementById('riwayatImunisasi').value,
+        catatan: document.getElementById('catatan').value
+    };
+    
+    const stuntingId = document.getElementById('stuntingId').value;
+    const url = stuntingId ? 
+        `/pulosarok/posyandu/api/stunting/${stuntingId}/update/` : 
+        '/pulosarok/posyandu/api/stunting/create/';
+    const method = stuntingId ? 'PUT' : 'POST';
+    
+    showLoading();
+    
+    fetch(url, {
+        method: method,
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify(formData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showToast(data.message, 'success');
+            resetStuntingForm();
+            loadStuntingData();
+            loadStatistics();
+        } else {
+            showToast(data.message || 'Terjadi kesalahan', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showToast('Terjadi kesalahan saat menyimpan data', 'error');
+    })
+    .finally(() => {
+        hideLoading();
+    });
+}
+
+// Utility functions (same as previous files)
+function updatePagination(containerId, pagination, loadFunction) {
+    const container = document.getElementById(containerId);
+    if (!pagination) return;
+    
+    let paginationHTML = `
+        <div class="flex items-center justify-between">
+            <div class="text-sm text-gray-700">
+                Menampilkan halaman ${pagination.current_page} dari ${pagination.total_pages} (${pagination.total_items} total item)
+            </div>
+            <div class="flex space-x-2">
+    `;
+    
+    if (pagination.has_previous) {
+        paginationHTML += `<button onclick="changePage(${pagination.current_page - 1}, '${loadFunction}')" class="px-3 py-1 border border-gray-300 rounded-md text-sm hover:bg-gray-50">Sebelumnya</button>`;
+    }
+    
+    if (pagination.has_next) {
+        paginationHTML += `<button onclick="changePage(${pagination.current_page + 1}, '${loadFunction}')" class="px-3 py-1 border border-gray-300 rounded-md text-sm hover:bg-gray-50">Selanjutnya</button>`;
+    }
+    
+    paginationHTML += `
+            </div>
+        </div>
+    `;
+    
+    container.innerHTML = paginationHTML;
+}
+
+function changePage(page, functionName) {
+    currentStuntingPage = page;
+    loadStuntingData();
+}
+
+function showLoading() {
+    if (!document.getElementById('loadingOverlay')) {
+        const overlay = document.createElement('div');
+        overlay.id = 'loadingOverlay';
+        overlay.className = 'fixed inset-0 bg-gray-600 bg-opacity-50 z-50 flex items-center justify-center';
+        overlay.innerHTML = `
+            <div class="bg-white rounded-lg p-6 shadow-xl">
+                <div class="flex items-center space-x-3">
+                    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                    <span class="text-gray-700 font-medium">Memproses...</span>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(overlay);
+    }
+}
+
+function hideLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) {
+        overlay.remove();
+    }
+}
+
+function showToast(message, type = 'info') {
+    const toast = document.createElement('div');
+    toast.className = `fixed top-4 right-4 p-4 rounded-md shadow-lg z-50 ${
+        type === 'success' ? 'bg-green-100 border border-green-400 text-green-700' :
+        type === 'error' ? 'bg-red-100 border border-red-400 text-red-700' :
+        'bg-blue-100 border border-blue-400 text-blue-700'
+    }`;
+    toast.innerHTML = `
+        <div class="flex items-center">
+            <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'} mr-2"></i>
+            <span>${message}</span>
+            <button onclick="this.parentElement.parentElement.remove()" class="ml-3 text-sm">×</button>
+        </div>
+    `;
+    
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        if (toast.parentElement) {
+            toast.remove();
+        }
+    }, 5000);
+}
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+function validateForm(formElement) {
+    const requiredFields = formElement.querySelectorAll('[required]');
+    let isValid = true;
+    
+    requiredFields.forEach(field => {
+        if (!field.value.trim()) {
+            field.classList.add('border-red-500');
+            isValid = false;
+        } else {
+            field.classList.remove('border-red-500');
+        }
+    });
+    
+    return isValid;
+}
+
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+</script>
+{% endblock %}

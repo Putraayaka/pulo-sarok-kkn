@@ -1,0 +1,624 @@
+{% extends 'admin/base.html' %}
+
+{% block title %}{{ page_title }}{% endblock %}
+{% block page_title %}{{ page_title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .section-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        transition: all 0.3s ease;
+    }
+    .section-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
+    }
+    .section-header {
+        background: linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%);
+        color: white;
+        padding: 1.5rem;
+    }
+    .section-body {
+        padding: 2rem;
+    }
+    .map-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        transition: all 0.3s ease;
+    }
+    .map-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
+    }
+    .map-filter-btn {
+        border: 1px solid #e5e7eb;
+        transition: all 0.3s ease;
+    }
+    .map-filter-btn.active {
+        background-color: #dbeafe !important;
+        color: #1d4ed8 !important;
+        border-color: #3b82f6 !important;
+    }
+    .map-filter-btn:hover {
+        background-color: #f3f4f6;
+    }
+    @media (max-width: 768px) {
+        .section-body {
+            padding: 1rem;
+        }
+        .section-header {
+            padding: 1rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50">
+    <div class="container mx-auto px-4 py-6">
+        <!-- Breadcrumb -->
+        <nav class="flex mb-6" aria-label="Breadcrumb">
+            <ol class="inline-flex items-center space-x-1 md:space-x-3">
+                <li class="inline-flex items-center">
+                    <a href="{% url 'custom_admin:dashboard' %}" class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-blue-600">
+                        <i class="fas fa-home mr-2"></i>Dashboard
+                    </a>
+                </li>
+                <li>
+                    <div class="flex items-center">
+                        <i class="fas fa-chevron-right text-gray-400 mx-2"></i>
+                        <span class="text-sm font-medium text-gray-500">Profil Desa</span>
+                    </div>
+                </li>
+                <li aria-current="page">
+                    <div class="flex items-center">
+                        <i class="fas fa-chevron-right text-gray-400 mx-2"></i>
+                        <span class="text-sm font-medium text-blue-600">Kelola Peta Desa</span>
+                    </div>
+                </li>
+            </ol>
+        </nav>
+
+        <!-- Submenu Navigation -->
+        <div class="bg-white rounded-lg shadow-sm mb-6">
+            <div class="border-b border-gray-200">
+                <nav class="-mb-px flex space-x-8 px-6 overflow-x-auto">
+                    <a href="{% url 'village_profile:visi_misi' %}" 
+                       class="py-4 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap">
+                        <i class="fas fa-bullseye mr-2"></i>Visi Misi Desa
+                    </a>
+                    <a href="{% url 'village_profile:sejarah' %}" 
+                       class="py-4 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap">
+                        <i class="fas fa-history mr-2"></i>Sejarah Desa
+                    </a>
+                    <a href="{% url 'village_profile:geografis' %}" 
+                       class="py-4 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap">
+                        <i class="fas fa-map mr-2"></i>Data Geografis
+                    </a>
+                    <a href="{% url 'village_profile:peta_desa' %}" 
+                       class="py-4 px-1 border-b-2 border-primary-500 font-medium text-sm text-primary-600 whitespace-nowrap">
+                        <i class="fas fa-images mr-2"></i>Kelola Peta Desa
+                    </a>
+                </nav>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="space-y-6">
+            <!-- Upload Section -->
+            <div class="section-card">
+                <div class="section-header">
+                    <h3 class="text-lg font-semibold">
+                        <i class="fas fa-upload mr-2"></i>Upload Peta Baru
+                    </h3>
+                </div>
+                <div class="section-body">
+                    <form id="mapUploadForm" class="space-y-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Judul Peta *</label>
+                                <input type="text" id="mapTitle" 
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-transparent" 
+                                       required placeholder="Masukkan judul peta">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Jenis Peta *</label>
+                                <select id="mapType" 
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-transparent" 
+                                        required>
+                                    <option value="">Pilih Jenis Peta</option>
+                                    <option value="ADMINISTRATIVE">Peta Administrasi</option>
+                                    <option value="TOPOGRAPHIC">Peta Topografi</option>
+                                    <option value="LAND_USE">Peta Penggunaan Lahan</option>
+                                    <option value="TOURISM">Peta Wisata</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Deskripsi</label>
+                            <textarea id="mapDescription" rows="3" 
+                                      class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-transparent" 
+                                      placeholder="Deskripsi peta (opsional)"></textarea>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">File Gambar Peta *</label>
+                            <input type="file" id="mapImage" 
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-transparent" 
+                                   accept="image/*" required>
+                            <p class="text-xs text-gray-500 mt-1">Format: JPG, PNG, GIF. Maksimal 10MB</p>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Latitude Pusat</label>
+                                <input type="number" step="0.00000001" id="mapLat" 
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-transparent" 
+                                       placeholder="-6.200000">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Longitude Pusat</label>
+                                <input type="number" step="0.00000001" id="mapLng" 
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-transparent" 
+                                       placeholder="106.816666">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Zoom Level</label>
+                                <input type="number" min="1" max="20" id="mapZoom" 
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-transparent" 
+                                       value="15" placeholder="15">
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center">
+                            <input type="checkbox" id="mapIsActive" 
+                                   class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded" checked>
+                            <label for="mapIsActive" class="ml-2 block text-sm text-gray-900">Aktif</label>
+                        </div>
+                        
+                        <div class="flex space-x-3">
+                            <button type="submit" 
+                                    class="bg-primary-600 text-white px-6 py-2 rounded-md hover:bg-primary-700 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500">
+                                <i class="fas fa-upload mr-2"></i>Upload Peta
+                            </button>
+                            <button type="button" onclick="resetMapForm()" 
+                                    class="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-300">
+                                <i class="fas fa-times mr-2"></i>Batal
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Filter and Maps Display -->
+            <div class="section-card">
+                <div class="section-header">
+                    <h3 class="text-lg font-semibold">
+                        <i class="fas fa-images mr-2"></i>Galeri Peta Desa
+                    </h3>
+                </div>
+                <div class="section-body">
+                    <!-- Map Type Filter -->
+                    <div class="mb-6">
+                        <div class="flex flex-wrap gap-2">
+                            <button onclick="filterMaps('')" 
+                                    class="map-filter-btn active px-4 py-2 rounded-full text-sm font-medium transition-colors">
+                                Semua Peta
+                            </button>
+                            <button onclick="filterMaps('ADMINISTRATIVE')" 
+                                    class="map-filter-btn px-4 py-2 rounded-full text-sm font-medium transition-colors">
+                                Peta Administrasi
+                            </button>
+                            <button onclick="filterMaps('TOPOGRAPHIC')" 
+                                    class="map-filter-btn px-4 py-2 rounded-full text-sm font-medium transition-colors">
+                                Peta Topografi
+                            </button>
+                            <button onclick="filterMaps('LAND_USE')" 
+                                    class="map-filter-btn px-4 py-2 rounded-full text-sm font-medium transition-colors">
+                                Peta Penggunaan Lahan
+                            </button>
+                            <button onclick="filterMaps('TOURISM')" 
+                                    class="map-filter-btn px-4 py-2 rounded-full text-sm font-medium transition-colors">
+                                Peta Wisata
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Search -->
+                    <div class="mb-6">
+                        <div class="relative">
+                            <input type="text" id="mapSearch" 
+                                   placeholder="Cari peta..." 
+                                   class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fas fa-search text-gray-400"></i>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Maps Grid -->
+                    <div id="mapsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <!-- Dynamic content will be loaded here -->
+                    </div>
+                    
+                    <!-- Empty State -->
+                    <div id="mapsEmptyState" class="text-center py-12 hidden">
+                        <i class="fas fa-map text-gray-400 text-6xl mb-4"></i>
+                        <h3 class="text-lg font-medium text-gray-900 mb-2">Belum Ada Peta</h3>
+                        <p class="text-gray-500 mb-4">Belum ada peta yang tersedia untuk ditampilkan.</p>
+                        <button onclick="document.getElementById('mapImage').click()" 
+                                class="bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700 transition-colors">
+                            <i class="fas fa-upload mr-2"></i>Upload Peta Pertama
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Map Preview Modal -->
+<div id="mapPreviewModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+    <div class="relative top-10 mx-auto p-5 border w-11/12 max-w-4xl shadow-lg rounded-md bg-white">
+        <div class="mt-3">
+            <div class="flex items-center justify-between mb-4">
+                <h3 id="modalTitle" class="text-lg leading-6 font-medium text-gray-900"></h3>
+                <button onclick="closeMapPreview()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            <div class="text-center">
+                <img id="modalImage" src="" alt="" class="w-full h-auto max-h-96 object-contain rounded-lg">
+                <div id="modalDescription" class="mt-4 text-sm text-gray-600"></div>
+                <div id="modalInfo" class="mt-2 text-xs text-gray-500"></div>
+            </div>
+            <div class="mt-4 flex space-x-3 justify-end">
+                <button id="modalDownloadBtn" 
+                        class="px-4 py-2 bg-blue-500 text-white text-base font-medium rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-300">
+                    <i class="fas fa-download mr-2"></i>Download
+                </button>
+                <button onclick="closeMapPreview()" 
+                        class="px-4 py-2 bg-gray-500 text-white text-base font-medium rounded-md shadow-sm hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-300">
+                    Tutup
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let currentMapType = '';
+
+// Load maps data
+function loadMapsData() {
+    const search = document.getElementById('mapSearch').value;
+    showLoading();
+    
+    let url = '/pulosarok/village-profile/maps/';
+    const params = new URLSearchParams();
+    
+    if (search) params.append('search', search);
+    if (currentMapType) params.append('map_type', currentMapType);
+    
+    if (params.toString()) {
+        url += '?' + params.toString();
+    }
+    
+    fetch(url)
+        .then(response => response.json())
+        .then(data => {
+            const mapsGrid = document.getElementById('mapsGrid');
+            const emptyState = document.getElementById('mapsEmptyState');
+            
+            if (data.results && data.results.length > 0) {
+                mapsGrid.innerHTML = '';
+                emptyState.classList.add('hidden');
+                
+                data.results.forEach(item => {
+                    const mapCard = document.createElement('div');
+                    mapCard.className = 'map-card';
+                    mapCard.innerHTML = `
+                        <div class="relative">
+                            ${item.map_image ? 
+                                `<img src="${item.map_image}" alt="${item.title}" class="w-full h-48 object-cover cursor-pointer" onclick="viewMapPreview(${item.id})">` :
+                                `<div class="w-full h-48 bg-gray-200 flex items-center justify-center cursor-pointer" onclick="viewMapPreview(${item.id})">
+                                    <i class="fas fa-image text-gray-400 text-3xl"></i>
+                                </div>`
+                            }
+                            <div class="absolute top-2 right-2">
+                                <span class="px-2 py-1 text-xs font-semibold rounded-full ${item.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
+                                    ${item.is_active ? 'Aktif' : 'Tidak Aktif'}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="p-4">
+                            <h4 class="text-lg font-semibold text-gray-900 mb-2 truncate">${item.title}</h4>
+                            <p class="text-sm text-gray-600 mb-2">
+                                <i class="fas fa-tag mr-1"></i>${item.map_type}
+                            </p>
+                            <p class="text-sm text-gray-500 mb-3 line-clamp-2">${item.description || 'Tidak ada deskripsi'}</p>
+                            <div class="flex items-center justify-between">
+                                <small class="text-xs text-gray-400">
+                                    <i class="fas fa-clock mr-1"></i>${item.created_at}
+                                </small>
+                                <div class="flex space-x-2">
+                                    <button onclick="viewMapPreview(${item.id})" 
+                                            class="text-blue-600 hover:text-blue-900" 
+                                            title="Lihat">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button onclick="downloadMap(${item.id})" 
+                                            class="text-green-600 hover:text-green-900" 
+                                            title="Download">
+                                        <i class="fas fa-download"></i>
+                                    </button>
+                                    <button onclick="deleteMap(${item.id})" 
+                                            class="text-red-600 hover:text-red-900" 
+                                            title="Hapus">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    mapsGrid.appendChild(mapCard);
+                });
+            } else {
+                mapsGrid.innerHTML = '';
+                emptyState.classList.remove('hidden');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showToast('Gagal memuat data peta', 'error');
+        })
+        .finally(() => {
+            hideLoading();
+        });
+}
+
+function filterMaps(type) {
+    // Update filter buttons
+    document.querySelectorAll('.map-filter-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    event.target.classList.add('active');
+    currentMapType = type;
+    
+    // Load filtered maps
+    loadMapsData();
+}
+
+function viewMapPreview(id) {
+    showLoading();
+    fetch(`/pulosarok/village-profile/maps/${id}/`)
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('modalTitle').textContent = data.title;
+            document.getElementById('modalImage').src = data.map_image || '';
+            document.getElementById('modalDescription').textContent = data.description || 'Tidak ada deskripsi';
+            document.getElementById('modalInfo').textContent = `Jenis: ${data.map_type} • Dibuat: ${data.created_at}`;
+            
+            const downloadBtn = document.getElementById('modalDownloadBtn');
+            downloadBtn.onclick = () => downloadMapFile(data.map_image);
+            
+            document.getElementById('mapPreviewModal').classList.remove('hidden');
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showToast('Gagal memuat detail peta', 'error');
+        })
+        .finally(() => {
+            hideLoading();
+        });
+}
+
+function closeMapPreview() {
+    document.getElementById('mapPreviewModal').classList.add('hidden');
+}
+
+function downloadMap(id) {
+    fetch(`/pulosarok/village-profile/maps/${id}/`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.map_image) {
+                downloadMapFile(data.map_image);
+            } else {
+                showToast('File peta tidak tersedia', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showToast('Gagal mengunduh peta', 'error');
+        });
+}
+
+function downloadMapFile(url) {
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = '';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
+function deleteMap(id) {
+    if (confirm('Apakah Anda yakin ingin menghapus peta ini?')) {
+        showLoading();
+        
+        fetch(`/pulosarok/village-profile/maps/${id}/delete/`, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showToast(data.message, 'success');
+                loadMapsData();
+            } else {
+                showToast(data.error || 'Terjadi kesalahan', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showToast('Terjadi kesalahan saat menghapus peta', 'error');
+        })
+        .finally(() => {
+            hideLoading();
+        });
+    }
+}
+
+function resetMapForm() {
+    document.getElementById('mapUploadForm').reset();
+    document.getElementById('mapIsActive').checked = true;
+    document.getElementById('mapZoom').value = 15;
+}
+
+// Form submission
+document.getElementById('mapUploadForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    if (!validateForm(this)) {
+        showToast('Mohon lengkapi semua field yang wajib diisi', 'error');
+        return;
+    }
+    
+    const formData = new FormData();
+    formData.append('title', document.getElementById('mapTitle').value);
+    formData.append('map_type', document.getElementById('mapType').value);
+    formData.append('description', document.getElementById('mapDescription').value);
+    formData.append('map_image', document.getElementById('mapImage').files[0]);
+    formData.append('coordinates_center_lat', document.getElementById('mapLat').value || null);
+    formData.append('coordinates_center_lng', document.getElementById('mapLng').value || null);
+    formData.append('zoom_level', document.getElementById('mapZoom').value || 15);
+    formData.append('is_active', document.getElementById('mapIsActive').checked);
+    
+    showLoading();
+    
+    fetch('/pulosarok/village-profile/maps/create/', {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showToast(data.message, 'success');
+            resetMapForm();
+            loadMapsData();
+        } else {
+            showToast(data.error || 'Terjadi kesalahan', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showToast('Terjadi kesalahan saat mengupload peta', 'error');
+    })
+    .finally(() => {
+        hideLoading();
+    });
+});
+
+// Search functionality
+document.getElementById('mapSearch').addEventListener('input', debounce(function() {
+    loadMapsData();
+}, 300));
+
+// Utility functions
+function showLoading() {
+    // You can implement a loading indicator here
+}
+
+function hideLoading() {
+    // You can implement hiding loading indicator here
+}
+
+function showToast(message, type = 'info') {
+    // Create toast notification
+    const toast = document.createElement('div');
+    toast.className = `fixed top-4 right-4 p-4 rounded-md shadow-lg z-50 ${
+        type === 'success' ? 'bg-green-100 border border-green-400 text-green-700' :
+        type === 'error' ? 'bg-red-100 border border-red-400 text-red-700' :
+        'bg-blue-100 border border-blue-400 text-blue-700'
+    }`;
+    toast.innerHTML = `
+        <div class="flex items-center">
+            <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'} mr-2"></i>
+            <span>${message}</span>
+            <button onclick="this.parentElement.parentElement.remove()" class="ml-3 text-sm">×</button>
+        </div>
+    `;
+    
+    document.body.appendChild(toast);
+    
+    // Auto remove after 5 seconds
+    setTimeout(() => {
+        if (toast.parentElement) {
+            toast.remove();
+        }
+    }, 5000);
+}
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+function validateForm(formElement) {
+    const requiredFields = formElement.querySelectorAll('[required]');
+    let isValid = true;
+    
+    requiredFields.forEach(field => {
+        if (!field.value.trim()) {
+            field.classList.add('border-red-500');
+            isValid = false;
+        } else {
+            field.classList.remove('border-red-500');
+        }
+    });
+    
+    return isValid;
+}
+
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
+// Initialize
+document.addEventListener('DOMContentLoaded', function() {
+    loadMapsData();
+});
+</script>
+{% endblock %}
