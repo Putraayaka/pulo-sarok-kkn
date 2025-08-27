@@ -749,7 +749,7 @@
         // Load actual data from backend
         // TODO: Replace with actual API call
         setTimeout(() => {
-            tableBody.innerHTML = '<tr><td colspan="8" class="text-center py-8 text-gray-500">Belum ada data berita. <a href="{% url \'news:news_create_view\' %}" class="text-blue-600 hover:text-blue-800">Tambah berita pertama</a></td></tr>';
+            tableBody.innerHTML = '<tr><td colspan="8" class="text-center py-8 text-gray-500">Belum ada data berita. <a href="{% url "news:news_create_view" %}" class="text-blue-600 hover:text-blue-800">Tambah berita pertama</a></td></tr>';
             updatePagination();
         }, 500);
     }
@@ -763,7 +763,7 @@
         // Load actual data from backend
         // TODO: Replace with actual API call
         setTimeout(() => {
-            grid.innerHTML = '<div class="col-span-full text-center py-8 text-gray-500">Belum ada kategori. <a href="{% url \'news:news_category_view\' %}" class="text-blue-600 hover:text-blue-800">Tambah kategori pertama</a></div>';
+            grid.innerHTML = '<div class="col-span-full text-center py-8 text-gray-500">Belum ada kategori. <a href="{% url "news:news_category_view" %}" class="text-blue-600 hover:text-blue-800">Tambah kategori pertama</a></div>';
         }, 500);
     }
     
@@ -776,7 +776,7 @@
         // Load actual data from backend
         // TODO: Replace with actual API call
         setTimeout(() => {
-            grid.innerHTML = '<div class="col-span-full text-center py-8 text-gray-500">Belum ada media. <a href="{% url \'news:news_media_view\' %}" class="text-blue-600 hover:text-blue-800">Upload media pertama</a></div>';
+            grid.innerHTML = '<div class="col-span-full text-center py-8 text-gray-500">Belum ada media. <a href="{% url "news:news_media_view" %}" class="text-blue-600 hover:text-blue-800">Upload media pertama</a></div>';
         }, 500);
     }
     

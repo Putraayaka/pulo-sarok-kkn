@@ -22,7 +22,7 @@ from organization.models import (
     PeriodeKepengurusan, AnggotaOrganisasi, GaleriKegiatan, 
     StrukturOrganisasi
 )
-from django.contrib.auth.models import User
+from references.models import Penduduk
 
 fake = Faker('id_ID')  # Indonesian locale
 
@@ -91,7 +91,7 @@ def create_dummy_data():
         )
         jabatan_list.append(jabatan)
         if created:
-            print(f"   - Created: {jabatan.nama}")
+            print(f"   - Created: {jabatan.nama_jabatan}")
     
     # 3. Buat Organization (minimal 12)
     print("3. Membuat Organization...")
@@ -134,26 +134,14 @@ def create_dummy_data():
             )
             periode_list.append(periode)
             if created:
-                print(f"   - Created: {periode.nama} - {org.name}")
+                print(f"   - Created: {periode.nama_periode} - {org.name}")
     
-    # 5. Buat data user dummy jika belum ada
-    print("5. Memastikan data user tersedia...")
-    user_list = list(User.objects.all()[:50])
-    if len(user_list) < 20:
-        print("   Membuat data user dummy...")
-        for i in range(30):
-            username = fake.unique.user_name()
-            user, created = User.objects.get_or_create(
-                username=username,
-                defaults={
-                    'first_name': fake.first_name(),
-                    'last_name': fake.last_name(),
-                    'email': fake.email(),
-                    'is_active': True
-                }
-            )
-            if created:
-                user_list.append(user)
+    # 5. Ambil data penduduk yang sudah ada
+    print("5. Mengambil data penduduk...")
+    penduduk_list = list(Penduduk.objects.all()[:50])
+    if len(penduduk_list) < 10:
+        print("   Tidak cukup data penduduk. Silakan buat data penduduk terlebih dahulu.")
+        return
     
     # 6. Buat AnggotaOrganisasi (minimal 50)
     print("6. Membuat AnggotaOrganisasi...")
@@ -161,25 +149,31 @@ def create_dummy_data():
     for org in organizations:
         # Setiap organisasi punya 3-8 anggota
         num_members = random.randint(3, 8)
-        selected_users = random.sample(user_list, min(num_members, len(user_list)))
+        selected_penduduk = random.sample(penduduk_list, min(num_members, len(penduduk_list)))
         
-        for user in selected_users:
+        for penduduk in selected_penduduk:
             jabatan = random.choice(jabatan_list)
-            periode = random.choice([p for p in periode_list if p.organisasi == org])
+            periode = random.choice([p for p in periode_list if p.organization == org])
             
-            anggota, created = AnggotaOrganisasi.objects.get_or_create(
-                user=user,
-                organisasi=org,
-                jabatan=jabatan,
-                periode=periode,
-                defaults={
-                    'tanggal_bergabung': fake.date_between(start_date=periode.tanggal_mulai, end_date='today'),
-                    'is_active': random.choice([True, True, True, False]),  # 75% aktif
-                    'keterangan': f"Anggota {jabatan.nama} {org.name}"
-                }
-            )
-            if created:
-                anggota_count += 1
+            # Cek apakah kombinasi sudah ada untuk menghindari duplikasi
+            if not AnggotaOrganisasi.objects.filter(
+                organization=org,
+                penduduk=penduduk,
+                periode=periode
+            ).exists():
+                anggota, created = AnggotaOrganisasi.objects.get_or_create(
+                    penduduk=penduduk,
+                    organization=org,
+                    periode=periode,
+                    defaults={
+                        'jabatan': jabatan,
+                        'tanggal_bergabung': fake.date_between(start_date=periode.tanggal_mulai, end_date='today'),
+                        'status': random.choice(['aktif', 'aktif', 'aktif', 'non_aktif']),  # 75% aktif
+                        'bio': f"Anggota {jabatan.nama_jabatan} {org.name}"
+                    }
+                )
+                if created:
+                    anggota_count += 1
     
     print(f"   - Created {anggota_count} anggota organisasi")
     
@@ -188,18 +182,16 @@ def create_dummy_data():
     struktur_count = 0
     for org in organizations:
         periode_aktif = periode_list[-1] if periode_list else None
-        anggota_org = AnggotaOrganisasi.objects.filter(organisasi=org, is_active=True)
+        anggota_org = AnggotaOrganisasi.objects.filter(organization=org, status='aktif')
         
         for anggota in anggota_org[:5]:  # Ambil 5 anggota per organisasi untuk struktur
             struktur, created = StrukturOrganisasi.objects.get_or_create(
-                organisasi=org,
-                user=anggota.user,
-                jabatan=anggota.jabatan,
+                organization=org,
+                anggota=anggota,
                 defaults={
                     'periode': periode_aktif,
                     'urutan': random.randint(1, 10),
-                    'is_active': True,
-                    'keterangan': f"Struktur organisasi {org.name}"
+                    'is_visible': True
                 }
             )
             if created:
@@ -226,10 +218,16 @@ def create_dummy_data():
         
         galeri, created = GaleriKegiatan.objects.get_or_create(
             judul=f"{title} {org.name}",
+            organization=org,
             defaults={
                 'deskripsi': f"Dokumentasi kegiatan {title.lower()} yang diselenggarakan oleh {org.name}. Kegiatan ini bertujuan untuk meningkatkan partisipasi masyarakat dan mengembangkan potensi desa.",
+                'foto': f'organization/gallery/dummy_{i}.jpg',
                 'tanggal_kegiatan': fake.date_between(start_date='-2y', end_date='today'),
-                'is_active': True
+                'lokasi': fake.city(),
+                'fotografer': fake.name(),
+                'tags': ', '.join(fake.words(nb=3)),
+                'is_featured': random.choice([True, False]),
+                'view_count': random.randint(0, 1000)
             }
         )
         if created:
@@ -257,7 +255,7 @@ def create_dummy_data():
                     'location': f"Balai Desa Pulosarok / {fake.address()}",
                     'participants_count': random.randint(10, 100),
                     'budget': random.randint(500000, 5000000),
-                    'is_completed': event_date < timezone.now()
+                    'is_completed': event_date.replace(tzinfo=None) < datetime.now()
                 }
             )
             if created:
@@ -274,7 +272,7 @@ def create_dummy_data():
     print(f"StrukturOrganisasi: {StrukturOrganisasi.objects.count()}")
     print(f"GaleriKegiatan: {GaleriKegiatan.objects.count()}")
     print(f"OrganizationEvent: {OrganizationEvent.objects.count()}")
-    print(f"User: {User.objects.count()}")
+    print(f"Penduduk: {Penduduk.objects.count()}")
     
     print("\nData dummy berhasil dibuat!")
 

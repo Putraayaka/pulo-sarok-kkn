@@ -1,807 +1,482 @@
 {% extends 'admin/base.html' %}
 
-{% block title %}Organisasi{% endblock %}
-
-{% block page_title %}Manajemen Organisasi{% endblock %}
+{% block title %}Dashboard Organisasi{% endblock %}
 
 {% block content %}
-<div class="p-3 sm:p-4 lg:p-6 space-y-4 lg:space-y-6">
+<div class="min-h-screen bg-gray-50 p-2 sm:p-4 lg:p-6">
     <!-- Header Section -->
-    <div class="bg-white rounded-lg shadow-sm border p-3 sm:p-4 lg:p-6">
-        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3 sm:gap-4">
-            <div class="flex-1">
-                <h2 class="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900">Organisasi Desa</h2>
-                <p class="text-gray-600 mt-1 text-xs sm:text-sm lg:text-base">Kelola data organisasi dan struktur kepengurusan</p>
-            </div>
-            <div class="flex flex-col xs:flex-row gap-2 w-full sm:w-auto">
-                <button id="add-organization-btn" class="bg-primary-600 text-white px-3 sm:px-4 py-2 rounded-md hover:bg-primary-700 transition-colors duration-200 text-xs sm:text-sm flex items-center justify-center">
-                    <i class="fas fa-plus mr-1 sm:mr-2"></i>
-                    <span class="hidden xs:inline">Tambah </span>Organisasi
-                </button>
-                <button id="import-btn" class="bg-green-600 text-white px-3 sm:px-4 py-2 rounded-md hover:bg-green-700 transition-colors duration-200 text-xs sm:text-sm flex items-center justify-center">
-                    <i class="fas fa-upload mr-1 sm:mr-2"></i>
-                    <span class="hidden xs:inline">Import </span>Data
-                </button>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Statistics Cards -->
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        <div class="bg-white rounded-lg shadow-sm border p-3 sm:p-4">
-            <div class="flex items-center">
-                <div class="p-2 sm:p-3 rounded-full bg-primary-100 text-primary-600 flex-shrink-0">
-                    <i class="fas fa-sitemap text-sm sm:text-lg lg:text-xl"></i>
+    <div class="mb-4 sm:mb-6">
+        <div class="bg-white rounded-lg shadow-sm p-3 sm:p-4 lg:p-6">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <div>
+                    <h1 class="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">Dashboard Organisasi</h1>
+                    <p class="text-sm sm:text-base text-gray-600 mt-1">Kelola data organisasi dan kegiatan</p>
                 </div>
-                <div class="ml-2 sm:ml-3 lg:ml-4 min-w-0 flex-1">
-                    <p class="text-xs font-medium text-gray-600 truncate">Total Organisasi</p>
-                    <p class="text-lg sm:text-xl font-semibold text-gray-900" id="total-organizations">-</p>
-                </div>
-            </div>
-        </div>
-        
-        <div class="bg-white rounded-lg shadow-sm border p-3 sm:p-4">
-            <div class="flex items-center">
-                <div class="p-2 sm:p-3 rounded-full bg-green-100 text-green-600 flex-shrink-0">
-                    <i class="fas fa-users text-sm sm:text-lg lg:text-xl"></i>
-                </div>
-                <div class="ml-2 sm:ml-3 lg:ml-4 min-w-0 flex-1">
-                    <p class="text-xs font-medium text-gray-600 truncate">Total Anggota</p>
-                    <p class="text-lg sm:text-xl font-semibold text-gray-900" id="total-members">-</p>
-                </div>
-            </div>
-        </div>
-        
-        <div class="bg-white rounded-lg shadow-sm border p-3 sm:p-4">
-            <div class="flex items-center">
-                <div class="p-2 sm:p-3 rounded-full bg-purple-100 text-purple-600 flex-shrink-0">
-                    <i class="fas fa-check-circle text-sm sm:text-lg lg:text-xl"></i>
-                </div>
-                <div class="ml-2 sm:ml-3 lg:ml-4 min-w-0 flex-1">
-                    <p class="text-xs font-medium text-gray-600 truncate">Org. Aktif</p>
-                    <p class="text-lg sm:text-xl font-semibold text-gray-900" id="active-organizations">-</p>
-                </div>
-            </div>
-        </div>
-        
-        <div class="bg-white rounded-lg shadow-sm border p-3 sm:p-4">
-            <div class="flex items-center">
-                <div class="p-2 sm:p-3 rounded-full bg-yellow-100 text-yellow-600 flex-shrink-0">
-                    <i class="fas fa-calendar-alt text-sm sm:text-lg lg:text-xl"></i>
-                </div>
-                <div class="ml-2 sm:ml-3 lg:ml-4 min-w-0 flex-1">
-                    <p class="text-xs font-medium text-gray-600 truncate">Kegiatan</p>
-                    <p class="text-lg sm:text-xl font-semibold text-gray-900" id="activities-count">-</p>
+                <div class="flex flex-col sm:flex-row gap-2">
+                    <button onclick="refreshAllData()" class="bg-primary-600 hover:bg-primary-700 text-white px-3 py-2 sm:px-4 sm:py-2 rounded-lg text-sm sm:text-base font-medium transition-colors duration-200 flex items-center gap-2">
+                        <i class="fas fa-sync-alt text-xs sm:text-sm"></i>
+                        <span>Refresh Data</span>
+                    </button>
                 </div>
             </div>
         </div>
     </div>
-    
-    <!-- Organization Management Tabs -->
-    <div class="bg-white rounded-lg shadow-sm border">
-        <div class="border-b border-gray-200">
-            <nav class="-mb-px flex overflow-x-auto px-3 sm:px-4 lg:px-6" aria-label="Tabs">
-                <button class="org-tab border-primary-500 text-primary-600 whitespace-nowrap py-3 sm:py-4 px-2 sm:px-3 lg:px-4 border-b-2 font-medium text-xs sm:text-sm flex-shrink-0" data-tab="list">
-                    <i class="fas fa-list mr-1 sm:mr-2"></i>
-                    <span class="hidden xs:inline sm:hidden lg:inline">Daftar </span>Organisasi
-                </button>
-                <button class="org-tab border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-3 sm:py-4 px-2 sm:px-3 lg:px-4 border-b-2 font-medium text-xs sm:text-sm flex-shrink-0" data-tab="structure">
-                    <i class="fas fa-sitemap mr-1 sm:mr-2"></i>
-                    <span class="hidden xs:inline sm:hidden lg:inline">Struktur</span><span class="hidden lg:inline"> Organisasi</span>
-                </button>
-                <button class="org-tab border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-3 sm:py-4 px-2 sm:px-3 lg:px-4 border-b-2 font-medium text-xs sm:text-sm flex-shrink-0" data-tab="members">
-                    <i class="fas fa-users mr-1 sm:mr-2"></i>
-                    <span class="hidden xs:inline sm:hidden lg:inline">Anggota</span><span class="hidden lg:inline"> Organisasi</span>
-                </button>
-                <button class="org-tab border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-3 sm:py-4 px-2 sm:px-3 lg:px-4 border-b-2 font-medium text-xs sm:text-sm flex-shrink-0" data-tab="activities">
-                    <i class="fas fa-calendar mr-1 sm:mr-2"></i>
-                    <span class="hidden xs:inline sm:hidden lg:inline">Kegiatan</span><span class="hidden lg:inline"> Organisasi</span>
-                </button>
-            </nav>
-        </div>
-        
-        <!-- Organization List Tab -->
-        <div id="list-tab" class="org-content p-3 sm:p-4 lg:p-6">
-            <!-- Search and Filter -->
-            <div class="flex flex-col gap-3 sm:gap-4 mb-4 sm:mb-6">
-                <div class="flex flex-col sm:flex-row gap-2 sm:gap-3">
-                    <div class="relative flex-1">
-                        <input type="text" id="search-organization" placeholder="Cari organisasi..." 
-                               class="w-full pl-8 sm:pl-10 pr-3 sm:pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent text-xs sm:text-sm">
-                        <div class="absolute inset-y-0 left-0 pl-2 sm:pl-3 flex items-center pointer-events-none">
-                            <i class="fas fa-search text-gray-400 text-xs sm:text-sm"></i>
-                        </div>
-                    </div>
-                    
-                    <div class="flex gap-2 sm:gap-3">
-                        <select id="filter-type" class="flex-1 sm:flex-none px-2 sm:px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent text-xs sm:text-sm">
-                            <option value="">Semua Jenis</option>
-                            <option value="pemerintahan">Pemerintahan</option>
-                            <option value="kemasyarakatan">Kemasyarakatan</option>
-                            <option value="keagamaan">Keagamaan</option>
-                            <option value="ekonomi">Ekonomi</option>
-                            <option value="pendidikan">Pendidikan</option>
-                            <option value="kesehatan">Kesehatan</option>
-                        </select>
-                        
-                        <select id="filter-status" class="flex-1 sm:flex-none px-2 sm:px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent text-xs sm:text-sm">
-                            <option value="">Semua Status</option>
-                            <option value="aktif">Aktif</option>
-                            <option value="tidak_aktif">Tidak Aktif</option>
-                        </select>
-                    </div>
-                </div>
-                
-                <div class="flex gap-2 justify-end">
-                    <button id="export-excel-btn" class="bg-green-600 text-white px-3 sm:px-4 py-2 rounded-md hover:bg-green-700 transition-colors duration-200 text-xs sm:text-sm flex items-center justify-center">
-                        <i class="fas fa-file-excel mr-1 sm:mr-2"></i>
-                        <span class="hidden xs:inline">Excel</span>
-                    </button>
-                    <button id="export-pdf-btn" class="bg-red-600 text-white px-3 sm:px-4 py-2 rounded-md hover:bg-red-700 transition-colors duration-200 text-xs sm:text-sm flex items-center justify-center">
-                        <i class="fas fa-file-pdf mr-1 sm:mr-2"></i>
-                        <span class="hidden xs:inline">PDF</span>
-                    </button>
-                </div>
-            </div>
-            
-            <!-- Organization Cards for Mobile -->
-            <div id="organization-cards" class="block lg:hidden space-y-3">
-                <!-- Cards will be loaded here -->
-            </div>
-            
-            <!-- Organization Table for Desktop -->
-            <div class="hidden lg:block overflow-x-auto rounded-lg border border-gray-200">
-                <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                <input type="checkbox" id="select-all-organizations" class="rounded border-gray-300">
-                            </th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Organisasi</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jenis</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ketua</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Anggota</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody id="organization-table-body" class="bg-white divide-y divide-gray-200">
-                        <!-- Data will be loaded here -->
-                    </tbody>
-                </table>
-            </div>
-            
-            <!-- Pagination -->
-            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-4 mt-4 sm:mt-6">
-                <div class="text-xs sm:text-sm text-gray-700 text-center sm:text-left">
-                    Menampilkan <span id="showing-start">1</span> sampai <span id="showing-end">25</span> dari <span id="total-records">0</span> data
-                </div>
-                <div class="flex justify-center sm:justify-end">
-                    <nav class="flex space-x-1" aria-label="Pagination">
-                        <button id="prev-page" class="px-2 sm:px-3 py-1 sm:py-2 border border-gray-300 rounded-md text-xs sm:text-sm font-medium text-gray-700 hover:bg-gray-50">
-                            <i class="fas fa-chevron-left"></i>
-                        </button>
-                        <div id="page-numbers" class="flex space-x-1">
-                            <!-- Page numbers will be generated here -->
-                        </div>
-                        <button id="next-page" class="px-2 sm:px-3 py-1 sm:py-2 border border-gray-300 rounded-md text-xs sm:text-sm font-medium text-gray-700 hover:bg-gray-50">
-                            <i class="fas fa-chevron-right"></i>
-                        </button>
-                    </nav>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Structure Tab -->
-        <div id="structure-tab" class="org-content p-3 sm:p-4 lg:p-6 hidden">
-            <div class="flex flex-col gap-3 sm:gap-4 mb-4 sm:mb-6">
-                <h3 class="text-base sm:text-lg font-semibold text-gray-900">Struktur Organisasi</h3>
-                <div class="flex flex-col sm:flex-row gap-2 sm:gap-3">
-                    <select id="structure-org-select" class="flex-1 sm:flex-none px-2 sm:px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent text-xs sm:text-sm">
-                        <option value="">Pilih Organisasi</option>
-                        <!-- Options will be loaded dynamically -->
-                    </select>
-                    <button id="add-position-btn" class="bg-primary-600 text-white px-3 sm:px-4 py-2 rounded-md hover:bg-primary-700 transition-colors duration-200 text-xs sm:text-sm flex items-center justify-center">
-                        <i class="fas fa-plus mr-1 sm:mr-2"></i>
-                        <span class="hidden xs:inline">Tambah </span>Jabatan
-                    </button>
-                </div>
-            </div>
-            
-            <div id="structure-chart" class="bg-gray-50 rounded-lg p-3 sm:p-6 min-h-64 sm:min-h-96">
-                <div class="text-center text-gray-500 mt-12 sm:mt-20">
-                    <i class="fas fa-sitemap text-3xl sm:text-4xl mb-3 sm:mb-4"></i>
-                    <p class="text-sm sm:text-base">Pilih organisasi untuk melihat struktur kepengurusan</p>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Members Tab -->
-        <div id="members-tab" class="org-content p-3 sm:p-4 lg:p-6 hidden">
-            <div class="flex flex-col gap-3 sm:gap-4 mb-4 sm:mb-6">
-                <h3 class="text-base sm:text-lg font-semibold text-gray-900">Anggota Organisasi</h3>
-                <div class="flex flex-col sm:flex-row gap-2 sm:gap-3">
-                    <select id="members-org-select" class="flex-1 sm:flex-none px-2 sm:px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent text-xs sm:text-sm">
-                        <option value="">Pilih Organisasi</option>
-                        <!-- Options will be loaded dynamically -->
-                    </select>
-                    <button id="add-member-btn" class="bg-primary-600 text-white px-3 sm:px-4 py-2 rounded-md hover:bg-primary-700 transition-colors duration-200 text-xs sm:text-sm flex items-center justify-center">
-                        <i class="fas fa-user-plus mr-1 sm:mr-2"></i>
-                        <span class="hidden xs:inline">Tambah </span>Anggota
-                    </button>
-                </div>
-            </div>
-            
-            <!-- Members Cards for Mobile -->
-            <div id="members-cards" class="block lg:hidden space-y-3 sm:space-y-4">
-                <!-- Cards will be loaded here -->
-            </div>
-            
-            <!-- Members Table for Desktop -->
-            <div class="hidden lg:block overflow-x-auto rounded-lg border border-gray-200">
-                <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jabatan</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. HP</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Bergabung</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody id="members-table-body" class="bg-white divide-y divide-gray-200">
-                        <!-- Data will be loaded here -->
-                    </tbody>
-                </table>
-            </div>
-        </div>
-        
-        <!-- Activities Tab -->
-        <div id="activities-tab" class="org-content p-3 sm:p-4 lg:p-6 hidden">
-            <div class="flex flex-col gap-3 sm:gap-4 mb-4 sm:mb-6">
-                <h3 class="text-base sm:text-lg font-semibold text-gray-900">Kegiatan Organisasi</h3>
-                <div class="flex flex-col sm:flex-row gap-2 sm:gap-3">
-                    <select id="activities-org-select" class="flex-1 sm:flex-none px-2 sm:px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent text-xs sm:text-sm">
-                        <option value="">Semua Organisasi</option>
-                        <!-- Options will be loaded dynamically -->
-                    </select>
-                    <button id="add-activity-btn" class="bg-primary-600 text-white px-3 sm:px-4 py-2 rounded-md hover:bg-primary-700 transition-colors duration-200 text-xs sm:text-sm flex items-center justify-center">
-                        <i class="fas fa-plus mr-1 sm:mr-2"></i>
-                        <span class="hidden xs:inline">Tambah </span>Kegiatan
-                    </button>
-                </div>
-            </div>
-            
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4" id="activities-grid">
-                <!-- Activities will be loaded here -->
-            </div>
-        </div>
-    </div>
-</div>
 
-<!-- Add/Edit Organization Modal -->
-<div id="organization-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
-    <div class="relative top-2 sm:top-4 lg:top-8 mx-auto p-3 sm:p-4 lg:p-5 border w-11/12 sm:w-3/4 lg:w-2/3 xl:w-1/2 shadow-lg rounded-md bg-white max-h-screen overflow-y-auto">
-        <div class="mt-2 sm:mt-3">
-            <div class="flex justify-between items-center mb-3 sm:mb-4">
-                <h3 class="text-base sm:text-lg font-semibold text-gray-900" id="organization-modal-title">Tambah Organisasi</h3>
-                <button id="close-organization-modal" class="text-gray-400 hover:text-gray-600 p-1">
-                    <i class="fas fa-times text-lg sm:text-xl"></i>
-                </button>
+    <!-- Quick Stats Cards -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6 mb-4 sm:mb-6">
+        <div class="bg-white rounded-lg shadow-sm p-3 sm:p-4 lg:p-6">
+            <div class="flex items-center">
+                <div class="p-2 sm:p-3 bg-blue-100 rounded-lg">
+                    <i class="fas fa-users text-blue-600 text-lg sm:text-xl lg:text-2xl"></i>
+                </div>
+                <div class="ml-3 sm:ml-4">
+                    <p class="text-xs sm:text-sm font-medium text-gray-600">Total Organisasi</p>
+                    <p class="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900" id="totalOrganisasi">0</p>
+                </div>
             </div>
-            
-            <form id="organization-form">
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                    <div class="sm:col-span-2">
-                        <label for="nama_organisasi" class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Nama Organisasi *</label>
-                        <input type="text" id="nama_organisasi" name="nama_organisasi" required 
-                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm">
-                    </div>
-                    
-                    <div>
-                        <label for="jenis_organisasi" class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Jenis Organisasi *</label>
-                        <select id="jenis_organisasi" name="jenis_organisasi" required 
-                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm">
-                            <option value="">Pilih Jenis</option>
-                            <option value="pemerintahan">Pemerintahan</option>
-                            <option value="kemasyarakatan">Kemasyarakatan</option>
-                            <option value="keagamaan">Keagamaan</option>
-                            <option value="ekonomi">Ekonomi</option>
-                            <option value="pendidikan">Pendidikan</option>
-                            <option value="kesehatan">Kesehatan</option>
-                        </select>
-                    </div>
-                    
-                    <div>
-                        <label for="tahun_berdiri" class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Tahun Berdiri</label>
-                        <input type="number" id="tahun_berdiri" name="tahun_berdiri" min="1900" max="2024" 
-                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm">
-                    </div>
-                    
-                    <div>
-                        <label for="ketua_organisasi" class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Ketua Organisasi</label>
-                        <input type="text" id="ketua_organisasi" name="ketua_organisasi" 
-                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm">
-                    </div>
-                    
-                    <div>
-                        <label for="sekretaris" class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Sekretaris</label>
-                        <input type="text" id="sekretaris" name="sekretaris" 
-                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm">
-                    </div>
-                    
-                    <div class="sm:col-span-2">
-                        <label for="deskripsi" class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Deskripsi</label>
-                        <textarea id="deskripsi" name="deskripsi" rows="2" 
-                                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm resize-none"></textarea>
-                    </div>
-                    
-                    <div>
-                        <label for="alamat" class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Alamat</label>
-                        <textarea id="alamat" name="alamat" rows="2" 
-                                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm resize-none"></textarea>
-                    </div>
-                    
-                    <div>
-                        <label for="kontak" class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Kontak</label>
-                        <input type="text" id="kontak" name="kontak" 
-                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm">
-                    </div>
+        </div>
+        <div class="bg-white rounded-lg shadow-sm p-3 sm:p-4 lg:p-6">
+            <div class="flex items-center">
+                <div class="p-2 sm:p-3 bg-green-100 rounded-lg">
+                    <i class="fas fa-user-friends text-green-600 text-lg sm:text-xl lg:text-2xl"></i>
                 </div>
-                
-                <div class="flex flex-col-reverse sm:flex-row justify-end gap-2 sm:gap-3 mt-4 sm:mt-6">
-                    <button type="button" id="cancel-organization" class="w-full sm:w-auto px-3 sm:px-4 py-2 border border-gray-300 rounded-md text-xs sm:text-sm font-medium text-gray-700 hover:bg-gray-50">
-                        Batal
-                    </button>
-                    <button type="submit" class="w-full sm:w-auto px-3 sm:px-4 py-2 bg-primary-600 text-white rounded-md text-xs sm:text-sm font-medium hover:bg-primary-700">
-                        Simpan
-                    </button>
+                <div class="ml-3 sm:ml-4">
+                    <p class="text-xs sm:text-sm font-medium text-gray-600">Total Anggota</p>
+                    <p class="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900" id="totalAnggota">0</p>
                 </div>
-            </form>
+            </div>
+        </div>
+        <div class="bg-white rounded-lg shadow-sm p-3 sm:p-4 lg:p-6">
+            <div class="flex items-center">
+                <div class="p-2 sm:p-3 bg-purple-100 rounded-lg">
+                    <i class="fas fa-user-tie text-purple-600 text-lg sm:text-xl lg:text-2xl"></i>
+                </div>
+                <div class="ml-3 sm:ml-4">
+                    <p class="text-xs sm:text-sm font-medium text-gray-600">Total Jabatan</p>
+                    <p class="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900" id="totalJabatan">0</p>
+                </div>
+            </div>
+        </div>
+        <div class="bg-white rounded-lg shadow-sm p-3 sm:p-4 lg:p-6">
+            <div class="flex items-center">
+                <div class="p-2 sm:p-3 bg-yellow-100 rounded-lg">
+                    <i class="fas fa-images text-yellow-600 text-lg sm:text-xl lg:text-2xl"></i>
+                </div>
+                <div class="ml-3 sm:ml-4">
+                    <p class="text-xs sm:text-sm font-medium text-gray-600">Galeri Kegiatan</p>
+                    <p class="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900" id="totalGaleri">0</p>
+                </div>
+            </div>
         </div>
     </div>
-</div>
 
-<!-- Loading Spinner -->
-<div id="loading-spinner" class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50 hidden">
-    <div class="bg-white rounded-lg p-4 sm:p-6 shadow-lg mx-4">
-        <div class="flex items-center space-x-2 sm:space-x-3">
-            <div class="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-primary-600"></div>
-            <span class="text-sm sm:text-base text-gray-700">Memuat data...</span>
+    <!-- Quick Actions -->
+    <div class="bg-white rounded-lg shadow-sm p-3 sm:p-4 lg:p-6 mb-4 sm:mb-6">
+        <h2 class="text-lg sm:text-xl font-semibold text-gray-900 mb-3 sm:mb-4">Aksi Cepat</h2>
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
+            <a href="/pulosarok/organization/data-anggota/" class="flex flex-col items-center p-3 sm:p-4 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors duration-200">
+                <i class="fas fa-user-friends text-blue-600 text-xl sm:text-2xl mb-2"></i>
+                <span class="text-xs sm:text-sm font-medium text-blue-800 text-center">Data Anggota</span>
+            </a>
+            <a href="/pulosarok/organization/data-jabatan/" class="flex flex-col items-center p-3 sm:p-4 bg-green-50 hover:bg-green-100 rounded-lg transition-colors duration-200">
+                <i class="fas fa-user-tie text-green-600 text-xl sm:text-2xl mb-2"></i>
+                <span class="text-xs sm:text-sm font-medium text-green-800 text-center">Data Jabatan</span>
+            </a>
+            <a href="/pulosarok/organization/galeri-kegiatan/" class="flex flex-col items-center p-3 sm:p-4 bg-purple-50 hover:bg-purple-100 rounded-lg transition-colors duration-200">
+                <i class="fas fa-images text-purple-600 text-xl sm:text-2xl mb-2"></i>
+                <span class="text-xs sm:text-sm font-medium text-purple-800 text-center">Galeri Kegiatan</span>
+            </a>
+            <a href="/pulosarok/organization/kategori-organisasi/" class="flex flex-col items-center p-3 sm:p-4 bg-yellow-50 hover:bg-yellow-100 rounded-lg transition-colors duration-200">
+                <i class="fas fa-tags text-yellow-600 text-xl sm:text-2xl mb-2"></i>
+                <span class="text-xs sm:text-sm font-medium text-yellow-800 text-center">Kategori</span>
+            </a>
+            <a href="/pulosarok/organization/periode-kepengurusan/" class="flex flex-col items-center p-3 sm:p-4 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition-colors duration-200">
+                <i class="fas fa-calendar text-indigo-600 text-xl sm:text-2xl mb-2"></i>
+                <span class="text-xs sm:text-sm font-medium text-indigo-800 text-center">Periode</span>
+            </a>
+            <a href="/pulosarok/organization/struktur-organisasi/" class="flex flex-col items-center p-3 sm:p-4 bg-red-50 hover:bg-red-100 rounded-lg transition-colors duration-200">
+                <i class="fas fa-sitemap text-red-600 text-xl sm:text-2xl mb-2"></i>
+                <span class="text-xs sm:text-sm font-medium text-red-800 text-center">Struktur</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Recent Activities & Charts -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-4 sm:mb-6">
+        <!-- Recent Activities -->
+        <div class="bg-white rounded-lg shadow-sm p-3 sm:p-4 lg:p-6">
+            <div class="flex items-center justify-between mb-3 sm:mb-4">
+                <h2 class="text-lg sm:text-xl font-semibold text-gray-900">Aktivitas Terbaru</h2>
+                <button onclick="loadRecentActivities()" class="text-primary-600 hover:text-primary-700 text-sm">
+                    <i class="fas fa-sync-alt"></i>
+                </button>
+            </div>
+            <div id="recentActivities" class="space-y-3">
+                <!-- Recent activities will be loaded here -->
+            </div>
+            <div id="activitiesLoading" class="flex items-center justify-center py-4">
+                <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-primary-600"></div>
+                <span class="ml-2 text-sm text-gray-600">Memuat aktivitas...</span>
+            </div>
+        </div>
+
+        <!-- Organization Chart -->
+        <div class="bg-white rounded-lg shadow-sm p-3 sm:p-4 lg:p-6">
+            <div class="flex items-center justify-between mb-3 sm:mb-4">
+                <h2 class="text-lg sm:text-xl font-semibold text-gray-900">Distribusi Organisasi</h2>
+                <button onclick="loadOrganizationChart()" class="text-primary-600 hover:text-primary-700 text-sm">
+                    <i class="fas fa-sync-alt"></i>
+                </button>
+            </div>
+            <div id="organizationChart" class="h-64">
+                <!-- Chart will be loaded here -->
+            </div>
+            <div id="chartLoading" class="flex items-center justify-center h-64">
+                <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-primary-600"></div>
+                <span class="ml-2 text-sm text-gray-600">Memuat grafik...</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Organizations -->
+    <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+        <div class="px-3 sm:px-4 lg:px-6 py-3 sm:py-4 border-b border-gray-200">
+            <div class="flex items-center justify-between">
+                <h2 class="text-lg sm:text-xl font-semibold text-gray-900">Organisasi Terbaru</h2>
+                <a href="/pulosarok/organization/data-anggota/" class="text-primary-600 hover:text-primary-700 text-sm font-medium">
+                    Lihat Semua
+                </a>
+            </div>
+        </div>
+        
+        <!-- Desktop Table -->
+        <div class="hidden lg:block overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Organisasi</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kategori</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Anggota</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Dibuat</th>
+                    </tr>
+                </thead>
+                <tbody id="organizationsTableBody" class="bg-white divide-y divide-gray-200">
+                    <!-- Data will be loaded here -->
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Mobile Cards -->
+        <div class="lg:hidden" id="organizationsMobileCards">
+            <!-- Mobile cards will be loaded here -->
+        </div>
+        
+        <!-- Loading State -->
+        <div id="organizationsLoading" class="flex items-center justify-center py-8">
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+            <span class="ml-2 text-gray-600">Memuat data organisasi...</span>
+        </div>
+        
+        <!-- Empty State -->
+        <div id="organizationsEmpty" class="hidden text-center py-8">
+            <i class="fas fa-users text-gray-400 text-4xl mb-4"></i>
+            <p class="text-gray-600">Belum ada data organisasi</p>
         </div>
     </div>
 </div>
 
 <script>
-// Tab functionality with mobile optimization
+// Initialize dashboard
 document.addEventListener('DOMContentLoaded', function() {
-    // Tab switching
-    const tabs = document.querySelectorAll('.org-tab');
-    const contents = document.querySelectorAll('.org-content');
-    
-    tabs.forEach(tab => {
-        tab.addEventListener('click', function() {
-            const targetTab = this.getAttribute('data-tab');
-            
-            // Remove active classes
-            tabs.forEach(t => {
-                t.classList.remove('border-primary-500', 'text-primary-600');
-                t.classList.add('border-transparent', 'text-gray-500');
-            });
-            
-            // Add active class to clicked tab
-            this.classList.remove('border-transparent', 'text-gray-500');
-            this.classList.add('border-primary-500', 'text-primary-600');
-            
-            // Hide all content
-            contents.forEach(content => {
-                content.classList.add('hidden');
-            });
-            
-            // Show target content
-            document.getElementById(targetTab + '-tab').classList.remove('hidden');
-            
-            // Scroll to top on mobile after tab change
-            if (window.innerWidth < 768) {
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            }
-            
-            // Load data for the active tab
-            loadTabData(targetTab);
-        });
-    });
-    
-    // Modal functionality with mobile optimization
-    const modal = document.getElementById('organization-modal');
-    const addBtn = document.getElementById('add-organization-btn');
-    const closeBtn = document.getElementById('close-organization-modal');
-    const cancelBtn = document.getElementById('cancel-organization');
-    
-    function openModal() {
-        modal.classList.remove('hidden');
-        document.getElementById('organization-modal-title').textContent = 'Tambah Organisasi';
-        document.getElementById('organization-form').reset();
-        // Prevent body scroll on mobile
-        document.body.style.overflow = 'hidden';
-    }
-    
-    function closeModal() {
-        modal.classList.add('hidden');
-        // Restore body scroll
-        document.body.style.overflow = 'auto';
-    }
-    
-    addBtn.addEventListener('click', openModal);
-    
-    [closeBtn, cancelBtn].forEach(btn => {
-        btn.addEventListener('click', closeModal);
-    });
-    
-    // Close modal when clicking outside (but not on mobile to prevent accidental closes)
-    modal.addEventListener('click', function(e) {
-        if (e.target === modal && window.innerWidth >= 768) {
-            closeModal();
-        }
-    });
-    
-    // Handle escape key
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
-            closeModal();
-        }
-    });
-    
-    // Form submission with better mobile UX
-    document.getElementById('organization-form').addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        // Disable submit button to prevent double submission
-        const submitBtn = this.querySelector('button[type="submit"]');
-        const originalText = submitBtn.textContent;
-        submitBtn.disabled = true;
-        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1 sm:mr-2"></i>Menyimpan...';
-        
-        // Simulate API call
-        setTimeout(() => {
-            closeModal();
-            showNotification('Organisasi berhasil disimpan!', 'success');
-            loadOrganizations();
-            
-            // Reset button
-            submitBtn.disabled = false;
-            submitBtn.textContent = originalText;
-        }, 1000);
-    });
-    
-    // Export button handlers
-    document.getElementById('export-excel-btn').addEventListener('click', () => exportData('excel'));
-    document.getElementById('export-pdf-btn').addEventListener('click', () => exportData('pdf'));
-    
-    // Search functionality with debounce for better performance
-    let searchTimeout;
-    document.getElementById('search-organization').addEventListener('input', function() {
-        clearTimeout(searchTimeout);
-        const searchTerm = this.value.toLowerCase();
-        
-        searchTimeout = setTimeout(() => {
-            filterOrganizations();
-        }, 300); // 300ms debounce
-    });
-    
-    document.getElementById('filter-type').addEventListener('change', function() {
-        filterOrganizations();
-    });
-    
-    document.getElementById('filter-status').addEventListener('change', function() {
-        filterOrganizations();
-    });
-    
-    // Load initial data
-    loadStatistics();
-    loadTabData('list');
+    loadDashboardStats();
+    loadRecentActivities();
+    loadOrganizationChart();
+    loadRecentOrganizations();
 });
 
-// Utility functions
-function showLoading() {
-    document.getElementById('loading-spinner').classList.remove('hidden');
+// Load dashboard statistics
+function loadDashboardStats() {
+    // Load organization stats
+    fetch('/pulosarok/organization/api/statistics/')
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('totalOrganisasi').textContent = data.total_organizations || 0;
+        })
+        .catch(error => console.error('Error loading organization stats:', error));
+    
+    // Load member stats
+    fetch('/pulosarok/organization/api/anggota-organisasi/statistics/')
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('totalAnggota').textContent = data.total_anggota || 0;
+        })
+        .catch(error => console.error('Error loading member stats:', error));
+    
+    // Load position stats
+    fetch('/pulosarok/organization/api/jabatan/statistics/')
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('totalJabatan').textContent = data.total_jabatan || 0;
+        })
+        .catch(error => console.error('Error loading position stats:', error));
+    
+    // Load gallery stats
+    fetch('/pulosarok/organization/api/galeri-kegiatan/statistics/')
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('totalGaleri').textContent = data.total_galeri || 0;
+        })
+        .catch(error => console.error('Error loading gallery stats:', error));
 }
 
-function hideLoading() {
-    document.getElementById('loading-spinner').classList.add('hidden');
+// Load recent activities
+function loadRecentActivities() {
+    document.getElementById('activitiesLoading').classList.remove('hidden');
+    
+    // Simulate recent activities (replace with actual API call)
+    setTimeout(() => {
+        const activities = [
+            {
+                type: 'member_added',
+                message: 'Anggota baru ditambahkan ke Karang Taruna',
+                time: '2 jam yang lalu',
+                icon: 'fa-user-plus',
+                color: 'text-green-600'
+            },
+            {
+                type: 'gallery_uploaded',
+                message: 'Foto kegiatan PKK diupload',
+                time: '4 jam yang lalu',
+                icon: 'fa-images',
+                color: 'text-blue-600'
+            },
+            {
+                type: 'organization_created',
+                message: 'Organisasi baru "Posyandu Melati" dibuat',
+                time: '1 hari yang lalu',
+                icon: 'fa-plus-circle',
+                color: 'text-purple-600'
+            },
+            {
+                type: 'structure_updated',
+                message: 'Struktur organisasi BPD diperbarui',
+                time: '2 hari yang lalu',
+                icon: 'fa-sitemap',
+                color: 'text-orange-600'
+            },
+            {
+                type: 'period_changed',
+                message: 'Periode kepengurusan RT 01 diperbarui',
+                time: '3 hari yang lalu',
+                icon: 'fa-calendar',
+                color: 'text-indigo-600'
+            }
+        ];
+        
+        const activitiesContainer = document.getElementById('recentActivities');
+        activitiesContainer.innerHTML = activities.map(activity => `
+            <div class="flex items-start space-x-3 p-3 hover:bg-gray-50 rounded-lg transition-colors duration-200">
+                <div class="flex-shrink-0">
+                    <i class="fas ${activity.icon} ${activity.color} text-sm"></i>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm text-gray-900">${activity.message}</p>
+                    <p class="text-xs text-gray-500">${activity.time}</p>
+                </div>
+            </div>
+        `).join('');
+        
+        document.getElementById('activitiesLoading').classList.add('hidden');
+    }, 1000);
 }
 
-function showNotification(message, type = 'info') {
-    // Create notification element
+// Load organization chart
+function loadOrganizationChart() {
+    document.getElementById('chartLoading').classList.remove('hidden');
+    
+    fetch('/pulosarok/organization/api/organizations/chart-data/')
+        .then(response => response.json())
+        .then(data => {
+            renderOrganizationChart(data);
+            document.getElementById('chartLoading').classList.add('hidden');
+        })
+        .catch(error => {
+            console.error('Error loading chart data:', error);
+            // Fallback to sample data
+            const sampleData = [
+                { name: 'Karang Taruna', value: 5, color: '#3B82F6' },
+                { name: 'PKK', value: 8, color: '#10B981' },
+                { name: 'BPD', value: 3, color: '#8B5CF6' },
+                { name: 'RT/RW', value: 12, color: '#F59E0B' },
+                { name: 'Posyandu', value: 6, color: '#EF4444' }
+            ];
+            renderOrganizationChart(sampleData);
+            document.getElementById('chartLoading').classList.add('hidden');
+        });
+}
+
+// Render organization chart
+function renderOrganizationChart(data) {
+    const chartContainer = document.getElementById('organizationChart');
+    const total = data.reduce((sum, item) => sum + item.value, 0);
+    
+    chartContainer.innerHTML = `
+        <div class="space-y-3">
+            ${data.map(item => {
+                const percentage = total > 0 ? (item.value / total * 100) : 0;
+                return `
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-4 h-4 rounded-full" style="background-color: ${item.color}"></div>
+                            <span class="text-sm font-medium text-gray-700">${item.name}</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <div class="w-24 bg-gray-200 rounded-full h-2">
+                                <div class="h-2 rounded-full" style="background-color: ${item.color}; width: ${percentage}%"></div>
+                            </div>
+                            <span class="text-sm font-semibold text-gray-900 w-8 text-right">${item.value}</span>
+                        </div>
+                    </div>
+                `;
+            }).join('')}
+        </div>
+        <div class="mt-4 pt-4 border-t border-gray-200">
+            <div class="flex justify-between items-center">
+                <span class="text-sm font-medium text-gray-700">Total Organisasi</span>
+                <span class="text-lg font-bold text-gray-900">${total}</span>
+            </div>
+        </div>
+    `;
+}
+
+// Load recent organizations
+function loadRecentOrganizations() {
+    document.getElementById('organizationsLoading').classList.remove('hidden');
+    
+    fetch('/pulosarok/organization/api/organizations/?limit=5&ordering=-created_at')
+        .then(response => response.json())
+        .then(data => {
+            renderRecentOrganizations(data.results || []);
+            
+            if ((data.results || []).length === 0) {
+                document.getElementById('organizationsEmpty').classList.remove('hidden');
+            }
+        })
+        .catch(error => {
+            console.error('Error loading recent organizations:', error);
+            document.getElementById('organizationsEmpty').classList.remove('hidden');
+        })
+        .finally(() => {
+            document.getElementById('organizationsLoading').classList.add('hidden');
+        });
+}
+
+// Render recent organizations
+function renderRecentOrganizations(organizations) {
+    const tableBody = document.getElementById('organizationsTableBody');
+    const mobileCards = document.getElementById('organizationsMobileCards');
+    
+    // Desktop table
+    tableBody.innerHTML = organizations.map(org => `
+        <tr class="hover:bg-gray-50">
+            <td class="px-6 py-4 whitespace-nowrap">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 h-10 w-10">
+                        <div class="h-10 w-10 rounded-full bg-primary-100 flex items-center justify-center">
+                            <i class="fas fa-users text-primary-600"></i>
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <div class="text-sm font-medium text-gray-900">${org.name || 'Nama tidak tersedia'}</div>
+                        <div class="text-sm text-gray-500">${org.description || 'Tidak ada deskripsi'}</div>
+                    </div>
+                </div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                    ${org.organization_type || 'Umum'}
+                </span>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                ${org.members_count || 0} orang
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                    org.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                }">
+                    ${org.is_active ? 'Aktif' : 'Non Aktif'}
+                </span>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                ${new Date(org.created_at).toLocaleDateString('id-ID')}
+            </td>
+        </tr>
+    `).join('');
+    
+    // Mobile cards
+    mobileCards.innerHTML = organizations.map(org => `
+        <div class="border-b border-gray-200 p-4">
+            <div class="flex items-start space-x-3">
+                <div class="flex-shrink-0">
+                    <div class="h-10 w-10 rounded-full bg-primary-100 flex items-center justify-center">
+                        <i class="fas fa-users text-primary-600"></i>
+                    </div>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-sm font-medium text-gray-900 truncate">${org.name || 'Nama tidak tersedia'}</h3>
+                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                            org.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                        }">
+                            ${org.is_active ? 'Aktif' : 'Non Aktif'}
+                        </span>
+                    </div>
+                    <p class="text-sm text-gray-500 mt-1">${org.description || 'Tidak ada deskripsi'}</p>
+                    <div class="flex items-center justify-between mt-2">
+                        <div class="flex items-center space-x-4 text-xs text-gray-500">
+                            <span>${org.organization_type || 'Umum'}</span>
+                            <span>${org.members_count || 0} anggota</span>
+                        </div>
+                        <span class="text-xs text-gray-500">${new Date(org.created_at).toLocaleDateString('id-ID')}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+// Refresh all data
+function refreshAllData() {
+    loadDashboardStats();
+    loadRecentActivities();
+    loadOrganizationChart();
+    loadRecentOrganizations();
+    
+    // Show notification
+    showNotification('Data berhasil diperbarui', 'success');
+}
+
+// Show notification
+function showNotification(message, type) {
     const notification = document.createElement('div');
-    notification.className = `fixed top-4 right-4 p-3 sm:p-4 rounded-lg shadow-lg z-50 max-w-xs sm:max-w-sm mx-4 ${
-        type === 'success' ? 'bg-green-500 text-white' :
-        type === 'error' ? 'bg-red-500 text-white' :
-        'bg-blue-500 text-white'
+    notification.className = `fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg ${
+        type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
     }`;
     notification.innerHTML = `
-        <div class="flex items-center justify-between">
-            <span class="text-sm sm:text-base">${message}</span>
-            <button onclick="this.parentElement.parentElement.remove()" class="ml-2 text-white hover:text-gray-200">
-                <i class="fas fa-times text-sm"></i>
-            </button>
+        <div class="flex items-center">
+            <i class="fas ${
+                type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'
+            } mr-2"></i>
+            <span>${message}</span>
         </div>
     `;
     
     document.body.appendChild(notification);
     
-    // Remove after 5 seconds
     setTimeout(() => {
-        if (notification.parentElement) {
-            notification.remove();
-        }
-    }, 5000);
-}
-
-function loadStatistics() {
-    // Simulate API call with loading states
-    const stats = ['total-organizations', 'active-organizations', 'total-members', 'activities-count'];
-    
-    stats.forEach(stat => {
-        const element = document.getElementById(stat);
-        if (element) {
-            element.innerHTML = '<i class="fas fa-spinner fa-spin text-sm"></i>';
-        }
-    });
-    
-    setTimeout(() => {
-        document.getElementById('total-organizations').textContent = '12';
-        document.getElementById('total-members').textContent = '156';
-        document.getElementById('active-organizations').textContent = '10';
-        document.getElementById('activities-count').textContent = '8';
-    }, 500);
-}
-
-function loadTabData(tab) {
-    switch(tab) {
-        case 'list':
-            loadOrganizations();
-            break;
-        case 'structure':
-            loadStructure();
-            break;
-        case 'members':
-            loadMembers();
-            break;
-        case 'activities':
-            loadActivities();
-            break;
-    }
-}
-
-function loadOrganizations() {
-    const tableBody = document.getElementById('organization-table-body');
-    const cardsContainer = document.getElementById('organization-cards');
-    
-    // Sample data
-    const organizations = [
-        {
-            id: 1,
-            nama: 'Karang Taruna Pulosarok',
-            jenis: 'Kemasyarakatan',
-            ketua: 'Ahmad Fauzi',
-            anggota: 25,
-            status: 'Aktif'
-        },
-        {
-            id: 2,
-            nama: 'PKK Pulosarok',
-            jenis: 'Kemasyarakatan',
-            ketua: 'Siti Aminah',
-            anggota: 30,
-            status: 'Aktif'
-        }
-    ];
-    
-    // Load table for desktop
-    tableBody.innerHTML = organizations.map(org => `
-        <tr>
-            <td class="px-6 py-4 whitespace-nowrap">
-                <input type="checkbox" class="rounded border-gray-300">
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap">
-                <div class="text-sm font-medium text-gray-900">${org.nama}</div>
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap">
-                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                    ${org.jenis}
-                </span>
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${org.ketua}</td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${org.anggota}</td>
-            <td class="px-6 py-4 whitespace-nowrap">
-                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                    org.status === 'Aktif' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                }">
-                    ${org.status}
-                </span>
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                <button class="text-primary-600 hover:text-primary-900 mr-3" onclick="editOrganization(${org.id})">
-                    <i class="fas fa-edit"></i>
-                </button>
-                <button class="text-red-600 hover:text-red-900" onclick="deleteOrganization(${org.id})">
-                    <i class="fas fa-trash"></i>
-                </button>
-            </td>
-        </tr>
-    `).join('');
-    
-    // Load cards for mobile
-    cardsContainer.innerHTML = organizations.map(org => `
-        <div class="bg-white border rounded-lg p-4 shadow-sm">
-            <div class="flex justify-between items-start mb-3">
-                <h3 class="font-medium text-gray-900">${org.nama}</h3>
-                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                    org.status === 'Aktif' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                }">
-                    ${org.status}
-                </span>
-            </div>
-            <div class="space-y-2 text-sm text-gray-600">
-                <div class="flex justify-between">
-                    <span>Jenis:</span>
-                    <span class="font-medium">${org.jenis}</span>
-                </div>
-                <div class="flex justify-between">
-                    <span>Ketua:</span>
-                    <span class="font-medium">${org.ketua}</span>
-                </div>
-                <div class="flex justify-between">
-                    <span>Anggota:</span>
-                    <span class="font-medium">${org.anggota} orang</span>
-                </div>
-            </div>
-            <div class="flex justify-end space-x-2 mt-4">
-                <button class="text-primary-600 hover:text-primary-900" onclick="editOrganization(${org.id})">
-                    <i class="fas fa-edit"></i>
-                </button>
-                <button class="text-red-600 hover:text-red-900" onclick="deleteOrganization(${org.id})">
-                    <i class="fas fa-trash"></i>
-                </button>
-            </div>
-        </div>
-    `).join('');
-}
-
-function loadStructure() {
-    const container = document.querySelector('#structure-chart');
-    if (!container) return;
-    
-    container.innerHTML = `
-        <div class="text-center py-8">
-            <i class="fas fa-sitemap text-4xl text-gray-400 mb-4"></i>
-            <p class="text-gray-500">Struktur organisasi akan ditampilkan di sini</p>
-        </div>
-    `;
-}
-
-function loadMembers() {
-    const tableBody = document.getElementById('members-table-body');
-    const cardsContainer = document.getElementById('members-cards');
-    
-    if (tableBody) {
-        tableBody.innerHTML = `
-            <tr>
-                <td class="px-4 py-3 text-sm text-gray-900">Ahmad Fauzi</td>
-                <td class="px-4 py-3 text-sm text-gray-900">Ketua</td>
-                <td class="px-4 py-3 text-sm text-gray-900">081234567890</td>
-                <td class="px-4 py-3 text-sm text-gray-900">Jan 2023</td>
-                <td class="px-4 py-3">
-                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                        Aktif
-                    </span>
-                </td>
-                <td class="px-4 py-3 text-sm font-medium">
-                    <button class="text-primary-600 hover:text-primary-900 mr-3">
-                        <i class="fas fa-edit"></i>
-                    </button>
-                    <button class="text-red-600 hover:text-red-900">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </td>
-            </tr>
-        `;
-    }
-    
-    if (cardsContainer) {
-        cardsContainer.innerHTML = `
-            <div class="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow">
-                <div class="flex items-center space-x-3">
-                    <div class="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center">
-                        <i class="fas fa-user text-primary-600"></i>
-                    </div>
-                    <div class="flex-1">
-                        <h3 class="font-medium text-gray-900">Ahmad Fauzi</h3>
-                        <p class="text-sm text-gray-500">Ketua</p>
-                        <p class="text-xs text-gray-400">081234567890</p>
-                    </div>
-                    <span class="px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">Aktif</span>
-                </div>
-            </div>
-        `;
-    }
-}
-
-function loadActivities() {
-    const container = document.getElementById('activities-grid');
-    if (!container) return;
-    
-    container.innerHTML = `
-        <div class="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow">
-            <div class="flex items-start space-x-3">
-                <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <i class="fas fa-calendar text-blue-600"></i>
-                </div>
-                <div class="flex-1 min-w-0">
-                    <h3 class="font-medium text-gray-900 text-sm">Gotong Royong</h3>
-                    <p class="text-xs text-gray-500 mt-1">15 Januari 2024</p>
-                    <p class="text-xs text-gray-600 mt-2">Kegiatan gotong royong membersihkan lingkungan desa</p>
-                </div>
-            </div>
-        </div>
-    `;
-}
-
-function filterOrganizations() {
-    const searchTerm = document.getElementById('search-organization').value.toLowerCase();
-    const typeFilter = document.getElementById('filter-type').value;
-    const statusFilter = document.getElementById('filter-status').value;
-    
-    // Show loading briefly
-    showLoading();
-    setTimeout(() => {
-        hideLoading();
-        // Update filtered results
-        loadOrganizations();
-    }, 300);
-}
-
-function exportData(format) {
-    showNotification(`Mengekspor data dalam format ${format.toUpperCase()}...`, 'info');
-    
-    // Simulate export with progress
-    setTimeout(() => {
-        showNotification(`Data berhasil diekspor dalam format ${format.toUpperCase()}!`, 'success');
-        
-        // Trigger download (simulation)
-        const link = document.createElement('a');
-        link.href = '#';
-        link.download = `organisasi.${format}`;
-        link.click();
-    }, 2000);
-}
-
-function saveOrganization() {
-    // Implement save logic
-    const modal = document.getElementById('organization-modal');
-    modal.classList.add('hidden');
-    
-    // Show success message
-    alert('Organisasi berhasil disimpan!');
-    
-    // Reload data
-    loadOrganizations();
-}
-
-function editOrganization(id) {
-    // Implement edit logic
-    const modal = document.getElementById('organization-modal');
-    modal.classList.remove('hidden');
-    document.getElementById('organization-modal-title').textContent = 'Edit Organisasi';
-}
-
-function deleteOrganization(id) {
-    if (confirm('Apakah Anda yakin ingin menghapus organisasi ini?')) {
-        // Implement delete logic
-        alert('Organisasi berhasil dihapus!');
-        loadOrganizations();
-    }
+        notification.remove();
+    }, 3000);
 }
 </script>
 {% endblock %}

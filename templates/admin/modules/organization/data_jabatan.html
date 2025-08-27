@@ -1,205 +1,251 @@
 {% extends 'admin/base.html' %}
 
-{% block page_title %}Data Jabatan{% endblock %}
+{% block title %}Data Jabatan{% endblock %}
 
 {% block content %}
-<div class="p-6">
+<div class="min-h-screen bg-gray-50 p-2 sm:p-4 lg:p-6">
     <!-- Header Section -->
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-            <div>
-                <h2 class="text-2xl font-bold text-gray-900 mb-2">Data Jabatan Organisasi</h2>
-                <p class="text-gray-600">Kelola jabatan dan hierarki dalam organisasi</p>
-            </div>
-            <div class="mt-4 sm:mt-0">
-                <button onclick="openAddModal()" class="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200">
-                    <i class="fas fa-plus mr-2"></i>Tambah Jabatan
+    <div class="mb-4 sm:mb-6">
+        <div class="bg-white rounded-lg shadow-sm p-3 sm:p-4 lg:p-6">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <div>
+                    <h1 class="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">Data Jabatan</h1>
+                    <p class="text-sm sm:text-base text-gray-600 mt-1">Kelola data jabatan dalam organisasi</p>
+                </div>
+                <button onclick="openAddModal()" class="bg-primary-600 hover:bg-primary-700 text-white px-3 py-2 sm:px-4 sm:py-2 rounded-lg text-sm sm:text-base font-medium transition-colors duration-200 flex items-center gap-2">
+                    <i class="fas fa-plus text-xs sm:text-sm"></i>
+                    <span class="hidden sm:inline">Tambah Jabatan</span>
+                    <span class="sm:hidden">Tambah</span>
                 </button>
             </div>
         </div>
     </div>
 
     <!-- Statistics Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6 mb-4 sm:mb-6">
+        <div class="bg-white rounded-lg shadow-sm p-3 sm:p-4 lg:p-6">
             <div class="flex items-center">
-                <div class="p-3 rounded-full bg-blue-100">
-                    <i class="fas fa-user-tie text-blue-600 text-xl"></i>
+                <div class="p-2 sm:p-3 bg-blue-100 rounded-lg">
+                    <i class="fas fa-user-tie text-blue-600 text-lg sm:text-xl lg:text-2xl"></i>
                 </div>
-                <div class="ml-4">
-                    <p class="text-sm font-medium text-gray-600">Total Jabatan</p>
-                    <p class="text-2xl font-bold text-gray-900" id="total-jabatan">0</p>
+                <div class="ml-3 sm:ml-4">
+                    <p class="text-xs sm:text-sm font-medium text-gray-600">Total Jabatan</p>
+                    <p class="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900" id="totalJabatan">0</p>
                 </div>
             </div>
         </div>
-        
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div class="bg-white rounded-lg shadow-sm p-3 sm:p-4 lg:p-6">
             <div class="flex items-center">
-                <div class="p-3 rounded-full bg-green-100">
-                    <i class="fas fa-crown text-green-600 text-xl"></i>
+                <div class="p-2 sm:p-3 bg-green-100 rounded-lg">
+                    <i class="fas fa-check-circle text-green-600 text-lg sm:text-xl lg:text-2xl"></i>
                 </div>
-                <div class="ml-4">
-                    <p class="text-sm font-medium text-gray-600">Jabatan Eksekutif</p>
-                    <p class="text-2xl font-bold text-gray-900" id="jabatan-eksekutif">0</p>
+                <div class="ml-3 sm:ml-4">
+                    <p class="text-xs sm:text-sm font-medium text-gray-600">Jabatan Aktif</p>
+                    <p class="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900" id="jabatanAktif">0</p>
                 </div>
             </div>
         </div>
-        
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div class="bg-white rounded-lg shadow-sm p-3 sm:p-4 lg:p-6">
             <div class="flex items-center">
-                <div class="p-3 rounded-full bg-yellow-100">
-                    <i class="fas fa-users-cog text-yellow-600 text-xl"></i>
+                <div class="p-2 sm:p-3 bg-yellow-100 rounded-lg">
+                    <i class="fas fa-layer-group text-yellow-600 text-lg sm:text-xl lg:text-2xl"></i>
                 </div>
-                <div class="ml-4">
-                    <p class="text-sm font-medium text-gray-600">Jabatan Struktural</p>
-                    <p class="text-2xl font-bold text-gray-900" id="jabatan-struktural">0</p>
+                <div class="ml-3 sm:ml-4">
+                    <p class="text-xs sm:text-sm font-medium text-gray-600">Level Tertinggi</p>
+                    <p class="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900" id="levelTertinggi">0</p>
                 </div>
             </div>
         </div>
-        
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div class="bg-white rounded-lg shadow-sm p-3 sm:p-4 lg:p-6">
             <div class="flex items-center">
-                <div class="p-3 rounded-full bg-purple-100">
-                    <i class="fas fa-user-friends text-purple-600 text-xl"></i>
+                <div class="p-2 sm:p-3 bg-purple-100 rounded-lg">
+                    <i class="fas fa-users text-purple-600 text-lg sm:text-xl lg:text-2xl"></i>
                 </div>
-                <div class="ml-4">
-                    <p class="text-sm font-medium text-gray-600">Jabatan Anggota</p>
-                    <p class="text-2xl font-bold text-gray-900" id="jabatan-anggota">0</p>
+                <div class="ml-3 sm:ml-4">
+                    <p class="text-xs sm:text-sm font-medium text-gray-600">Pemegang Jabatan</p>
+                    <p class="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900" id="pemegangJabatan">0</p>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Main Content -->
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200">
-        <!-- Filters -->
-        <div class="p-6 border-b border-gray-200">
-            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <div class="flex flex-col sm:flex-row gap-4">
-                    <div class="relative">
-                        <input type="text" id="search-input" placeholder="Cari jabatan..." class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent w-full sm:w-64">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <i class="fas fa-search text-gray-400"></i>
-                        </div>
-                    </div>
-                    <select id="filter-tipe" class="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent">
-                        <option value="">Semua Tipe</option>
-                        <option value="eksekutif">Eksekutif</option>
-                        <option value="struktural">Struktural</option>
-                        <option value="anggota">Anggota</option>
-                    </select>
-                    <select id="filter-level" class="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent">
-                        <option value="">Semua Level</option>
-                        <option value="1">Level 1</option>
-                        <option value="2">Level 2</option>
-                        <option value="3">Level 3</option>
-                        <option value="4">Level 4</option>
-                        <option value="5">Level 5</option>
-                    </select>
-                </div>
-                <div class="flex gap-2">
-                    <button onclick="exportData()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200">
-                        <i class="fas fa-download mr-2"></i>Export
-                    </button>
-                    <button onclick="refreshData()" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200">
-                        <i class="fas fa-sync-alt mr-2"></i>Refresh
-                    </button>
+    <!-- Filter Section -->
+    <div class="bg-white rounded-lg shadow-sm p-3 sm:p-4 lg:p-6 mb-4 sm:mb-6">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
+            <!-- Search -->
+            <div class="sm:col-span-2">
+                <div class="relative">
+                    <input type="text" id="searchInput" placeholder="Cari jabatan..." class="w-full pl-8 sm:pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm sm:text-base">
+                    <i class="fas fa-search absolute left-2 sm:left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm"></i>
                 </div>
             </div>
+            
+            <!-- Level Filter -->
+            <div>
+                <select id="levelFilter" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm sm:text-base">
+                    <option value="">Semua Level</option>
+                    <option value="1">Level 1 (Tertinggi)</option>
+                    <option value="2">Level 2</option>
+                    <option value="3">Level 3</option>
+                    <option value="4">Level 4</option>
+                    <option value="5">Level 5</option>
+                </select>
+            </div>
+            
+            <!-- Status Filter -->
+            <div>
+                <select id="statusFilter" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm sm:text-base">
+                    <option value="">Semua Status</option>
+                    <option value="true">Aktif</option>
+                    <option value="false">Non Aktif</option>
+                </select>
+            </div>
+            
+            <!-- Action Buttons -->
+            <div class="flex gap-2">
+                <button onclick="exportData()" class="flex-1 bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200 flex items-center justify-center gap-1">
+                    <i class="fas fa-download text-xs"></i>
+                    <span class="hidden sm:inline">Export</span>
+                </button>
+                <button onclick="refreshData()" class="flex-1 bg-gray-600 hover:bg-gray-700 text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200 flex items-center justify-center gap-1">
+                    <i class="fas fa-sync-alt text-xs"></i>
+                    <span class="hidden sm:inline">Refresh</span>
+                </button>
+            </div>
         </div>
+    </div>
 
-        <!-- Table -->
-        <div class="overflow-x-auto">
+    <!-- Table Section -->
+    <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+        <!-- Mobile Table Header -->
+        <div class="lg:hidden bg-gray-50 px-3 py-2 border-b">
+            <h3 class="text-sm font-medium text-gray-700">Daftar Jabatan</h3>
+        </div>
+        
+        <!-- Desktop Table -->
+        <div class="hidden lg:block overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                     <tr>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Jabatan</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipe</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Level Hierarki</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Deskripsi</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jumlah Pemegang</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Warna Badge</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
                     </tr>
                 </thead>
-                <tbody id="jabatan-table-body" class="bg-white divide-y divide-gray-200">
+                <tbody id="jabatanTableBody" class="bg-white divide-y divide-gray-200">
                     <!-- Data will be loaded here -->
                 </tbody>
             </table>
         </div>
+        
+        <!-- Mobile Cards -->
+        <div class="lg:hidden" id="jabatanMobileCards">
+            <!-- Mobile cards will be loaded here -->
+        </div>
+        
+        <!-- Loading State -->
+        <div id="loadingState" class="flex items-center justify-center py-8">
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+            <span class="ml-2 text-gray-600">Memuat data...</span>
+        </div>
+        
+        <!-- Empty State -->
+        <div id="emptyState" class="hidden text-center py-8">
+            <i class="fas fa-user-tie text-gray-400 text-4xl mb-4"></i>
+            <p class="text-gray-600">Belum ada data jabatan</p>
+        </div>
+    </div>
 
-        <!-- Pagination -->
-        <div class="px-6 py-4 border-t border-gray-200">
-            <div class="flex items-center justify-between">
-                <div class="text-sm text-gray-700">
-                    Menampilkan <span id="showing-start">0</span> sampai <span id="showing-end">0</span> dari <span id="total-items">0</span> data
-                </div>
-                <div class="flex space-x-2" id="pagination-container">
-                    <!-- Pagination buttons will be generated here -->
-                </div>
-            </div>
+    <!-- Pagination -->
+    <div class="mt-4 sm:mt-6 flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div class="text-sm text-gray-700">
+            Menampilkan <span id="showingStart">0</span> sampai <span id="showingEnd">0</span> dari <span id="totalItems">0</span> data
+        </div>
+        <div class="flex items-center gap-2" id="paginationContainer">
+            <!-- Pagination buttons will be loaded here -->
         </div>
     </div>
 </div>
 
 <!-- Add/Edit Modal -->
-<div id="jabatan-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-50">
-    <div class="flex items-center justify-center min-h-screen p-4">
-        <div class="bg-white rounded-lg shadow-xl max-w-md w-full">
-            <div class="px-6 py-4 border-b border-gray-200">
-                <h3 class="text-lg font-medium text-gray-900" id="modal-title">Tambah Jabatan</h3>
-            </div>
-            <form id="jabatan-form" class="p-6">
-                <div class="space-y-4">
-                    <div>
-                        <label for="nama_jabatan" class="block text-sm font-medium text-gray-700 mb-1">Nama Jabatan</label>
-                        <input type="text" id="nama_jabatan" name="nama_jabatan" required class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent" placeholder="Masukkan nama jabatan">
-                    </div>
-                    <div>
-                        <label for="tipe_jabatan" class="block text-sm font-medium text-gray-700 mb-1">Tipe Jabatan</label>
-                        <select id="tipe_jabatan" name="tipe_jabatan" required class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent">
-                            <option value="">Pilih Tipe Jabatan</option>
-                            <option value="eksekutif">Eksekutif</option>
-                            <option value="struktural">Struktural</option>
-                            <option value="anggota">Anggota</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label for="level_hierarki" class="block text-sm font-medium text-gray-700 mb-1">Level Hierarki</label>
-                        <select id="level_hierarki" name="level_hierarki" required class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent">
-                            <option value="">Pilih Level</option>
-                            <option value="1">Level 1 (Tertinggi)</option>
-                            <option value="2">Level 2</option>
-                            <option value="3">Level 3</option>
-                            <option value="4">Level 4</option>
-                            <option value="5">Level 5 (Terendah)</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label for="deskripsi" class="block text-sm font-medium text-gray-700 mb-1">Deskripsi</label>
-                        <textarea id="deskripsi" name="deskripsi" rows="3" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent" placeholder="Deskripsi tugas dan tanggung jawab"></textarea>
-                    </div>
-                    <div>
-                        <label for="wewenang" class="block text-sm font-medium text-gray-700 mb-1">Wewenang</label>
-                        <textarea id="wewenang" name="wewenang" rows="3" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent" placeholder="Wewenang dan kekuasaan jabatan"></textarea>
-                    </div>
-                    <div class="flex items-center">
-                        <input type="checkbox" id="is_active" name="is_active" checked class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded">
-                        <label for="is_active" class="ml-2 block text-sm text-gray-900">Aktif</label>
-                    </div>
-                </div>
-                <div class="flex justify-end space-x-3 mt-6">
-                    <button type="button" onclick="closeModal()" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors duration-200">Batal</button>
-                    <button type="submit" class="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors duration-200">Simpan</button>
-                </div>
-            </form>
+<div id="jabatanModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 hidden">
+    <div class="relative top-4 mx-auto p-3 sm:p-5 border w-11/12 sm:w-10/12 md:w-8/12 lg:w-6/12 xl:w-4/12 shadow-lg rounded-lg bg-white">
+        <!-- Modal Header -->
+        <div class="flex items-center justify-between pb-3 border-b">
+            <h3 class="text-lg sm:text-xl font-semibold text-gray-900" id="modalTitle">Tambah Jabatan</h3>
+            <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600 text-xl">
+                <i class="fas fa-times"></i>
+            </button>
         </div>
+        
+        <!-- Modal Body -->
+        <form id="jabatanForm" class="mt-4 space-y-4">
+            <input type="hidden" id="jabatanId">
+            
+            <!-- Nama Jabatan -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Nama Jabatan *</label>
+                <input type="text" id="namaJabatan" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm" placeholder="Masukkan nama jabatan">
+            </div>
+            
+            <!-- Level Hierarki -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Level Hierarki *</label>
+                <select id="levelHierarki" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm">
+                    <option value="">Pilih Level</option>
+                    <option value="1">Level 1 (Tertinggi)</option>
+                    <option value="2">Level 2</option>
+                    <option value="3">Level 3</option>
+                    <option value="4">Level 4</option>
+                    <option value="5">Level 5</option>
+                </select>
+                <p class="text-xs text-gray-500 mt-1">Level 1 = Tertinggi, semakin besar semakin rendah</p>
+            </div>
+            
+            <!-- Deskripsi -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Deskripsi</label>
+                <textarea id="deskripsi" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm" placeholder="Masukkan deskripsi jabatan"></textarea>
+            </div>
+            
+            <!-- Warna Badge -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Warna Badge</label>
+                <div class="flex items-center gap-3">
+                    <input type="color" id="warnaBadge" value="#3B82F6" class="w-12 h-10 border border-gray-300 rounded-lg cursor-pointer">
+                    <input type="text" id="warnaHex" value="#3B82F6" class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm" placeholder="#3B82F6">
+                </div>
+                <p class="text-xs text-gray-500 mt-1">Warna untuk badge jabatan dalam tampilan</p>
+            </div>
+            
+            <!-- Status -->
+            <div>
+                <label class="flex items-center">
+                    <input type="checkbox" id="isActive" checked class="rounded border-gray-300 text-primary-600 shadow-sm focus:border-primary-300 focus:ring focus:ring-primary-200 focus:ring-opacity-50">
+                    <span class="ml-2 text-sm text-gray-700">Aktif</span>
+                </label>
+            </div>
+            
+            <!-- Modal Footer -->
+            <div class="flex flex-col sm:flex-row gap-3 pt-4 border-t">
+                <button type="button" onclick="closeModal()" class="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200">
+                    Batal
+                </button>
+                <button type="submit" class="flex-1 bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200">
+                    Simpan
+                </button>
+            </div>
+        </form>
     </div>
 </div>
 
 <script>
 let currentPage = 1;
-let currentEditId = null;
+let totalPages = 1;
+let isLoading = false;
 
 // Initialize page
 document.addEventListener('DOMContentLoaded', function() {
@@ -207,33 +253,44 @@ document.addEventListener('DOMContentLoaded', function() {
     loadJabatanData();
     
     // Search functionality
-    document.getElementById('search-input').addEventListener('input', debounce(function() {
+    const searchInput = document.getElementById('searchInput');
+    searchInput.addEventListener('input', debounce(function() {
         currentPage = 1;
         loadJabatanData();
     }, 300));
     
     // Filter functionality
-    ['filter-tipe', 'filter-level'].forEach(id => {
-        document.getElementById(id).addEventListener('change', function() {
+    ['levelFilter', 'statusFilter'].forEach(filterId => {
+        document.getElementById(filterId).addEventListener('change', function() {
             currentPage = 1;
             loadJabatanData();
         });
     });
     
     // Form submission
-    document.getElementById('jabatan-form').addEventListener('submit', handleFormSubmit);
+    document.getElementById('jabatanForm').addEventListener('submit', handleFormSubmit);
+    
+    // Color picker sync
+    document.getElementById('warnaBadge').addEventListener('change', function() {
+        document.getElementById('warnaHex').value = this.value;
+    });
+    
+    document.getElementById('warnaHex').addEventListener('input', function() {
+        if (/^#[0-9A-F]{6}$/i.test(this.value)) {
+            document.getElementById('warnaBadge').value = this.value;
+        }
+    });
 });
 
 // Load statistics
 function loadStatistics() {
-    // Load statistics from API
     fetch('/organization/api/jabatan/statistics/')
         .then(response => response.json())
         .then(data => {
-            document.getElementById('total-jabatan').textContent = data.total_jabatan || 0;
-            document.getElementById('jabatan-eksekutif').textContent = data.jabatan_eksekutif || 0;
-            document.getElementById('jabatan-struktural').textContent = data.jabatan_struktural || 0;
-            document.getElementById('jabatan-anggota').textContent = data.jabatan_anggota || 0;
+            document.getElementById('totalJabatan').textContent = data.total_jabatan || 0;
+            document.getElementById('jabatanAktif').textContent = data.jabatan_aktif || 0;
+            document.getElementById('levelTertinggi').textContent = data.level_tertinggi || 0;
+            document.getElementById('pemegangJabatan').textContent = data.pemegang_jabatan || 0;
         })
         .catch(error => {
             console.error('Error loading statistics:', error);
@@ -242,205 +299,298 @@ function loadStatistics() {
 
 // Load jabatan data
 function loadJabatanData() {
-    const search = document.getElementById('search-input').value;
-    const tipe = document.getElementById('filter-tipe').value;
-    const level = document.getElementById('filter-level').value;
+    if (isLoading) return;
     
-    // Build query parameters
+    isLoading = true;
+    document.getElementById('loadingState').classList.remove('hidden');
+    document.getElementById('emptyState').classList.add('hidden');
+    
     const params = new URLSearchParams({
         page: currentPage,
-        search: search,
-        tipe: tipe,
-        level: level
+        search: document.getElementById('searchInput').value,
+        level: document.getElementById('levelFilter').value,
+        is_active: document.getElementById('statusFilter').value
     });
     
-    // Load jabatan data from API
     fetch(`/organization/api/jabatan/?${params}`)
         .then(response => response.json())
         .then(data => {
-            renderJabatanTable(data.results || []);
-            updatePagination(data);
+            renderJabatanTable(data.results);
+            updatePagination(data.pagination);
+            
+            if (data.results.length === 0) {
+                document.getElementById('emptyState').classList.remove('hidden');
+            }
         })
         .catch(error => {
             console.error('Error loading jabatan data:', error);
-            renderJabatanTable([]);
+            showNotification('Gagal memuat data jabatan', 'error');
+        })
+        .finally(() => {
+            isLoading = false;
+            document.getElementById('loadingState').classList.add('hidden');
         });
 }
 
 // Render jabatan table
-function renderJabatanTable(data) {
-    const tbody = document.getElementById('jabatan-table-body');
+function renderJabatanTable(jabatan) {
+    const tableBody = document.getElementById('jabatanTableBody');
+    const mobileCards = document.getElementById('jabatanMobileCards');
     
-    if (data.length === 0) {
-        tbody.innerHTML = `
-            <tr>
-                <td colspan="7" class="px-6 py-4 text-center text-gray-500">
-                    <i class="fas fa-inbox text-4xl mb-2 block"></i>
-                    Tidak ada data jabatan
-                </td>
-            </tr>
-        `;
-        return;
-    }
-    
-    tbody.innerHTML = data.map(item => `
+    // Desktop table
+    tableBody.innerHTML = jabatan.map(item => `
         <tr class="hover:bg-gray-50">
             <td class="px-6 py-4 whitespace-nowrap">
-                <div class="text-sm font-medium text-gray-900">${item.nama_jabatan}</div>
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap">
-                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                    item.tipe_jabatan === 'eksekutif' ? 'bg-purple-100 text-purple-800' :
-                    item.tipe_jabatan === 'struktural' ? 'bg-blue-100 text-blue-800' :
-                    'bg-gray-100 text-gray-800'
-                }">
-                    ${item.tipe_jabatan.charAt(0).toUpperCase() + item.tipe_jabatan.slice(1)}
-                </span>
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap">
                 <div class="flex items-center">
-                    <span class="text-sm text-gray-900">Level ${item.level_hierarki}</span>
-                    <div class="ml-2 flex">
-                        ${Array.from({length: 5}, (_, i) => 
-                            `<div class="w-2 h-2 rounded-full mr-1 ${
-                                i < item.level_hierarki ? 'bg-primary-500' : 'bg-gray-200'
-                            }"></div>`
-                        ).join('')}
+                    <div class="flex-shrink-0">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium" style="background-color: ${item.warna_badge}20; color: ${item.warna_badge}">
+                            ${item.nama_jabatan}
+                        </span>
                     </div>
                 </div>
             </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                    Level ${item.level_hierarki}
+                </span>
+            </td>
             <td class="px-6 py-4">
-                <div class="text-sm text-gray-900 max-w-xs truncate" title="${item.deskripsi}">
-                    ${item.deskripsi}
+                <div class="text-sm text-gray-900 max-w-xs truncate" title="${item.deskripsi || '-'}">
+                    ${item.deskripsi || '-'}
                 </div>
             </td>
             <td class="px-6 py-4 whitespace-nowrap">
-                <div class="text-sm text-gray-900">${item.jumlah_pemegang} orang</div>
+                <div class="flex items-center">
+                    <div class="w-6 h-6 rounded-full border-2 border-gray-300" style="background-color: ${item.warna_badge}"></div>
+                    <span class="ml-2 text-sm text-gray-600">${item.warna_badge}</span>
+                </div>
             </td>
             <td class="px-6 py-4 whitespace-nowrap">
-                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                    item.is_active 
-                        ? 'bg-green-100 text-green-800' 
-                        : 'bg-red-100 text-red-800'
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                    item.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                 }">
-                    ${item.is_active ? 'Aktif' : 'Tidak Aktif'}
+                    ${item.is_active ? 'Aktif' : 'Non Aktif'}
                 </span>
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                <button onclick="editJabatan(${item.id})" class="text-primary-600 hover:text-primary-900 mr-3">
-                    <i class="fas fa-edit"></i>
-                </button>
-                <button onclick="deleteJabatan(${item.id})" class="text-red-600 hover:text-red-900">
-                    <i class="fas fa-trash"></i>
-                </button>
+                <div class="flex space-x-2">
+                    <button onclick="editJabatan(${item.id})" class="text-indigo-600 hover:text-indigo-900">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button onclick="deleteJabatan(${item.id})" class="text-red-600 hover:text-red-900">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
             </td>
         </tr>
     `).join('');
+    
+    // Mobile cards
+    mobileCards.innerHTML = jabatan.map(item => `
+        <div class="border-b border-gray-200 p-4">
+            <div class="flex items-start justify-between">
+                <div class="flex-1">
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium" style="background-color: ${item.warna_badge}20; color: ${item.warna_badge}">
+                            ${item.nama_jabatan}
+                        </span>
+                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                            Level ${item.level_hierarki}
+                        </span>
+                    </div>
+                    <div class="space-y-1">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs text-gray-500">Deskripsi:</span>
+                            <span class="text-xs text-gray-900 max-w-32 truncate" title="${item.deskripsi || '-'}">
+                                ${item.deskripsi || '-'}
+                            </span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs text-gray-500">Warna:</span>
+                            <div class="flex items-center gap-1">
+                                <div class="w-4 h-4 rounded-full border border-gray-300" style="background-color: ${item.warna_badge}"></div>
+                                <span class="text-xs text-gray-600">${item.warna_badge}</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs text-gray-500">Status:</span>
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                                item.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                            }">
+                                ${item.is_active ? 'Aktif' : 'Non Aktif'}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex space-x-2 ml-3">
+                    <button onclick="editJabatan(${item.id})" class="text-indigo-600 hover:text-indigo-900 p-1">
+                        <i class="fas fa-edit text-sm"></i>
+                    </button>
+                    <button onclick="deleteJabatan(${item.id})" class="text-red-600 hover:text-red-900 p-1">
+                        <i class="fas fa-trash text-sm"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+// Update pagination
+function updatePagination(pagination) {
+    totalPages = pagination.total_pages;
+    currentPage = pagination.current_page;
+    
+    document.getElementById('showingStart').textContent = ((currentPage - 1) * 10) + 1;
+    document.getElementById('showingEnd').textContent = Math.min(currentPage * 10, pagination.total_items);
+    document.getElementById('totalItems').textContent = pagination.total_items;
+    
+    const container = document.getElementById('paginationContainer');
+    container.innerHTML = '';
+    
+    if (totalPages <= 1) return;
+    
+    // Previous button
+    if (pagination.has_previous) {
+        container.innerHTML += `<button onclick="changePage(${currentPage - 1})" class="px-3 py-1 text-sm border border-gray-300 rounded-md hover:bg-gray-50">‹</button>`;
+    }
+    
+    // Page numbers
+    for (let i = Math.max(1, currentPage - 2); i <= Math.min(totalPages, currentPage + 2); i++) {
+        container.innerHTML += `<button onclick="changePage(${i})" class="px-3 py-1 text-sm border ${i === currentPage ? 'bg-primary-600 text-white border-primary-600' : 'border-gray-300 hover:bg-gray-50'} rounded-md">${i}</button>`;
+    }
+    
+    // Next button
+    if (pagination.has_next) {
+        container.innerHTML += `<button onclick="changePage(${currentPage + 1})" class="px-3 py-1 text-sm border border-gray-300 rounded-md hover:bg-gray-50">›</button>`;
+    }
+}
+
+// Change page
+function changePage(page) {
+    currentPage = page;
+    loadJabatanData();
 }
 
 // Modal functions
 function openAddModal() {
-    currentEditId = null;
-    document.getElementById('modal-title').textContent = 'Tambah Jabatan';
-    document.getElementById('jabatan-form').reset();
-    document.getElementById('is_active').checked = true;
-    document.getElementById('jabatan-modal').classList.remove('hidden');
+    document.getElementById('modalTitle').textContent = 'Tambah Jabatan';
+    document.getElementById('jabatanForm').reset();
+    document.getElementById('jabatanId').value = '';
+    document.getElementById('warnaBadge').value = '#3B82F6';
+    document.getElementById('warnaHex').value = '#3B82F6';
+    document.getElementById('isActive').checked = true;
+    document.getElementById('jabatanModal').classList.remove('hidden');
 }
 
 function editJabatan(id) {
-    currentEditId = id;
-    document.getElementById('modal-title').textContent = 'Edit Jabatan';
+    document.getElementById('modalTitle').textContent = 'Edit Jabatan';
+    document.getElementById('jabatanId').value = id;
     
-    // Load data for editing from API
     fetch(`/organization/api/jabatan/${id}/`)
         .then(response => response.json())
         .then(data => {
-            document.getElementById('nama_jabatan').value = data.nama_jabatan;
-            document.getElementById('tipe_jabatan').value = data.tipe_jabatan;
-            document.getElementById('level_hierarki').value = data.level_hierarki;
+            document.getElementById('namaJabatan').value = data.nama_jabatan;
+            document.getElementById('levelHierarki').value = data.level_hierarki;
             document.getElementById('deskripsi').value = data.deskripsi || '';
-            document.getElementById('wewenang').value = data.wewenang || '';
-            document.getElementById('is_active').checked = data.is_active;
+            document.getElementById('warnaBadge').value = data.warna_badge;
+            document.getElementById('warnaHex').value = data.warna_badge;
+            document.getElementById('isActive').checked = data.is_active;
             
-            document.getElementById('jabatan-modal').classList.remove('hidden');
+            document.getElementById('jabatanModal').classList.remove('hidden');
         })
         .catch(error => {
             console.error('Error loading jabatan data:', error);
-            showNotification('Error loading data', 'error');
+            showNotification('Gagal memuat data jabatan', 'error');
         });
 }
 
 function closeModal() {
-    document.getElementById('jabatan-modal').classList.add('hidden');
+    document.getElementById('jabatanModal').classList.add('hidden');
 }
 
 // Form submission
 function handleFormSubmit(e) {
     e.preventDefault();
     
-    const formData = new FormData(e.target);
+    const id = document.getElementById('jabatanId').value;
     const data = {
-        nama_jabatan: formData.get('nama_jabatan'),
-        tipe_jabatan: formData.get('tipe_jabatan'),
-        level_hierarki: formData.get('level_hierarki'),
-        deskripsi: formData.get('deskripsi'),
-        wewenang: formData.get('wewenang'),
-        is_active: formData.get('is_active') === 'on'
+        nama_jabatan: document.getElementById('namaJabatan').value,
+        level_hierarki: parseInt(document.getElementById('levelHierarki').value),
+        deskripsi: document.getElementById('deskripsi').value,
+        warna_badge: document.getElementById('warnaHex').value,
+        is_active: document.getElementById('isActive').checked
     };
     
-    const url = currentEditId 
-        ? `/organization/api/jabatan/${currentEditId}/`
-        : '/organization/api/jabatan/';
-    
-    const method = currentEditId ? 'PUT' : 'POST';
+    const url = id ? `/organization/api/jabatan/${id}/update/` : '/organization/api/jabatan/create/';
+    const method = id ? 'PUT' : 'POST';
     
     fetch(url, {
         method: method,
         headers: {
             'Content-Type': 'application/json',
-            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            'X-CSRFToken': getCookie('csrftoken')
         },
         body: JSON.stringify(data)
     })
     .then(response => response.json())
     .then(data => {
-        showNotification(currentEditId ? 'Jabatan berhasil diperbarui!' : 'Jabatan berhasil ditambahkan!', 'success');
-        closeModal();
-        loadJabatanData();
-        loadStatistics();
+        if (data.success) {
+            showNotification(data.message, 'success');
+            closeModal();
+            loadJabatanData();
+            loadStatistics();
+        } else {
+            showNotification(data.message, 'error');
+        }
     })
     .catch(error => {
         console.error('Error saving jabatan:', error);
-        showNotification('Error saving data', 'error');
+        showNotification('Gagal menyimpan data jabatan', 'error');
     });
 }
 
 // Delete jabatan
 function deleteJabatan(id) {
     if (confirm('Apakah Anda yakin ingin menghapus jabatan ini?')) {
-        fetch(`/organization/api/jabatan/${id}/`, {
+        fetch(`/organization/api/jabatan/${id}/delete/`, {
             method: 'DELETE',
             headers: {
-                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                'X-CSRFToken': getCookie('csrftoken')
             }
         })
-        .then(response => {
-            if (response.ok) {
-                showNotification('Jabatan berhasil dihapus!', 'success');
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showNotification(data.message, 'success');
                 loadJabatanData();
                 loadStatistics();
             } else {
-                throw new Error('Failed to delete');
+                showNotification(data.message, 'error');
             }
         })
         .catch(error => {
             console.error('Error deleting jabatan:', error);
-            showNotification('Error deleting data', 'error');
+            showNotification('Gagal menghapus jabatan', 'error');
         });
     }
 }
 
 // Utility functions
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
 function debounce(func, wait) {
     let timeout;
     return function executedFunction(...args) {
@@ -456,57 +606,34 @@ function debounce(func, wait) {
 function refreshData() {
     loadJabatanData();
     loadStatistics();
-    showNotification('Data berhasil diperbarui!', 'success');
+    showNotification('Data berhasil diperbarui', 'success');
 }
 
 function exportData() {
-    showNotification('Data sedang diexport...', 'info');
-    
-    fetch('/organization/api/jabatan/export/')
-        .then(response => response.blob())
-        .then(blob => {
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.style.display = 'none';
-            a.href = url;
-            a.download = 'data-jabatan.xlsx';
-            document.body.appendChild(a);
-            a.click();
-            window.URL.revokeObjectURL(url);
-            showNotification('Data berhasil diexport!', 'success');
-        })
-        .catch(error => {
-            console.error('Error exporting data:', error);
-            showNotification('Error exporting data', 'error');
-        });
+    window.open('/organization/api/jabatan/export/', '_blank');
 }
 
-function showNotification(message, type = 'info') {
+function showNotification(message, type) {
     // Create notification element
     const notification = document.createElement('div');
     notification.className = `fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg ${
-        type === 'success' ? 'bg-green-500 text-white' :
-        type === 'error' ? 'bg-red-500 text-white' :
-        type === 'warning' ? 'bg-yellow-500 text-white' :
-        'bg-blue-500 text-white'
+        type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
     }`;
     notification.innerHTML = `
         <div class="flex items-center">
+            <i class="fas ${
+                type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'
+            } mr-2"></i>
             <span>${message}</span>
-            <button onclick="this.parentElement.parentElement.remove()" class="ml-4 text-white hover:text-gray-200">
-                <i class="fas fa-times"></i>
-            </button>
         </div>
     `;
     
     document.body.appendChild(notification);
     
-    // Auto remove after 5 seconds
+    // Remove notification after 3 seconds
     setTimeout(() => {
-        if (notification.parentElement) {
-            notification.remove();
-        }
-    }, 5000);
+        notification.remove();
+    }, 3000);
 }
 </script>
 {% endblock %}

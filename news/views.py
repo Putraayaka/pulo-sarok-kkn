@@ -40,7 +40,7 @@ def news_admin(request):
     scheduled_news = News.objects.filter(status='scheduled').count()
     total_views = NewsView.objects.count()
     total_likes = NewsLike.objects.count()
-    total_comments = NewsComment.objects.filter(moderation_status='approved').count()
+    total_comments = NewsComment.objects.filter(status='approved').count()
     
     # Recent news
     recent_news = News.objects.select_related('category', 'author').order_by('-created_at')[:5]
@@ -50,7 +50,7 @@ def news_admin(request):
     
     # Recent comments
     recent_comments = NewsComment.objects.select_related('news').filter(
-        moderation_status='pending'
+        status='pending'
     ).order_by('-created_at')[:5]
     
     context = {
@@ -176,8 +176,8 @@ def news_detail(request, pk):
     news = get_object_or_404(News.objects.select_related('category', 'author').prefetch_related('tags', 'images'), pk=pk)
     
     # Get comments
-    comments = news.comments.filter(moderation_status='approved').order_by('-created_at')
-    pending_comments = news.comments.filter(moderation_status='pending').count()
+    comments = news.comments.filter(status='approved').order_by('-created_at')
+    pending_comments = news.comments.filter(status='pending').count()
     
     # Get related news
     related_news = News.objects.filter(
@@ -408,7 +408,7 @@ def news_comments(request, pk):
     # Filter by moderation status
     status = request.GET.get('status')
     if status:
-        comments_list = comments_list.filter(moderation_status=status)
+        comments_list = comments_list.filter(status=status)
     
     paginator = Paginator(comments_list, 20)
     page_number = request.GET.get('page')
@@ -431,7 +431,7 @@ def comment_moderate(request, comment_id):
     action = request.POST.get('action')
     
     if action == 'approve':
-        comment.moderation_status = 'approved'
+        comment.status = 'approved'
         comment.moderated_by = request.user
         comment.moderated_at = timezone.now()
         comment.save()
@@ -442,7 +442,7 @@ def comment_moderate(request, comment_id):
         messages.success(request, 'Komentar berhasil disetujui.')
     
     elif action == 'reject':
-        comment.moderation_status = 'rejected'
+        comment.status = 'rejected'
         comment.moderated_by = request.user
         comment.moderated_at = timezone.now()
         comment.save()

@@ -1,117 +1,137 @@
 {% extends 'admin/base.html' %}
 
-{% block page_title %}Data Anggota{% endblock %}
+{% block title %}Data Anggota Organisasi{% endblock %}
 
 {% block content %}
-<div class="p-6">
+<div class="min-h-screen bg-gray-50 p-2 sm:p-4 lg:p-6">
     <!-- Header Section -->
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-            <div>
-                <h2 class="text-2xl font-bold text-gray-900 mb-2">Data Anggota Organisasi</h2>
-                <p class="text-gray-600">Kelola data anggota dan keanggotaan organisasi</p>
-            </div>
-            <div class="mt-4 sm:mt-0">
-                <button onclick="openAddModal()" class="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200">
-                    <i class="fas fa-plus mr-2"></i>Tambah Anggota
+    <div class="mb-4 sm:mb-6">
+        <div class="bg-white rounded-lg shadow-sm p-3 sm:p-4 lg:p-6">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <div>
+                    <h1 class="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">Data Anggota Organisasi</h1>
+                    <p class="text-sm sm:text-base text-gray-600 mt-1">Kelola data anggota organisasi desa</p>
+                </div>
+                <button onclick="openAddModal()" class="bg-primary-600 hover:bg-primary-700 text-white px-3 py-2 sm:px-4 sm:py-2 rounded-lg text-sm sm:text-base font-medium transition-colors duration-200 flex items-center gap-2">
+                    <i class="fas fa-plus text-xs sm:text-sm"></i>
+                    <span class="hidden sm:inline">Tambah Anggota</span>
+                    <span class="sm:hidden">Tambah</span>
                 </button>
             </div>
         </div>
     </div>
 
     <!-- Statistics Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6 mb-4 sm:mb-6">
+        <div class="bg-white rounded-lg shadow-sm p-3 sm:p-4 lg:p-6">
             <div class="flex items-center">
-                <div class="p-3 rounded-full bg-blue-100">
-                    <i class="fas fa-users text-blue-600 text-xl"></i>
+                <div class="p-2 sm:p-3 bg-blue-100 rounded-lg">
+                    <i class="fas fa-users text-blue-600 text-lg sm:text-xl lg:text-2xl"></i>
                 </div>
-                <div class="ml-4">
-                    <p class="text-sm font-medium text-gray-600">Total Anggota</p>
-                    <p class="text-2xl font-bold text-gray-900" id="total-anggota">0</p>
+                <div class="ml-3 sm:ml-4">
+                    <p class="text-xs sm:text-sm font-medium text-gray-600">Total Anggota</p>
+                    <p class="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900" id="totalAnggota">0</p>
                 </div>
             </div>
         </div>
-        
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div class="bg-white rounded-lg shadow-sm p-3 sm:p-4 lg:p-6">
             <div class="flex items-center">
-                <div class="p-3 rounded-full bg-green-100">
-                    <i class="fas fa-user-check text-green-600 text-xl"></i>
+                <div class="p-2 sm:p-3 bg-green-100 rounded-lg">
+                    <i class="fas fa-user-check text-green-600 text-lg sm:text-xl lg:text-2xl"></i>
                 </div>
-                <div class="ml-4">
-                    <p class="text-sm font-medium text-gray-600">Anggota Aktif</p>
-                    <p class="text-2xl font-bold text-gray-900" id="anggota-aktif">0</p>
+                <div class="ml-3 sm:ml-4">
+                    <p class="text-xs sm:text-sm font-medium text-gray-600">Anggota Aktif</p>
+                    <p class="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900" id="anggotaAktif">0</p>
                 </div>
             </div>
         </div>
-        
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div class="bg-white rounded-lg shadow-sm p-3 sm:p-4 lg:p-6">
             <div class="flex items-center">
-                <div class="p-3 rounded-full bg-yellow-100">
-                    <i class="fas fa-user-tie text-yellow-600 text-xl"></i>
+                <div class="p-2 sm:p-3 bg-yellow-100 rounded-lg">
+                    <i class="fas fa-building text-yellow-600 text-lg sm:text-xl lg:text-2xl"></i>
                 </div>
-                <div class="ml-4">
-                    <p class="text-sm font-medium text-gray-600">Pengurus</p>
-                    <p class="text-2xl font-bold text-gray-900" id="total-pengurus">0</p>
+                <div class="ml-3 sm:ml-4">
+                    <p class="text-xs sm:text-sm font-medium text-gray-600">Organisasi</p>
+                    <p class="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900" id="totalOrganisasi">0</p>
                 </div>
             </div>
         </div>
-        
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div class="bg-white rounded-lg shadow-sm p-3 sm:p-4 lg:p-6">
             <div class="flex items-center">
-                <div class="p-3 rounded-full bg-purple-100">
-                    <i class="fas fa-building text-purple-600 text-xl"></i>
+                <div class="p-2 sm:p-3 bg-purple-100 rounded-lg">
+                    <i class="fas fa-user-tie text-purple-600 text-lg sm:text-xl lg:text-2xl"></i>
                 </div>
-                <div class="ml-4">
-                    <p class="text-sm font-medium text-gray-600">Organisasi</p>
-                    <p class="text-2xl font-bold text-gray-900" id="total-organisasi">0</p>
+                <div class="ml-3 sm:ml-4">
+                    <p class="text-xs sm:text-sm font-medium text-gray-600">Jabatan</p>
+                    <p class="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900" id="totalJabatan">0</p>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Main Content -->
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200">
-        <!-- Filters -->
-        <div class="p-6 border-b border-gray-200">
-            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <div class="flex flex-col sm:flex-row gap-4">
-                    <div class="relative">
-                        <input type="text" id="search-input" placeholder="Cari anggota..." class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent w-full sm:w-64">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <i class="fas fa-search text-gray-400"></i>
-                        </div>
-                    </div>
-                    <select id="filter-organisasi" class="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent">
-                        <option value="">Semua Organisasi</option>
-                    </select>
-                    <select id="filter-jabatan" class="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent">
-                        <option value="">Semua Jabatan</option>
-                    </select>
-                    <select id="filter-status" class="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent">
-                        <option value="">Semua Status</option>
-                        <option value="active">Aktif</option>
-                        <option value="inactive">Tidak Aktif</option>
-                    </select>
-                </div>
-                <div class="flex gap-2">
-                    <button onclick="exportData()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200">
-                        <i class="fas fa-download mr-2"></i>Export
-                    </button>
-                    <button onclick="refreshData()" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200">
-                        <i class="fas fa-sync-alt mr-2"></i>Refresh
-                    </button>
+    <!-- Filter Section -->
+    <div class="bg-white rounded-lg shadow-sm p-3 sm:p-4 lg:p-6 mb-4 sm:mb-6">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3 sm:gap-4">
+            <!-- Search -->
+            <div class="sm:col-span-2">
+                <div class="relative">
+                    <input type="text" id="searchInput" placeholder="Cari anggota..." class="w-full pl-8 sm:pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm sm:text-base">
+                    <i class="fas fa-search absolute left-2 sm:left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm"></i>
                 </div>
             </div>
+            
+            <!-- Organization Filter -->
+            <div>
+                <select id="organizationFilter" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm sm:text-base">
+                    <option value="">Semua Organisasi</option>
+                </select>
+            </div>
+            
+            <!-- Position Filter -->
+            <div>
+                <select id="positionFilter" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm sm:text-base">
+                    <option value="">Semua Jabatan</option>
+                </select>
+            </div>
+            
+            <!-- Status Filter -->
+            <div>
+                <select id="statusFilter" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm sm:text-base">
+                    <option value="">Semua Status</option>
+                    <option value="aktif">Aktif</option>
+                    <option value="non_aktif">Non Aktif</option>
+                    <option value="keluar">Keluar</option>
+                    <option value="pensiun">Pensiun</option>
+                </select>
+            </div>
+            
+            <!-- Action Buttons -->
+            <div class="flex gap-2">
+                <button onclick="exportData()" class="flex-1 bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200 flex items-center justify-center gap-1">
+                    <i class="fas fa-download text-xs"></i>
+                    <span class="hidden sm:inline">Export</span>
+                </button>
+                <button onclick="refreshData()" class="flex-1 bg-gray-600 hover:bg-gray-700 text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200 flex items-center justify-center gap-1">
+                    <i class="fas fa-sync-alt text-xs"></i>
+                    <span class="hidden sm:inline">Refresh</span>
+                </button>
+            </div>
         </div>
+    </div>
 
-        <!-- Table -->
-        <div class="overflow-x-auto">
+    <!-- Table Section -->
+    <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+        <!-- Mobile Table Header -->
+        <div class="lg:hidden bg-gray-50 px-3 py-2 border-b">
+            <h3 class="text-sm font-medium text-gray-700">Daftar Anggota</h3>
+        </div>
+        
+        <!-- Desktop Table -->
+        <div class="hidden lg:block overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                     <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Foto</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Anggota</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Organisasi</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jabatan</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Periode</th>
@@ -119,88 +139,131 @@
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
                     </tr>
                 </thead>
-                <tbody id="anggota-table-body" class="bg-white divide-y divide-gray-200">
+                <tbody id="anggotaTableBody" class="bg-white divide-y divide-gray-200">
                     <!-- Data will be loaded here -->
                 </tbody>
             </table>
         </div>
+        
+        <!-- Mobile Cards -->
+        <div class="lg:hidden" id="anggotaMobileCards">
+            <!-- Mobile cards will be loaded here -->
+        </div>
+        
+        <!-- Loading State -->
+        <div id="loadingState" class="flex items-center justify-center py-8">
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+            <span class="ml-2 text-gray-600">Memuat data...</span>
+        </div>
+        
+        <!-- Empty State -->
+        <div id="emptyState" class="hidden text-center py-8">
+            <i class="fas fa-users text-gray-400 text-4xl mb-4"></i>
+            <p class="text-gray-600">Belum ada data anggota</p>
+        </div>
+    </div>
 
-        <!-- Pagination -->
-        <div class="px-6 py-4 border-t border-gray-200">
-            <div class="flex items-center justify-between">
-                <div class="text-sm text-gray-700">
-                    Menampilkan <span id="showing-start">0</span> sampai <span id="showing-end">0</span> dari <span id="total-items">0</span> data
-                </div>
-                <div class="flex space-x-2" id="pagination-container">
-                    <!-- Pagination buttons will be generated here -->
-                </div>
-            </div>
+    <!-- Pagination -->
+    <div class="mt-4 sm:mt-6 flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div class="text-sm text-gray-700">
+            Menampilkan <span id="showingStart">0</span> sampai <span id="showingEnd">0</span> dari <span id="totalItems">0</span> data
+        </div>
+        <div class="flex items-center gap-2" id="paginationContainer">
+            <!-- Pagination buttons will be loaded here -->
         </div>
     </div>
 </div>
 
 <!-- Add/Edit Modal -->
-<div id="anggota-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-50">
-    <div class="flex items-center justify-center min-h-screen p-4">
-        <div class="bg-white rounded-lg shadow-xl max-w-md w-full">
-            <div class="px-6 py-4 border-b border-gray-200">
-                <h3 class="text-lg font-medium text-gray-900" id="modal-title">Tambah Anggota Organisasi</h3>
-            </div>
-            <form id="anggota-form" class="p-6">
-                <div class="space-y-4">
-                    <div>
-                        <label for="penduduk" class="block text-sm font-medium text-gray-700 mb-1">Penduduk</label>
-                        <select id="penduduk" name="penduduk" required class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent">
-                            <option value="">Pilih Penduduk</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label for="organisasi" class="block text-sm font-medium text-gray-700 mb-1">Organisasi</label>
-                        <select id="organisasi" name="organisasi" required class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent">
-                            <option value="">Pilih Organisasi</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label for="jabatan" class="block text-sm font-medium text-gray-700 mb-1">Jabatan</label>
-                        <select id="jabatan" name="jabatan" required class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent">
-                            <option value="">Pilih Jabatan</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label for="periode" class="block text-sm font-medium text-gray-700 mb-1">Periode</label>
-                        <select id="periode" name="periode" required class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent">
-                            <option value="">Pilih Periode</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label for="tanggal_mulai" class="block text-sm font-medium text-gray-700 mb-1">Tanggal Mulai</label>
-                        <input type="date" id="tanggal_mulai" name="tanggal_mulai" required class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent">
-                    </div>
-                    <div>
-                        <label for="tanggal_selesai" class="block text-sm font-medium text-gray-700 mb-1">Tanggal Selesai</label>
-                        <input type="date" id="tanggal_selesai" name="tanggal_selesai" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent">
-                    </div>
-                    <div>
-                        <label for="foto_profil" class="block text-sm font-medium text-gray-700 mb-1">Foto Profil</label>
-                        <input type="file" id="foto_profil" name="foto_profil" accept="image/*" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent">
-                    </div>
-                    <div class="flex items-center">
-                        <input type="checkbox" id="is_active" name="is_active" checked class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded">
-                        <label for="is_active" class="ml-2 block text-sm text-gray-900">Aktif</label>
-                    </div>
-                </div>
-                <div class="flex justify-end space-x-3 mt-6">
-                    <button type="button" onclick="closeModal()" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors duration-200">Batal</button>
-                    <button type="submit" class="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors duration-200">Simpan</button>
-                </div>
-            </form>
+<div id="anggotaModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 hidden">
+    <div class="relative top-4 mx-auto p-3 sm:p-5 border w-11/12 sm:w-10/12 md:w-8/12 lg:w-6/12 xl:w-4/12 shadow-lg rounded-lg bg-white">
+        <!-- Modal Header -->
+        <div class="flex items-center justify-between pb-3 border-b">
+            <h3 class="text-lg sm:text-xl font-semibold text-gray-900" id="modalTitle">Tambah Anggota</h3>
+            <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600 text-xl">
+                <i class="fas fa-times"></i>
+            </button>
         </div>
+        
+        <!-- Modal Body -->
+        <form id="anggotaForm" class="mt-4 space-y-4">
+            <input type="hidden" id="anggotaId">
+            
+            <!-- Penduduk -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Penduduk *</label>
+                <select id="pendudukSelect" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm">
+                    <option value="">Pilih Penduduk</option>
+                </select>
+            </div>
+            
+            <!-- Organization -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Organisasi *</label>
+                <select id="organizationSelect" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm">
+                    <option value="">Pilih Organisasi</option>
+                </select>
+            </div>
+            
+            <!-- Position -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Jabatan *</label>
+                <select id="positionSelect" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm">
+                    <option value="">Pilih Jabatan</option>
+                </select>
+            </div>
+            
+            <!-- Period -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Periode *</label>
+                <select id="periodSelect" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm">
+                    <option value="">Pilih Periode</option>
+                </select>
+            </div>
+            
+            <!-- Dates -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Bergabung *</label>
+                    <input type="date" id="joinDate" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Keluar</label>
+                    <input type="date" id="endDate" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm">
+                </div>
+            </div>
+            
+            <!-- Profile Photo -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Foto Profil</label>
+                <input type="file" id="profilePhoto" accept="image/*" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm">
+            </div>
+            
+            <!-- Status -->
+            <div>
+                <label class="flex items-center">
+                    <input type="checkbox" id="isActive" class="rounded border-gray-300 text-primary-600 shadow-sm focus:border-primary-300 focus:ring focus:ring-primary-200 focus:ring-opacity-50">
+                    <span class="ml-2 text-sm text-gray-700">Aktif</span>
+                </label>
+            </div>
+            
+            <!-- Modal Footer -->
+            <div class="flex flex-col sm:flex-row gap-3 pt-4 border-t">
+                <button type="button" onclick="closeModal()" class="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200">
+                    Batal
+                </button>
+                <button type="submit" class="flex-1 bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200">
+                    Simpan
+                </button>
+            </div>
+        </form>
     </div>
 </div>
 
 <script>
 let currentPage = 1;
-let currentEditId = null;
+let totalPages = 1;
+let isLoading = false;
 
 // Initialize page
 document.addEventListener('DOMContentLoaded', function() {
@@ -209,33 +272,33 @@ document.addEventListener('DOMContentLoaded', function() {
     loadDropdownData();
     
     // Search functionality
-    document.getElementById('search-input').addEventListener('input', debounce(function() {
+    const searchInput = document.getElementById('searchInput');
+    searchInput.addEventListener('input', debounce(function() {
         currentPage = 1;
         loadAnggotaData();
     }, 300));
     
     // Filter functionality
-    ['filter-organisasi', 'filter-jabatan', 'filter-status'].forEach(id => {
-        document.getElementById(id).addEventListener('change', function() {
+    ['organizationFilter', 'positionFilter', 'statusFilter'].forEach(filterId => {
+        document.getElementById(filterId).addEventListener('change', function() {
             currentPage = 1;
             loadAnggotaData();
         });
     });
     
     // Form submission
-    document.getElementById('anggota-form').addEventListener('submit', handleFormSubmit);
+    document.getElementById('anggotaForm').addEventListener('submit', handleFormSubmit);
 });
 
 // Load statistics
 function loadStatistics() {
-    // Load statistics from API
     fetch('/organization/api/anggota-organisasi/statistics/')
         .then(response => response.json())
         .then(data => {
-            document.getElementById('total-anggota').textContent = data.total_anggota || 0;
-            document.getElementById('anggota-aktif').textContent = data.anggota_aktif || 0;
-            document.getElementById('total-pengurus').textContent = data.total_pengurus || 0;
-            document.getElementById('total-organisasi').textContent = data.total_organisasi || 0;
+            document.getElementById('totalAnggota').textContent = data.total_anggota || 0;
+            document.getElementById('anggotaAktif').textContent = data.anggota_aktif || 0;
+            document.getElementById('totalOrganisasi').textContent = data.total_organisasi || 0;
+            document.getElementById('totalJabatan').textContent = data.total_jabatan || 0;
         })
         .catch(error => {
             console.error('Error loading statistics:', error);
@@ -244,248 +307,351 @@ function loadStatistics() {
 
 // Load anggota data
 function loadAnggotaData() {
-    const search = document.getElementById('search-input').value;
-    const organisasi = document.getElementById('filter-organisasi').value;
-    const jabatan = document.getElementById('filter-jabatan').value;
-    const status = document.getElementById('filter-status').value;
+    if (isLoading) return;
     
-    // Build query parameters
+    isLoading = true;
+    document.getElementById('loadingState').classList.remove('hidden');
+    document.getElementById('emptyState').classList.add('hidden');
+    
     const params = new URLSearchParams({
         page: currentPage,
-        search: search,
-        organisasi: organisasi,
-        jabatan: jabatan,
-        status: status
+        search: document.getElementById('searchInput').value,
+        organization: document.getElementById('organizationFilter').value,
+        position: document.getElementById('positionFilter').value,
+        status: document.getElementById('statusFilter').value
     });
     
-    // Load anggota data from API
     fetch(`/organization/api/anggota-organisasi/?${params}`)
         .then(response => response.json())
         .then(data => {
-            renderAnggotaTable(data.results || []);
-            updatePagination(data);
+            renderAnggotaTable(data.results);
+            updatePagination(data.pagination);
+            
+            if (data.results.length === 0) {
+                document.getElementById('emptyState').classList.remove('hidden');
+            }
         })
         .catch(error => {
             console.error('Error loading anggota data:', error);
-            renderAnggotaTable([]);
+            showNotification('Gagal memuat data anggota', 'error');
+        })
+        .finally(() => {
+            isLoading = false;
+            document.getElementById('loadingState').classList.add('hidden');
         });
 }
 
 // Render anggota table
-function renderAnggotaTable(data) {
-    const tbody = document.getElementById('anggota-table-body');
+function renderAnggotaTable(anggota) {
+    const tableBody = document.getElementById('anggotaTableBody');
+    const mobileCards = document.getElementById('anggotaMobileCards');
     
-    if (data.length === 0) {
-        tbody.innerHTML = `
-            <tr>
-                <td colspan="7" class="px-6 py-4 text-center text-gray-500">
-                    <i class="fas fa-inbox text-4xl mb-2 block"></i>
-                    Tidak ada data anggota organisasi
-                </td>
-            </tr>
-        `;
-        return;
-    }
-    
-    tbody.innerHTML = data.map(item => `
+    // Desktop table
+    tableBody.innerHTML = anggota.map(item => `
         <tr class="hover:bg-gray-50">
             <td class="px-6 py-4 whitespace-nowrap">
-                <img src="${item.foto}" alt="${item.nama}" class="h-10 w-10 rounded-full object-cover">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 h-10 w-10">
+                        <img class="h-10 w-10 rounded-full object-cover" src="${item.foto_profil || '/static/images/default-avatar.png'}" alt="${item.penduduk_nama}">
+                    </div>
+                    <div class="ml-4">
+                        <div class="text-sm font-medium text-gray-900">${item.penduduk_nama}</div>
+                        <div class="text-sm text-gray-500">${item.penduduk_nik}</div>
+                    </div>
+                </div>
             </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${item.organization_name}</td>
             <td class="px-6 py-4 whitespace-nowrap">
-                <div class="text-sm font-medium text-gray-900">${item.nama}</div>
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium" style="background-color: ${item.jabatan_warna}20; color: ${item.jabatan_warna}">
+                    ${item.jabatan_nama}
+                </span>
             </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${item.periode_nama}</td>
             <td class="px-6 py-4 whitespace-nowrap">
-                <div class="text-sm text-gray-900">${item.organisasi}</div>
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap">
-                <div class="text-sm text-gray-900">${item.jabatan}</div>
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap">
-                <div class="text-sm text-gray-900">${item.periode}</div>
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap">
-                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                    item.status === 'active' 
-                        ? 'bg-green-100 text-green-800' 
-                        : 'bg-red-100 text-red-800'
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                    item.status === 'aktif' ? 'bg-green-100 text-green-800' :
+                    item.status === 'non_aktif' ? 'bg-yellow-100 text-yellow-800' :
+                    item.status === 'keluar' ? 'bg-red-100 text-red-800' :
+                    'bg-gray-100 text-gray-800'
                 }">
-                    ${item.status === 'active' ? 'Aktif' : 'Tidak Aktif'}
+                    ${item.status.charAt(0).toUpperCase() + item.status.slice(1).replace('_', ' ')}
                 </span>
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                <button onclick="editAnggota(${item.id})" class="text-primary-600 hover:text-primary-900 mr-3">
-                    <i class="fas fa-edit"></i>
-                </button>
-                <button onclick="deleteAnggota(${item.id})" class="text-red-600 hover:text-red-900">
-                    <i class="fas fa-trash"></i>
-                </button>
+                <div class="flex space-x-2">
+                    <button onclick="editAnggota(${item.id})" class="text-indigo-600 hover:text-indigo-900">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button onclick="deleteAnggota(${item.id})" class="text-red-600 hover:text-red-900">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
             </td>
         </tr>
     `).join('');
+    
+    // Mobile cards
+    mobileCards.innerHTML = anggota.map(item => `
+        <div class="border-b border-gray-200 p-4">
+            <div class="flex items-start space-x-3">
+                <img class="h-12 w-12 rounded-full object-cover" src="${item.foto_profil || '/static/images/default-avatar.png'}" alt="${item.penduduk_nama}">
+                <div class="flex-1 min-w-0">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-sm font-medium text-gray-900 truncate">${item.penduduk_nama}</h3>
+                        <div class="flex space-x-2">
+                            <button onclick="editAnggota(${item.id})" class="text-indigo-600 hover:text-indigo-900 p-1">
+                                <i class="fas fa-edit text-sm"></i>
+                            </button>
+                            <button onclick="deleteAnggota(${item.id})" class="text-red-600 hover:text-red-900 p-1">
+                                <i class="fas fa-trash text-sm"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <p class="text-xs text-gray-500 mb-2">${item.penduduk_nik}</p>
+                    <div class="space-y-1">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs text-gray-500">Organisasi:</span>
+                            <span class="text-xs font-medium text-gray-900">${item.organization_name}</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs text-gray-500">Jabatan:</span>
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium" style="background-color: ${item.jabatan_warna}20; color: ${item.jabatan_warna}">
+                                ${item.jabatan_nama}
+                            </span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs text-gray-500">Status:</span>
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                                item.status === 'aktif' ? 'bg-green-100 text-green-800' :
+                                item.status === 'non_aktif' ? 'bg-yellow-100 text-yellow-800' :
+                                item.status === 'keluar' ? 'bg-red-100 text-red-800' :
+                                'bg-gray-100 text-gray-800'
+                            }">
+                                ${item.status.charAt(0).toUpperCase() + item.status.slice(1).replace('_', ' ')}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+// Update pagination
+function updatePagination(pagination) {
+    totalPages = pagination.total_pages;
+    currentPage = pagination.current_page;
+    
+    document.getElementById('showingStart').textContent = ((currentPage - 1) * 10) + 1;
+    document.getElementById('showingEnd').textContent = Math.min(currentPage * 10, pagination.total_items);
+    document.getElementById('totalItems').textContent = pagination.total_items;
+    
+    const container = document.getElementById('paginationContainer');
+    container.innerHTML = '';
+    
+    if (totalPages <= 1) return;
+    
+    // Previous button
+    if (pagination.has_previous) {
+        container.innerHTML += `<button onclick="changePage(${currentPage - 1})" class="px-3 py-1 text-sm border border-gray-300 rounded-md hover:bg-gray-50">‹</button>`;
+    }
+    
+    // Page numbers
+    for (let i = Math.max(1, currentPage - 2); i <= Math.min(totalPages, currentPage + 2); i++) {
+        container.innerHTML += `<button onclick="changePage(${i})" class="px-3 py-1 text-sm border ${i === currentPage ? 'bg-primary-600 text-white border-primary-600' : 'border-gray-300 hover:bg-gray-50'} rounded-md">${i}</button>`;
+    }
+    
+    // Next button
+    if (pagination.has_next) {
+        container.innerHTML += `<button onclick="changePage(${currentPage + 1})" class="px-3 py-1 text-sm border border-gray-300 rounded-md hover:bg-gray-50">›</button>`;
+    }
+}
+
+// Change page
+function changePage(page) {
+    currentPage = page;
+    loadAnggotaData();
 }
 
 // Load dropdown data
 function loadDropdownData() {
-    // Load penduduk from API
-    fetch('/penduduk/api/penduduk/')
+    // Load residents
+    fetch('/references/api/penduduk/dropdown/')
         .then(response => response.json())
         .then(data => {
-            const pendudukSelect = document.getElementById('penduduk');
-            const options = data.results.map(p => `<option value="${p.id}">${p.nama}</option>`).join('');
-            pendudukSelect.innerHTML = '<option value="">Pilih Penduduk</option>' + options;
-        })
-        .catch(error => console.error('Error loading penduduk:', error));
+            const select = document.getElementById('pendudukSelect');
+            select.innerHTML = '<option value="">Pilih Penduduk</option>';
+            data.penduduk.forEach(item => {
+                select.innerHTML += `<option value="${item.id}">${item.nama} - ${item.nik}</option>`;
+            });
+        });
     
-    // Load organizations from API
+    // Load organizations
     fetch('/organization/api/organizations/')
         .then(response => response.json())
         .then(data => {
-            const organisasiSelect = document.getElementById('organisasi');
-            const filterOrganisasiSelect = document.getElementById('filter-organisasi');
-            const options = data.results.map(org => `<option value="${org.id}">${org.name}</option>`).join('');
-            
-            organisasiSelect.innerHTML = '<option value="">Pilih Organisasi</option>' + options;
-            filterOrganisasiSelect.innerHTML = '<option value="">Semua Organisasi</option>' + options;
-        })
-        .catch(error => console.error('Error loading organizations:', error));
+            const selects = ['organizationSelect', 'organizationFilter'];
+            selects.forEach(selectId => {
+                const select = document.getElementById(selectId);
+                const defaultText = selectId === 'organizationFilter' ? 'Semua Organisasi' : 'Pilih Organisasi';
+                select.innerHTML = `<option value="">${defaultText}</option>`;
+                data.results.forEach(item => {
+                    select.innerHTML += `<option value="${item.id}">${item.name}</option>`;
+                });
+            });
+        });
     
-    // Load jabatan from API
+    // Load positions
     fetch('/organization/api/jabatan/')
         .then(response => response.json())
         .then(data => {
-            const jabatanSelect = document.getElementById('jabatan');
-            const filterJabatanSelect = document.getElementById('filter-jabatan');
-            const options = data.results.map(jab => `<option value="${jab.id}">${jab.nama_jabatan}</option>`).join('');
-            
-            jabatanSelect.innerHTML = '<option value="">Pilih Jabatan</option>' + options;
-            filterJabatanSelect.innerHTML = '<option value="">Semua Jabatan</option>' + options;
-        })
-        .catch(error => console.error('Error loading jabatan:', error));
+            const selects = ['positionSelect', 'positionFilter'];
+            selects.forEach(selectId => {
+                const select = document.getElementById(selectId);
+                const defaultText = selectId === 'positionFilter' ? 'Semua Jabatan' : 'Pilih Jabatan';
+                select.innerHTML = `<option value="">${defaultText}</option>`;
+                data.results.forEach(item => {
+                    select.innerHTML += `<option value="${item.id}">${item.nama_jabatan}</option>`;
+                });
+            });
+        });
     
-    // Load periode from API
+    // Load periods
     fetch('/organization/api/periode-kepengurusan/')
         .then(response => response.json())
         .then(data => {
-            const periodeSelect = document.getElementById('periode');
-            const options = data.results.map(per => `<option value="${per.id}">${per.nama_periode}</option>`).join('');
-            
-            periodeSelect.innerHTML = '<option value="">Pilih Periode</option>' + options;
-        })
-        .catch(error => console.error('Error loading periode:', error));
+            const select = document.getElementById('periodSelect');
+            select.innerHTML = '<option value="">Pilih Periode</option>';
+            data.results.forEach(item => {
+                select.innerHTML += `<option value="${item.id}">${item.nama_periode}</option>`;
+            });
+        });
 }
 
 // Modal functions
 function openAddModal() {
-    currentEditId = null;
-    document.getElementById('modal-title').textContent = 'Tambah Anggota Organisasi';
-    document.getElementById('anggota-form').reset();
-    document.getElementById('is_active').checked = true;
-    document.getElementById('anggota-modal').classList.remove('hidden');
+    document.getElementById('modalTitle').textContent = 'Tambah Anggota';
+    document.getElementById('anggotaForm').reset();
+    document.getElementById('anggotaId').value = '';
+    document.getElementById('anggotaModal').classList.remove('hidden');
 }
 
 function editAnggota(id) {
-    currentEditId = id;
-    document.getElementById('modal-title').textContent = 'Edit Anggota Organisasi';
+    document.getElementById('modalTitle').textContent = 'Edit Anggota';
+    document.getElementById('anggotaId').value = id;
     
-    // Load data for editing from API
     fetch(`/organization/api/anggota-organisasi/${id}/`)
         .then(response => response.json())
         .then(data => {
-            document.getElementById('penduduk').value = data.penduduk;
-            document.getElementById('organisasi').value = data.organisasi;
-            document.getElementById('jabatan').value = data.jabatan;
-            document.getElementById('periode').value = data.periode;
-            document.getElementById('tanggal_mulai').value = data.tanggal_mulai;
-            document.getElementById('tanggal_selesai').value = data.tanggal_selesai || '';
-            document.getElementById('is_active').checked = data.is_active;
+            document.getElementById('pendudukSelect').value = data.penduduk;
+            document.getElementById('organizationSelect').value = data.organization;
+            document.getElementById('positionSelect').value = data.jabatan;
+            document.getElementById('periodSelect').value = data.periode;
+            document.getElementById('joinDate').value = data.tanggal_bergabung;
+            document.getElementById('endDate').value = data.tanggal_keluar || '';
+            document.getElementById('isActive').checked = data.status === 'aktif';
             
-            document.getElementById('anggota-modal').classList.remove('hidden');
+            document.getElementById('anggotaModal').classList.remove('hidden');
         })
         .catch(error => {
             console.error('Error loading anggota data:', error);
-            showNotification('Error loading data', 'error');
+            showNotification('Gagal memuat data anggota', 'error');
         });
 }
 
 function closeModal() {
-    document.getElementById('anggota-modal').classList.add('hidden');
+    document.getElementById('anggotaModal').classList.add('hidden');
 }
 
 // Form submission
 function handleFormSubmit(e) {
     e.preventDefault();
     
-    const formData = new FormData(e.target);
-    const data = {
-        penduduk: formData.get('penduduk'),
-        organisasi: formData.get('organisasi'),
-        jabatan: formData.get('jabatan'),
-        periode: formData.get('periode'),
-        tanggal_mulai: formData.get('tanggal_mulai'),
-        tanggal_selesai: formData.get('tanggal_selesai'),
-        is_active: formData.get('is_active') === 'on'
-    };
+    const formData = new FormData();
+    const id = document.getElementById('anggotaId').value;
     
-    // Handle file upload
-    const fotoFile = formData.get('foto_profil');
-    if (fotoFile && fotoFile.size > 0) {
-        data.foto_profil = fotoFile;
+    formData.append('penduduk', document.getElementById('pendudukSelect').value);
+    formData.append('organization', document.getElementById('organizationSelect').value);
+    formData.append('jabatan', document.getElementById('positionSelect').value);
+    formData.append('periode', document.getElementById('periodSelect').value);
+    formData.append('tanggal_bergabung', document.getElementById('joinDate').value);
+    formData.append('tanggal_keluar', document.getElementById('endDate').value);
+    formData.append('status', document.getElementById('isActive').checked ? 'aktif' : 'non_aktif');
+    
+    const photoFile = document.getElementById('profilePhoto').files[0];
+    if (photoFile) {
+        formData.append('foto_profil', photoFile);
     }
     
-    const url = currentEditId 
-        ? `/organization/api/anggota-organisasi/${currentEditId}/`
-        : '/organization/api/anggota-organisasi/';
-    
-    const method = currentEditId ? 'PUT' : 'POST';
+    const url = id ? `/organization/api/anggota-organisasi/${id}/update/` : '/organization/api/anggota-organisasi/create/';
+    const method = id ? 'PUT' : 'POST';
     
     fetch(url, {
         method: method,
+        body: formData,
         headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-        },
-        body: JSON.stringify(data)
+            'X-CSRFToken': getCookie('csrftoken')
+        }
     })
     .then(response => response.json())
     .then(data => {
-        showNotification(currentEditId ? 'Anggota berhasil diperbarui!' : 'Anggota berhasil ditambahkan!', 'success');
-        closeModal();
-        loadAnggotaData();
-        loadStatistics();
+        if (data.success) {
+            showNotification(data.message, 'success');
+            closeModal();
+            loadAnggotaData();
+            loadStatistics();
+        } else {
+            showNotification(data.message, 'error');
+        }
     })
     .catch(error => {
         console.error('Error saving anggota:', error);
-        showNotification('Error saving data', 'error');
+        showNotification('Gagal menyimpan data anggota', 'error');
     });
 }
 
 // Delete anggota
 function deleteAnggota(id) {
     if (confirm('Apakah Anda yakin ingin menghapus anggota ini?')) {
-        fetch(`/organization/api/anggota-organisasi/${id}/`, {
+        fetch(`/organization/api/anggota-organisasi/${id}/delete/`, {
             method: 'DELETE',
             headers: {
-                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                'X-CSRFToken': getCookie('csrftoken')
             }
         })
-        .then(response => {
-            if (response.ok) {
-                showNotification('Anggota berhasil dihapus!', 'success');
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showNotification(data.message, 'success');
                 loadAnggotaData();
                 loadStatistics();
             } else {
-                throw new Error('Failed to delete');
+                showNotification(data.message, 'error');
             }
         })
         .catch(error => {
             console.error('Error deleting anggota:', error);
-            showNotification('Error deleting data', 'error');
+            showNotification('Gagal menghapus anggota', 'error');
         });
     }
 }
 
 // Utility functions
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
 function debounce(func, wait) {
     let timeout;
     return function executedFunction(...args) {
@@ -501,57 +667,34 @@ function debounce(func, wait) {
 function refreshData() {
     loadAnggotaData();
     loadStatistics();
-    showNotification('Data berhasil diperbarui!', 'success');
+    showNotification('Data berhasil diperbarui', 'success');
 }
 
 function exportData() {
-    showNotification('Data sedang diexport...', 'info');
-    
-    fetch('/organization/api/anggota-organisasi/export/')
-        .then(response => response.blob())
-        .then(blob => {
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.style.display = 'none';
-            a.href = url;
-            a.download = 'data-anggota-organisasi.xlsx';
-            document.body.appendChild(a);
-            a.click();
-            window.URL.revokeObjectURL(url);
-            showNotification('Data berhasil diexport!', 'success');
-        })
-        .catch(error => {
-            console.error('Error exporting data:', error);
-            showNotification('Error exporting data', 'error');
-        });
+    window.open('/organization/api/anggota-organisasi/export/', '_blank');
 }
 
-function showNotification(message, type = 'info') {
+function showNotification(message, type) {
     // Create notification element
     const notification = document.createElement('div');
     notification.className = `fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg ${
-        type === 'success' ? 'bg-green-500 text-white' :
-        type === 'error' ? 'bg-red-500 text-white' :
-        type === 'warning' ? 'bg-yellow-500 text-white' :
-        'bg-blue-500 text-white'
+        type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
     }`;
     notification.innerHTML = `
         <div class="flex items-center">
+            <i class="fas ${
+                type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'
+            } mr-2"></i>
             <span>${message}</span>
-            <button onclick="this.parentElement.parentElement.remove()" class="ml-4 text-white hover:text-gray-200">
-                <i class="fas fa-times"></i>
-            </button>
         </div>
     `;
     
     document.body.appendChild(notification);
     
-    // Auto remove after 5 seconds
+    // Remove notification after 3 seconds
     setTimeout(() => {
-        if (notification.parentElement) {
-            notification.remove();
-        }
-    }, 5000);
+        notification.remove();
+    }, 3000);
 }
 </script>
 {% endblock %}

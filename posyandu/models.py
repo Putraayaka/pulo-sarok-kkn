@@ -86,7 +86,7 @@ class HealthRecord(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f'{self.patient.nama} - {self.visit_date}'
+        return f'{self.patient.name} - {self.visit_date}'
 
     class Meta:
         verbose_name = 'Rekam Kesehatan'
@@ -121,7 +121,7 @@ class Immunization(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f'{self.patient.nama} - {self.vaccine_name} (Dosis {self.dose_number})'
+        return f'{self.patient.name} - {self.vaccine_name} (Dosis {self.dose_number})'
 
     class Meta:
         verbose_name = 'Imunisasi'
@@ -156,7 +156,7 @@ class NutritionData(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f'{self.patient.nama} - {self.measurement_date} ({self.nutrition_status})'
+        return f'{self.patient.name} - {self.measurement_date} ({self.nutrition_status})'
 
     class Meta:
         verbose_name = 'Data Nutrisi'
@@ -192,7 +192,7 @@ class PosyanduKader(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     
     def __str__(self):
-        return f'{self.penduduk.nama} - {self.posyandu.name} ({self.jabatan})'
+        return f'{self.penduduk.name} - {self.posyandu.name} ({self.jabatan})'
     
     class Meta:
         verbose_name = 'Kader Posyandu'
@@ -238,7 +238,7 @@ class IbuHamil(models.Model):
         super().save(*args, **kwargs)
     
     def __str__(self):
-        return f'{self.penduduk.nama} - Hamil {self.usia_kehamilan} minggu'
+        return f'{self.penduduk.name} - Hamil {self.usia_kehamilan} minggu'
     
     class Meta:
         verbose_name = 'Ibu Hamil'
@@ -264,7 +264,7 @@ class PemeriksaanIbuHamil(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     
     def __str__(self):
-        return f'{self.ibu_hamil.penduduk.nama} - {self.tanggal_periksa}'
+        return f'{self.ibu_hamil.penduduk.name} - {self.tanggal_periksa}'
     
     class Meta:
         verbose_name = 'Pemeriksaan Ibu Hamil'
@@ -308,7 +308,7 @@ class StuntingData(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     
     def __str__(self):
-        return f'{self.balita.nama} - {self.tanggal_ukur} ({self.status_stunting})'
+        return f'{self.balita.name} - {self.tanggal_ukur} ({self.status_stunting})'
     
     class Meta:
         verbose_name = 'Data Stunting'

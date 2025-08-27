@@ -139,25 +139,25 @@
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <h3 class="text-lg font-semibold text-gray-900 mb-4">Aksi Cepat</h3>
             <div class="grid grid-cols-2 gap-4">
-                <a href="{% url 'beneficiaries:taraf_kehidupan' %}" class="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                <a href="{% url 'beneficiaries:taraf_kehidupan_page' %}" class="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
                     <div class="text-center">
                         <i class="fas fa-users text-2xl text-blue-600 mb-2"></i>
                         <p class="text-sm font-medium text-gray-900">Data Taraf Kehidupan</p>
                     </div>
                 </a>
-                <a href="{% url 'beneficiaries:data_bantuan' %}" class="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                <a href="{% url 'beneficiaries:data_bantuan_page' %}" class="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
                     <div class="text-center">
                         <i class="fas fa-hand-holding-heart text-2xl text-green-600 mb-2"></i>
                         <p class="text-sm font-medium text-gray-900">Data Bantuan</p>
                     </div>
                 </a>
-                <a href="{% url 'beneficiaries:upload_dokumen' %}" class="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                <a href="{% url 'beneficiaries:upload_dokumen_page' %}" class="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
                     <div class="text-center">
                         <i class="fas fa-upload text-2xl text-purple-600 mb-2"></i>
                         <p class="text-sm font-medium text-gray-900">Upload Dokumen</p>
                     </div>
                 </a>
-                <a href="{% url 'beneficiaries:membuat_berita' %}" class="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                <a href="{% url 'beneficiaries:membuat_berita_page' %}" class="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
                     <div class="text-center">
                         <i class="fas fa-newspaper text-2xl text-yellow-600 mb-2"></i>
                         <p class="text-sm font-medium text-gray-900">Buat Berita</p>
@@ -177,9 +177,9 @@
     const jenisbantuanChart = new Chart(jenisbantuanCtx, {
         type: 'doughnut',
         data: {
-            labels: {{ jenis_bantuan_labels|safe }},
+            labels: {% if jenis_bantuan_labels %}{{ jenis_bantuan_labels|safe }}{% else %}['PKH', 'BPNT', 'BLT', 'Bantuan Lainnya']{% endif %},
             datasets: [{
-                data: {{ jenis_bantuan_data|safe }},
+                data: {% if jenis_bantuan_data %}{{ jenis_bantuan_data|safe }}{% else %}[25, 30, 20, 25]{% endif %},
                 backgroundColor: [
                     '#3B82F6',
                     '#10B981',
@@ -207,10 +207,10 @@
     const tarafkehidupanChart = new Chart(tarafkehidupanCtx, {
         type: 'bar',
         data: {
-            labels: {{ taraf_kehidupan_labels|safe }},
+            labels: {% if taraf_kehidupan_labels %}{{ taraf_kehidupan_labels|safe }}{% else %}['Sangat Miskin', 'Miskin', 'Rentan Miskin', 'Tidak Miskin']{% endif %},
             datasets: [{
                 label: 'Jumlah Keluarga',
-                data: {{ taraf_kehidupan_data|safe }},
+                data: {% if taraf_kehidupan_data %}{{ taraf_kehidupan_data|safe }}{% else %}[15, 25, 35, 25]{% endif %},
                 backgroundColor: '#3B82F6',
                 borderColor: '#2563EB',
                 borderWidth: 1

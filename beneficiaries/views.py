@@ -1,13 +1,16 @@
 from django.shortcuts import render, get_object_or_404
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 from django.core.paginator import Paginator
 from django.db.models import Q, Count, Sum
 from django.utils.dateparse import parse_date
+from django.utils.text import slugify
 import json
+import csv
 from datetime import datetime, date
 from decimal import Decimal
+from io import StringIO
 
 from .models import (
     BeneficiaryCategory, Beneficiary, Aid, AidDistribution, BeneficiaryVerification,
@@ -1859,6 +1862,439 @@ def surat_detail(request, surat_id):
             'message': f'Error: {str(e)}'
         }, status=404)
 
+
+# ============ MISSING CRUD OPERATIONS ============
+
+@csrf_exempt
+@require_http_methods(["PUT"])
+def taraf_kehidupan_update(request, taraf_id):
+    """Update taraf kehidupan"""
+    try:
+        taraf = get_object_or_404(TarafKehidupan, id=taraf_id)
+        data = json.loads(request.body)
+        
+        if 'person_id' in data:
+            taraf.person = get_object_or_404(Penduduk, id=data['person_id'])
+        if 'taraf_ekonomi' in data:
+            taraf.taraf_ekonomi = data['taraf_ekonomi']
+        if 'pendapatan_bulanan' in data:
+            taraf.pendapatan_bulanan = Decimal(str(data['pendapatan_bulanan'])) if data['pendapatan_bulanan'] else None
+        if 'pendidikan_terakhir' in data:
+            taraf.pendidikan_terakhir = data['pendidikan_terakhir']
+        if 'pekerjaan' in data:
+            taraf.pekerjaan = data['pekerjaan']
+        if 'jumlah_tanggungan' in data:
+            taraf.jumlah_tanggungan = data['jumlah_tanggungan']
+        if 'kondisi_rumah' in data:
+            taraf.kondisi_rumah = data['kondisi_rumah']
+        if 'luas_rumah' in data:
+            taraf.luas_rumah = Decimal(str(data['luas_rumah'])) if data['luas_rumah'] else None
+        if 'kepemilikan_rumah' in data:
+            taraf.kepemilikan_rumah = data['kepemilikan_rumah']
+        if 'sumber_air' in data:
+            taraf.sumber_air = data['sumber_air']
+        if 'jenis_jamban' in data:
+            taraf.jenis_jamban = data['jenis_jamban']
+        if 'sumber_penerangan' in data:
+            taraf.sumber_penerangan = data['sumber_penerangan']
+        if 'bahan_bakar_memasak' in data:
+            taraf.bahan_bakar_memasak = data['bahan_bakar_memasak']
+        if 'kepemilikan_aset' in data:
+            taraf.kepemilikan_aset = data['kepemilikan_aset']
+        if 'catatan_khusus' in data:
+            taraf.catatan_khusus = data['catatan_khusus']
+        if 'tanggal_survei' in data:
+            taraf.tanggal_survei = parse_date(data['tanggal_survei'])
+        if 'surveyor_id' in data:
+            taraf.surveyor_id = data['surveyor_id']
+        
+        taraf.save()
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Data taraf kehidupan berhasil diperbarui'
+        })
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f'Error: {str(e)}'
+        }, status=400)
+
+@csrf_exempt
+@require_http_methods(["DELETE"])
+def taraf_kehidupan_delete(request, taraf_id):
+    """Delete taraf kehidupan"""
+    try:
+        taraf = get_object_or_404(TarafKehidupan, id=taraf_id)
+        taraf.delete()
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Data taraf kehidupan berhasil dihapus'
+        })
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f'Error: {str(e)}'
+        }, status=400)
+
+def dokumen_gampong_detail(request, dokumen_id):
+    """Get dokumen gampong details"""
+    try:
+        dokumen = get_object_or_404(DokumenGampong.objects.select_related('uploaded_by'), id=dokumen_id)
+        
+        return JsonResponse({
+            'success': True,
+            'data': {
+                'id': dokumen.id,
+                'nama_dokumen': dokumen.nama_dokumen,
+                'kategori': dokumen.kategori,
+                'deskripsi': dokumen.deskripsi,
+                'file_dokumen': dokumen.file_dokumen.url if dokumen.file_dokumen else None,
+                'ukuran_file': dokumen.get_file_size_display(),
+                'tipe_file': dokumen.tipe_file,
+                'nomor_dokumen': dokumen.nomor_dokumen,
+                'tanggal_dokumen': dokumen.tanggal_dokumen.strftime('%Y-%m-%d'),
+                'tags': dokumen.tags,
+                'status': dokumen.status,
+                'is_public': dokumen.is_public,
+                'download_count': dokumen.download_count,
+                'uploaded_by': dokumen.uploaded_by.username if dokumen.uploaded_by else None,
+                'created_at': dokumen.created_at.strftime('%Y-%m-%d %H:%M'),
+                'updated_at': dokumen.updated_at.strftime('%Y-%m-%d %H:%M'),
+            }
+        })
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f'Error: {str(e)}'
+        }, status=404)
+
+@csrf_exempt
+@require_http_methods(["PUT"])
+def dokumen_gampong_update(request, dokumen_id):
+    """Update dokumen gampong"""
+    try:
+        dokumen = get_object_or_404(DokumenGampong, id=dokumen_id)
+        data = json.loads(request.body)
+        
+        dokumen.nama_dokumen = data.get('nama_dokumen', dokumen.nama_dokumen)
+        dokumen.kategori = data.get('kategori', dokumen.kategori)
+        dokumen.deskripsi = data.get('deskripsi', dokumen.deskripsi)
+        dokumen.nomor_dokumen = data.get('nomor_dokumen', dokumen.nomor_dokumen)
+        
+        if 'tanggal_dokumen' in data:
+            dokumen.tanggal_dokumen = parse_date(data['tanggal_dokumen'])
+        
+        dokumen.tags = data.get('tags', dokumen.tags)
+        dokumen.status = data.get('status', dokumen.status)
+        dokumen.is_public = data.get('is_public', dokumen.is_public)
+        
+        dokumen.save()
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Dokumen berhasil diperbarui'
+        })
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f'Error: {str(e)}'
+        }, status=400)
+
+@csrf_exempt
+@require_http_methods(["DELETE"])
+def dokumen_gampong_delete(request, dokumen_id):
+    """Delete dokumen gampong"""
+    try:
+        dokumen = get_object_or_404(DokumenGampong, id=dokumen_id)
+        dokumen.delete()
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Dokumen berhasil dihapus'
+        })
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f'Error: {str(e)}'
+        }, status=400)
+
+@csrf_exempt
+@require_http_methods(["PUT"])
+def berita_update(request, berita_id):
+    """Update berita"""
+    try:
+        berita = get_object_or_404(Berita, id=berita_id)
+        data = json.loads(request.body)
+        
+        berita.title = data.get('title', berita.title)
+        berita.excerpt = data.get('excerpt', berita.excerpt)
+        berita.content = data.get('content', berita.content)
+        berita.kategori = data.get('kategori', berita.kategori)
+        berita.status = data.get('status', berita.status)
+        berita.tags = data.get('tags', berita.tags)
+        berita.is_featured = data.get('is_featured', berita.is_featured)
+        berita.allow_comments = data.get('allow_comments', berita.allow_comments)
+        
+        if 'published_at' in data and data['published_at']:
+            berita.published_at = parse_date(data['published_at'])
+        
+        # Update slug if title changed
+        if 'title' in data:
+            berita.slug = slugify(berita.title)
+        
+        berita.save()
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Berita berhasil diperbarui'
+        })
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f'Error: {str(e)}'
+        }, status=400)
+
+@csrf_exempt
+@require_http_methods(["DELETE"])
+def berita_delete(request, berita_id):
+    """Delete berita"""
+    try:
+        berita = get_object_or_404(Berita, id=berita_id)
+        berita.delete()
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Berita berhasil dihapus'
+        })
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f'Error: {str(e)}'
+        }, status=400)
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def surat_create(request):
+    """Create new surat"""
+    try:
+        data = json.loads(request.body)
+        
+        template = None
+        if data.get('template_id'):
+            template = get_object_or_404(LetterTemplate, id=data['template_id'])
+        
+        surat = Surat.objects.create(
+            nomor_surat=data['nomor_surat'],
+            perihal=data['perihal'],
+            jenis=data['jenis'],
+            template=template,
+            penerima=data['penerima'],
+            alamat_penerima=data.get('alamat_penerima', ''),
+            content=data['content'],
+            variables_data=data.get('variables_data', {}),
+            tanggal_surat=parse_date(data['tanggal_surat']),
+            status=data.get('status', 'draft'),
+            catatan=data.get('catatan', ''),
+            created_by_id=data.get('created_by_id')
+        )
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Surat berhasil dibuat',
+            'data': {
+                'id': surat.id,
+                'nomor_surat': surat.nomor_surat,
+                'perihal': surat.perihal,
+            }
+        })
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f'Error: {str(e)}'
+        }, status=400)
+
+@csrf_exempt
+@require_http_methods(["PUT"])
+def surat_update(request, surat_id):
+    """Update surat"""
+    try:
+        surat = get_object_or_404(Surat, id=surat_id)
+        data = json.loads(request.body)
+        
+        surat.nomor_surat = data.get('nomor_surat', surat.nomor_surat)
+        surat.perihal = data.get('perihal', surat.perihal)
+        surat.jenis = data.get('jenis', surat.jenis)
+        surat.penerima = data.get('penerima', surat.penerima)
+        surat.alamat_penerima = data.get('alamat_penerima', surat.alamat_penerima)
+        surat.content = data.get('content', surat.content)
+        surat.variables_data = data.get('variables_data', surat.variables_data)
+        surat.status = data.get('status', surat.status)
+        surat.catatan = data.get('catatan', surat.catatan)
+        
+        if 'template_id' in data:
+            if data['template_id']:
+                surat.template = get_object_or_404(LetterTemplate, id=data['template_id'])
+            else:
+                surat.template = None
+        
+        if 'tanggal_surat' in data:
+            surat.tanggal_surat = parse_date(data['tanggal_surat'])
+        
+        if 'approved_by_id' in data:
+            surat.approved_by_id = data['approved_by_id']
+        
+        surat.save()
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Surat berhasil diperbarui'
+        })
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f'Error: {str(e)}'
+        }, status=400)
+
+@csrf_exempt
+@require_http_methods(["DELETE"])
+def surat_delete(request, surat_id):
+    """Delete surat"""
+    try:
+        surat = get_object_or_404(Surat, id=surat_id)
+        surat.delete()
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Surat berhasil dihapus'
+        })
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f'Error: {str(e)}'
+        }, status=400)
+
+# ============ EXPORT FUNCTIONS ============
+
+def export_taraf_kehidupan_csv(request):
+    """Export taraf kehidupan data to CSV"""
+    try:
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="taraf_kehidupan.csv"'
+        
+        writer = csv.writer(response)
+        writer.writerow([
+            'Nama', 'NIK', 'Taraf Ekonomi', 'Pendapatan Bulanan', 'Pendidikan Terakhir',
+            'Pekerjaan', 'Jumlah Tanggungan', 'Kondisi Rumah', 'Luas Rumah',
+            'Kepemilikan Rumah', 'Sumber Air', 'Jenis Jamban', 'Sumber Penerangan',
+            'Bahan Bakar Memasak', 'Kepemilikan Aset', 'Tanggal Survei', 'Surveyor'
+        ])
+        
+        taraf_kehidupan = TarafKehidupan.objects.select_related('person', 'surveyor').all()
+        
+        for item in taraf_kehidupan:
+            writer.writerow([
+                item.person.nama,
+                item.person.nik,
+                item.get_taraf_ekonomi_display(),
+                item.pendapatan_bulanan or 0,
+                item.get_pendidikan_terakhir_display(),
+                item.get_pekerjaan_display(),
+                item.jumlah_tanggungan,
+                item.get_kondisi_rumah_display(),
+                item.luas_rumah or 0,
+                item.get_kepemilikan_rumah_display(),
+                item.sumber_air,
+                item.jenis_jamban,
+                item.sumber_penerangan,
+                item.bahan_bakar_memasak,
+                item.kepemilikan_aset,
+                item.tanggal_survei.strftime('%Y-%m-%d'),
+                item.surveyor.username if item.surveyor else ''
+            ])
+        
+        return response
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f'Error exporting data: {str(e)}'
+        }, status=500)
+
+def export_data_bantuan_csv(request):
+    """Export data bantuan to CSV"""
+    try:
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="data_bantuan.csv"'
+        
+        writer = csv.writer(response)
+        writer.writerow([
+            'Nama Penerima', 'NIK', 'Jenis Bantuan', 'Nama Program', 'Nomor Kartu',
+            'Nilai Bantuan', 'Periode Bantuan', 'Tanggal Mulai', 'Tanggal Berakhir',
+            'Status', 'Sumber Dana', 'Instansi Pemberi'
+        ])
+        
+        data_bantuan = DataBantuan.objects.select_related('penerima').all()
+        
+        for item in data_bantuan:
+            writer.writerow([
+                item.penerima.nama,
+                item.penerima.nik,
+                item.get_jenis_bantuan_display(),
+                item.nama_program,
+                item.nomor_kartu,
+                item.nilai_bantuan or 0,
+                item.periode_bantuan,
+                item.tanggal_mulai.strftime('%Y-%m-%d'),
+                item.tanggal_berakhir.strftime('%Y-%m-%d') if item.tanggal_berakhir else '',
+                item.get_status_display(),
+                item.sumber_dana,
+                item.instansi_pemberi
+            ])
+        
+        return response
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f'Error exporting data: {str(e)}'
+        }, status=500)
+
+def export_beneficiaries_csv(request):
+    """Export beneficiaries data to CSV"""
+    try:
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="penerima_bantuan.csv"'
+        
+        writer = csv.writer(response)
+        writer.writerow([
+            'Nama', 'NIK', 'Kategori', 'Tanggal Registrasi', 'Status',
+            'Status Ekonomi', 'Pendapatan Bulanan', 'Jumlah Anggota Keluarga',
+            'Kondisi Rumah', 'Kebutuhan Khusus', 'Tanggal Verifikasi'
+        ])
+        
+        beneficiaries = Beneficiary.objects.select_related('person', 'category').all()
+        
+        for item in beneficiaries:
+            writer.writerow([
+                item.person.nama,
+                item.person.nik,
+                item.category.name,
+                item.registration_date.strftime('%Y-%m-%d'),
+                item.get_status_display(),
+                item.get_economic_status_display(),
+                item.monthly_income or 0,
+                item.family_members_count,
+                item.house_condition,
+                item.special_needs,
+                item.verification_date.strftime('%Y-%m-%d') if item.verification_date else ''
+            ])
+        
+        return response
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f'Error exporting data: {str(e)}'
+        }, status=500)
 
 # ============ STATISTICS AND HELPER FUNCTIONS ============
 

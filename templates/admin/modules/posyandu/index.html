@@ -1,660 +1,430 @@
 {% extends 'admin/base.html' %}
 
-{% block title %}{{ page_title }}{% endblock %}
-{% block page_title %}{{ page_title }}{% endblock %}
+{% block title %}Dashboard Posyandu{% endblock %}
 
-{% block extra_css %}
-<style>
-    .dashboard-card {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        border-radius: 12px;
-        color: white;
-        padding: 1.5rem;
-        position: relative;
-        overflow: hidden;
-        transition: all 0.3s ease;
-    }
-    
-    .dashboard-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
-    }
-    
-    .dashboard-card.green {
-        background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
-    }
-    
-    .dashboard-card.orange {
-        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-    }
-    
-    .dashboard-card.red {
-        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-    }
-    
-    .dashboard-card.yellow {
-        background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
-        color: #333;
-    }
-    
-    .dashboard-card::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        right: 0;
-        width: 100px;
-        height: 100px;
-        background: rgba(255, 255, 255, 0.1);
-        border-radius: 50%;
-        transform: translate(30px, -30px);
-    }
-    
-    .stat-card {
-        background: white;
-        border-radius: 12px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        padding: 1.5rem;
-        transition: all 0.3s ease;
-    }
-    
-    .stat-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
-    }
-    
-    .chart-container {
-        background: white;
-        border-radius: 12px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        padding: 2rem;
-    }
-    
-    @media (max-width: 768px) {
-        .dashboard-card {
-            padding: 1rem;
-        }
-        .stat-card {
-            padding: 1rem;
-        }
-        .chart-container {
-            padding: 1rem;
-        }
-    }
-</style>
-{% endblock %}
+{% block page_title %}Dashboard Posyandu{% endblock %}
 
 {% block content %}
-<div class="min-h-screen bg-gray-50">
-    <div class="container mx-auto px-4 py-6">
-        <!-- Welcome Section -->
-        <div class="mb-8">
-            <div class="bg-white rounded-lg shadow-sm p-6">
-                <div class="flex flex-col md:flex-row md:items-center md:justify-between">
-                    <div>
-                        <h1 class="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
-                            Selamat Datang di Dashboard Posyandu
-                        </h1>
-                        <p class="text-gray-600">
-                            Kelola semua data kesehatan masyarakat dengan mudah dan efisien
-                        </p>
-                    </div>
-                    <div class="mt-4 md:mt-0">
-                        <div class="text-right">
-                            <p class="text-sm text-gray-500">Terakhir diperbarui</p>
-                            <p class="text-lg font-semibold text-gray-900" id="lastUpdate">-</p>
-                        </div>
-                    </div>
+<div class="p-4 sm:p-6 space-y-6">
+    <!-- Quick Stats Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+        <div class="bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg shadow-lg p-6 text-white">
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    <i class="fas fa-baby text-3xl opacity-80"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-blue-100 text-sm font-medium">Total Balita</p>
+                    <p class="text-3xl font-bold" id="total-balita">-</p>
+                    <p class="text-blue-100 text-xs" id="balita-growth">+0 bulan ini</p>
                 </div>
             </div>
         </div>
 
-        <!-- Quick Stats Cards -->
-        <div class="grid grid-cols-2 lg:grid-cols-5 gap-4 md:gap-6 mb-8">
-            <div class="dashboard-card">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-sm opacity-90 mb-1">Total Kader</p>
-                        <p class="text-2xl md:text-3xl font-bold" id="totalKader">-</p>
-                    </div>
-                    <div class="text-3xl md:text-4xl opacity-80">
-                        <i class="fas fa-user-nurse"></i>
-                    </div>
+        <div class="bg-gradient-to-r from-pink-500 to-pink-600 rounded-lg shadow-lg p-6 text-white">
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    <i class="fas fa-female text-3xl opacity-80"></i>
                 </div>
-            </div>
-            
-            <div class="dashboard-card green">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-sm opacity-90 mb-1">Ibu Hamil</p>
-                        <p class="text-2xl md:text-3xl font-bold" id="totalIbuHamil">-</p>
-                    </div>
-                    <div class="text-3xl md:text-4xl opacity-80">
-                        <i class="fas fa-user-plus"></i>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="dashboard-card orange">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-sm opacity-90 mb-1">Balita</p>
-                        <p class="text-2xl md:text-3xl font-bold" id="totalBalita">-</p>
-                    </div>
-                    <div class="text-3xl md:text-4xl opacity-80">
-                        <i class="fas fa-baby"></i>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="dashboard-card red">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-sm opacity-90 mb-1">Lansia</p>
-                        <p class="text-2xl md:text-3xl font-bold" id="totalLansia">-</p>
-                    </div>
-                    <div class="text-3xl md:text-4xl opacity-80">
-                        <i class="fas fa-user-friends"></i>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="dashboard-card yellow">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-sm opacity-90 mb-1">Stunting</p>
-                        <p class="text-2xl md:text-3xl font-bold" id="totalStunting">-</p>
-                    </div>
-                    <div class="text-3xl md:text-4xl opacity-80">
-                        <i class="fas fa-child"></i>
-                    </div>
+                <div class="ml-4">
+                    <p class="text-pink-100 text-sm font-medium">Ibu Hamil</p>
+                    <p class="text-3xl font-bold" id="total-ibu-hamil">-</p>
+                    <p class="text-pink-100 text-xs" id="ibu-hamil-growth">+0 bulan ini</p>
                 </div>
             </div>
         </div>
 
+        <div class="bg-gradient-to-r from-green-500 to-green-600 rounded-lg shadow-lg p-6 text-white">
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    <i class="fas fa-user-friends text-3xl opacity-80"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-green-100 text-sm font-medium">Kader Aktif</p>
+                    <p class="text-3xl font-bold" id="total-kader">-</p>
+                    <p class="text-green-100 text-xs" id="kader-status">Tersebar di posyandu</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-gradient-to-r from-orange-500 to-red-500 rounded-lg shadow-lg p-6 text-white">
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    <i class="fas fa-exclamation-triangle text-3xl opacity-80"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-orange-100 text-sm font-medium">Stunting</p>
+                    <p class="text-3xl font-bold" id="total-stunting">-</p>
+                    <p class="text-orange-100 text-xs" id="stunting-percentage">0% dari balita</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions & Recent Activity -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <!-- Quick Actions -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 md:gap-6 mb-8">
-            <a href="{% url 'posyandu:kader_admin' %}" class="stat-card hover:bg-blue-50 transition-colors group">
-                <div class="text-center">
-                    <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:bg-blue-200 transition-colors">
-                        <i class="fas fa-user-nurse text-blue-600 text-xl"></i>
+        <div class="bg-white rounded-lg shadow p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Aksi Cepat</h3>
+            <div class="space-y-3">
+                <a href="{% url 'posyandu:view_balita' %}" 
+                   class="w-full flex items-center justify-between p-3 text-left border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                    <div class="flex items-center">
+                        <i class="fas fa-baby text-blue-600 mr-3"></i>
+                        <span class="font-medium text-gray-900">Data Balita</span>
                     </div>
-                    <h3 class="font-semibold text-gray-900 mb-1">Input Kader</h3>
-                    <p class="text-sm text-gray-600">Kelola data kader posyandu</p>
-                </div>
-            </a>
-            
-            <a href="{% url 'posyandu:ibu_hamil_admin' %}" class="stat-card hover:bg-green-50 transition-colors group">
-                <div class="text-center">
-                    <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:bg-green-200 transition-colors">
-                        <i class="fas fa-user-plus text-green-600 text-xl"></i>
+                    <i class="fas fa-chevron-right text-gray-400"></i>
+                </a>
+                
+                <a href="{% url 'posyandu:ibu_hamil_admin' %}" 
+                   class="w-full flex items-center justify-between p-3 text-left border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                    <div class="flex items-center">
+                        <i class="fas fa-female text-pink-600 mr-3"></i>
+                        <span class="font-medium text-gray-900">Data Ibu Hamil</span>
                     </div>
-                    <h3 class="font-semibold text-gray-900 mb-1">Data Ibu Hamil</h3>
-                    <p class="text-sm text-gray-600">Input data ibu hamil</p>
-                </div>
-            </a>
-            
-            <a href="{% url 'posyandu:view_balita' %}" class="stat-card hover:bg-orange-50 transition-colors group">
-                <div class="text-center">
-                    <div class="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:bg-orange-200 transition-colors">
-                        <i class="fas fa-baby text-orange-600 text-xl"></i>
+                    <i class="fas fa-chevron-right text-gray-400"></i>
+                </a>
+                
+                <a href="{% url 'posyandu:kader_admin' %}" 
+                   class="w-full flex items-center justify-between p-3 text-left border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                    <div class="flex items-center">
+                        <i class="fas fa-user-friends text-green-600 mr-3"></i>
+                        <span class="font-medium text-gray-900">Kelola Kader</span>
                     </div>
-                    <h3 class="font-semibold text-gray-900 mb-1">Data Balita</h3>
-                    <p class="text-sm text-gray-600">Lihat data balita</p>
-                </div>
-            </a>
-            
-            <a href="{% url 'posyandu:view_lansia' %}" class="stat-card hover:bg-purple-50 transition-colors group">
-                <div class="text-center">
-                    <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:bg-purple-200 transition-colors">
-                        <i class="fas fa-user-friends text-purple-600 text-xl"></i>
+                    <i class="fas fa-chevron-right text-gray-400"></i>
+                </a>
+                
+                <a href="{% url 'posyandu:stunting_admin' %}" 
+                   class="w-full flex items-center justify-between p-3 text-left border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                    <div class="flex items-center">
+                        <i class="fas fa-exclamation-triangle text-orange-600 mr-3"></i>
+                        <span class="font-medium text-gray-900">Data Stunting</span>
                     </div>
-                    <h3 class="font-semibold text-gray-900 mb-1">Data Lansia</h3>
-                    <p class="text-sm text-gray-600">Lihat data lansia</p>
-                </div>
-            </a>
-            
-            <a href="{% url 'posyandu:stunting_admin' %}" class="stat-card hover:bg-red-50 transition-colors group">
-                <div class="text-center">
-                    <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:bg-red-200 transition-colors">
-                        <i class="fas fa-child text-red-600 text-xl"></i>
+                    <i class="fas fa-chevron-right text-gray-400"></i>
+                </a>
+                
+                <a href="{% url 'posyandu:view_lansia' %}" 
+                   class="w-full flex items-center justify-between p-3 text-left border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                    <div class="flex items-center">
+                        <i class="fas fa-user-clock text-purple-600 mr-3"></i>
+                        <span class="font-medium text-gray-900">Data Lansia</span>
                     </div>
-                    <h3 class="font-semibold text-gray-900 mb-1">Data Stunting</h3>
-                    <p class="text-sm text-gray-600">Input data stunting</p>
-                </div>
-            </a>
+                    <i class="fas fa-chevron-right text-gray-400"></i>
+                </a>
+                
+                <a href="{% url 'posyandu:pengaturan_admin' %}" 
+                   class="w-full flex items-center justify-between p-3 text-left border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                    <div class="flex items-center">
+                        <i class="fas fa-cog text-gray-600 mr-3"></i>
+                        <span class="font-medium text-gray-900">Pengaturan</span>
+                    </div>
+                    <i class="fas fa-chevron-right text-gray-400"></i>
+                </a>
+            </div>
         </div>
 
-        <!-- Charts and Statistics -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <!-- Health Status Overview -->
+        <div class="lg:col-span-2 bg-white rounded-lg shadow p-6">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-lg font-semibold text-gray-900">Status Kesehatan</h3>
+                <div class="flex space-x-2">
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                        <i class="fas fa-check-circle mr-1"></i><span id="normal-percentage">0%</span> Normal
+                    </span>
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                        <i class="fas fa-exclamation-circle mr-1"></i><span id="warning-percentage">0%</span> Perhatian
+                    </span>
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                        <i class="fas fa-times-circle mr-1"></i><span id="critical-percentage">0%</span> Kritis
+                    </span>
+                </div>
+            </div>
+            
             <!-- Nutrition Status Chart -->
-            <div class="chart-container">
-                <h3 class="text-lg font-semibold text-gray-900 mb-4">Status Gizi Balita</h3>
-                <div class="h-64 flex items-center justify-center">
-                    <canvas id="nutritionChart" width="400" height="200"></canvas>
-                </div>
-            </div>
-            
-            <!-- Pregnancy Risk Chart -->
-            <div class="chart-container">
-                <h3 class="text-lg font-semibold text-gray-900 mb-4">Risiko Kehamilan</h3>
-                <div class="h-64 flex items-center justify-center">
-                    <canvas id="pregnancyChart" width="400" height="200"></canvas>
-                </div>
-            </div>
-        </div>
-
-        <!-- Recent Activities -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <!-- Recent Registrations -->
-            <div class="stat-card">
-                <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-lg font-semibold text-gray-900">Pendaftaran Terbaru</h3>
-                    <button onclick="refreshRecentData()" class="text-blue-600 hover:text-blue-800 transition-colors">
-                        <i class="fas fa-sync-alt"></i>
-                    </button>
-                </div>
-                <div id="recentRegistrations" class="space-y-3">
-                    <div class="text-center py-8 text-gray-500">
-                        <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
-                        <p>Memuat data...</p>
+            <div class="space-y-4">
+                <div>
+                    <div class="flex justify-between text-sm mb-1">
+                        <span class="text-gray-600">Gizi Normal</span>
+                        <span id="gizi-normal-count" class="font-medium">0 anak</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2">
+                        <div class="bg-green-500 h-2 rounded-full" id="gizi-normal-bar" style="width: 0%"></div>
                     </div>
                 </div>
-            </div>
-            
-            <!-- Upcoming Schedules -->
-            <div class="stat-card">
-                <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-lg font-semibold text-gray-900">Jadwal Mendatang</h3>
-                    <button onclick="refreshScheduleData()" class="text-blue-600 hover:text-blue-800 transition-colors">
-                        <i class="fas fa-sync-alt"></i>
-                    </button>
+                <div>
+                    <div class="flex justify-between text-sm mb-1">
+                        <span class="text-gray-600">Gizi Kurang</span>
+                        <span id="gizi-kurang-count" class="font-medium">0 anak</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2">
+                        <div class="bg-yellow-500 h-2 rounded-full" id="gizi-kurang-bar" style="width: 0%"></div>
+                    </div>
                 </div>
-                <div id="upcomingSchedules" class="space-y-3">
-                    <div class="text-center py-8 text-gray-500">
-                        <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
-                        <p>Memuat data...</p>
+                <div>
+                    <div class="flex justify-between text-sm mb-1">
+                        <span class="text-gray-600">Gizi Buruk</span>
+                        <span id="gizi-buruk-count" class="font-medium">0 anak</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2">
+                        <div class="bg-red-500 h-2 rounded-full" id="gizi-buruk-bar" style="width: 0%"></div>
+                    </div>
+                </div>
+                <div>
+                    <div class="flex justify-between text-sm mb-1">
+                        <span class="text-gray-600">Stunting</span>
+                        <span id="stunting-count" class="font-medium">0 anak</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2">
+                        <div class="bg-orange-500 h-2 rounded-full" id="stunting-bar" style="width: 0%"></div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- Statistics Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Posyandu Locations -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Lokasi Posyandu</h3>
+            <div class="space-y-3" id="posyandu-locations-chart">
+                <!-- Dynamic content will be loaded here -->
+            </div>
+        </div>
+
+        <!-- Monthly Activity -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Aktivitas Bulanan</h3>
+            <div class="space-y-4">
+                <div class="flex justify-between items-center">
+                    <span class="text-sm text-gray-600">Pemeriksaan Balita</span>
+                    <span class="font-bold text-lg" id="monthly-balita-checkups">0</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-sm text-gray-600">Pemeriksaan Ibu Hamil</span>
+                    <span class="font-bold text-lg text-pink-600" id="monthly-ibu-hamil-checkups">0</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-sm text-gray-600">Imunisasi</span>
+                    <span class="font-bold text-lg text-blue-600" id="monthly-immunizations">0</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-sm text-gray-600">Vitamin A</span>
+                    <span class="font-bold text-lg text-orange-600" id="monthly-vitamin-a">0</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="bg-white rounded-lg shadow p-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">Aktivitas Terbaru (7 Hari Terakhir)</h3>
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div class="text-center">
+                <div class="bg-blue-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-3">
+                    <i class="fas fa-baby text-2xl text-blue-600"></i>
+                </div>
+                <div class="text-2xl font-bold text-gray-900" id="recent-balita-records">0</div>
+                <div class="text-sm text-gray-500">Data Balita Baru</div>
+            </div>
+            <div class="text-center">
+                <div class="bg-pink-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-3">
+                    <i class="fas fa-female text-2xl text-pink-600"></i>
+                </div>
+                <div class="text-2xl font-bold text-gray-900" id="recent-ibu-hamil-records">0</div>
+                <div class="text-sm text-gray-500">Data Ibu Hamil Baru</div>
+            </div>
+            <div class="text-center">
+                <div class="bg-green-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-3">
+                    <i class="fas fa-syringe text-2xl text-green-600"></i>
+                </div>
+                <div class="text-2xl font-bold text-gray-900" id="recent-immunizations">0</div>
+                <div class="text-sm text-gray-500">Imunisasi</div>
+            </div>
+            <div class="text-center">
+                <div class="bg-orange-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-3">
+                    <i class="fas fa-chart-line text-2xl text-orange-600"></i>
+                </div>
+                <div class="text-2xl font-bold text-gray-900" id="growth-monitoring">0</div>
+                <div class="text-sm text-gray-500">Pemantauan Tumbuh Kembang</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Upcoming Schedules -->
+    <div class="bg-white rounded-lg shadow p-6">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-semibold text-gray-900">Jadwal Posyandu Mendatang</h3>
+            <button class="text-blue-600 hover:text-blue-800 text-sm font-medium">Lihat Semua</button>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Lokasi</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Waktu</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kader</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                    </tr>
+                </thead>
+                <tbody id="upcoming-schedules" class="bg-white divide-y divide-gray-200">
+                    <!-- Dynamic content will be loaded here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>
-{% endblock %}
 
-{% block extra_js %}
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<!-- JavaScript for Dashboard -->
 <script>
-let nutritionChart = null;
-let pregnancyChart = null;
-
-// Initialize dashboard
 document.addEventListener('DOMContentLoaded', function() {
     loadDashboardStats();
-    loadCharts();
-    loadRecentActivities();
-    setLastUpdate();
-    
-    // Refresh data every 5 minutes
-    setInterval(function() {
-        loadDashboardStats();
-        loadRecentActivities();
-        setLastUpdate();
-    }, 300000);
+    loadUpcomingSchedules();
+    loadPosyanduLocations();
 });
 
-function setLastUpdate() {
-    const now = new Date();
-    const timeString = now.toLocaleTimeString('id-ID', { 
-        hour: '2-digit', 
-        minute: '2-digit' 
-    });
-    document.getElementById('lastUpdate').textContent = timeString;
-}
-
 function loadDashboardStats() {
-    // Load basic statistics
     fetch('/pulosarok/posyandu/api/stats/')
         .then(response => response.json())
         .then(data => {
-            // Update main stats cards
-            document.getElementById('totalKader').textContent = data.total_kader || '0';
-            document.getElementById('totalIbuHamil').textContent = data.total_ibu_hamil || '0';
-            document.getElementById('totalBalita').textContent = data.total_balita || '0';
-            document.getElementById('totalLansia').textContent = data.total_lansia || '0';
-            document.getElementById('totalStunting').textContent = data.total_stunting || '0';
-            
-            // Update charts with real data
-            updateCharts(data);
+            if (data.success) {
+                updateStatsCards(data.stats);
+                updateHealthStatusChart(data.health_status);
+                updateMonthlyActivity(data.monthly_activity);
+                updateRecentActivity(data.recent_activity);
+            }
         })
-        .catch(error => {
-            console.error('Error loading dashboard stats:', error);
-            // Set default values on error
-            document.getElementById('totalKader').textContent = '0';
-            document.getElementById('totalIbuHamil').textContent = '0';
-            document.getElementById('totalBalita').textContent = '0';
-            document.getElementById('totalLansia').textContent = '0';
-            document.getElementById('totalStunting').textContent = '0';
-        });
+        .catch(error => console.error('Error loading dashboard stats:', error));
 }
 
-function updateCharts(data) {
-    // Update Nutrition Status Chart
-    if (nutritionChart && data.nutrition_status) {
-        const nutritionLabels = data.nutrition_status.map(item => item.nutrition_status);
-        const nutritionData = data.nutrition_status.map(item => item.count);
+function updateStatsCards(stats) {
+    document.getElementById('total-balita').textContent = stats.total_balita || 0;
+    document.getElementById('total-ibu-hamil').textContent = stats.total_ibu_hamil || 0;
+    document.getElementById('total-kader').textContent = stats.total_kader || 0;
+    document.getElementById('total-stunting').textContent = stats.total_stunting || 0;
+    
+    document.getElementById('balita-growth').textContent = `+${stats.balita_growth || 0} bulan ini`;
+    document.getElementById('ibu-hamil-growth').textContent = `+${stats.ibu_hamil_growth || 0} bulan ini`;
+    document.getElementById('stunting-percentage').textContent = `${stats.stunting_percentage || 0}% dari balita`;
+}
+
+function updateHealthStatusChart(healthStatus) {
+    const total = healthStatus.normal + healthStatus.warning + healthStatus.critical;
+    
+    if (total > 0) {
+        const normalPercentage = Math.round((healthStatus.normal / total) * 100);
+        const warningPercentage = Math.round((healthStatus.warning / total) * 100);
+        const criticalPercentage = Math.round((healthStatus.critical / total) * 100);
         
-        nutritionChart.data.labels = nutritionLabels;
-        nutritionChart.data.datasets[0].data = nutritionData;
-        nutritionChart.update();
+        document.getElementById('normal-percentage').textContent = `${normalPercentage}%`;
+        document.getElementById('warning-percentage').textContent = `${warningPercentage}%`;
+        document.getElementById('critical-percentage').textContent = `${criticalPercentage}%`;
     }
     
-    // Update Pregnancy Risk Chart
-    if (pregnancyChart && data.pregnancy_risk) {
-        const riskLabels = data.pregnancy_risk.map(item => item.risiko_kehamilan);
-        const riskData = data.pregnancy_risk.map(item => item.count);
-        
-        pregnancyChart.data.labels = riskLabels;
-        pregnancyChart.data.datasets[0].data = riskData;
-        pregnancyChart.update();
+    // Update nutrition bars
+    updateNutritionBars(healthStatus.nutrition);
+}
+
+function updateNutritionBars(nutrition) {
+    const total = Object.values(nutrition).reduce((sum, count) => sum + count, 0);
+    
+    if (total > 0) {
+        Object.keys(nutrition).forEach(status => {
+            const percentage = Math.round((nutrition[status] / total) * 100);
+            const countElement = document.getElementById(`${status.replace('_', '-')}-count`);
+            const barElement = document.getElementById(`${status.replace('_', '-')}-bar`);
+            
+            if (countElement) countElement.textContent = `${nutrition[status]} anak`;
+            if (barElement) barElement.style.width = `${percentage}%`;
+        });
     }
 }
 
-function loadCharts() {
-    // Nutrition Status Chart
-    const nutritionCtx = document.getElementById('nutritionChart').getContext('2d');
-    nutritionChart = new Chart(nutritionCtx, {
-        type: 'doughnut',
-        data: {
-            labels: ['Memuat data...'],
-            datasets: [{
-                data: [1],
-                backgroundColor: [
-                    '#10B981',
-                    '#F59E0B',
-                    '#EF4444',
-                    '#8B5CF6'
-                ],
-                borderWidth: 0
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    position: 'bottom',
-                    labels: {
-                        padding: 20,
-                        usePointStyle: true
-                    }
-                }
-            }
-        }
-    });
-
-    // Pregnancy Risk Chart
-    const pregnancyCtx = document.getElementById('pregnancyChart').getContext('2d');
-    pregnancyChart = new Chart(pregnancyCtx, {
-        type: 'bar',
-        data: {
-            labels: ['Memuat data...'],
-            datasets: [{
-                label: 'Jumlah Ibu Hamil',
-                data: [1],
-                backgroundColor: [
-                    '#10B981',
-                    '#EF4444'
-                ],
-                borderRadius: 8,
-                borderSkipped: false,
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    display: false
-                }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    grid: {
-                        color: '#F3F4F6'
-                    }
-                },
-                x: {
-                    grid: {
-                        display: false
-                    }
-                }
-            }
-        }
-    });
+function updateMonthlyActivity(activity) {
+    document.getElementById('monthly-balita-checkups').textContent = activity.balita_checkups || 0;
+    document.getElementById('monthly-ibu-hamil-checkups').textContent = activity.ibu_hamil_checkups || 0;
+    document.getElementById('monthly-immunizations').textContent = activity.immunizations || 0;
+    document.getElementById('monthly-vitamin-a').textContent = activity.vitamin_a || 0;
 }
 
-function loadRecentActivities() {
-    loadRecentRegistrations();
-    loadUpcomingSchedules();
-}
-
-function loadRecentRegistrations() {
-    const container = document.getElementById('recentRegistrations');
-    
-    // Load recent data from APIs
-    Promise.all([
-        fetch('/pulosarok/posyandu/api/kader/').then(r => r.json()),
-        fetch('/pulosarok/posyandu/api/ibu-hamil/').then(r => r.json()),
-        fetch('/pulosarok/posyandu/api/stunting/').then(r => r.json())
-    ])
-    .then(([kaderData, ibuHamilData, stuntingData]) => {
-        const recentData = [];
-        
-        // Add recent kader
-        if (kaderData.results && kaderData.results.length > 0) {
-            const kader = kaderData.results[0];
-            recentData.push({
-                name: kader.nama,
-                type: 'Kader',
-                date: kader.created_at.split(' ')[0],
-                icon: 'fa-user-nurse',
-                color: 'text-purple-600'
-            });
-        }
-        
-        // Add recent ibu hamil
-        if (ibuHamilData.results && ibuHamilData.results.length > 0) {
-            const ibu = ibuHamilData.results[0];
-            recentData.push({
-                name: ibu.nama,
-                type: 'Ibu Hamil',
-                date: ibu.created_at.split(' ')[0],
-                icon: 'fa-user-plus',
-                color: 'text-green-600'
-            });
-        }
-        
-        // Add recent stunting
-        if (stuntingData.results && stuntingData.results.length > 0) {
-            const stunting = stuntingData.results[0];
-            recentData.push({
-                name: stunting.nama_balita,
-                type: 'Stunting',
-                date: stunting.created_at.split(' ')[0],
-                icon: 'fa-child',
-                color: 'text-red-600'
-            });
-        }
-        
-        // If no real data, show message
-        if (recentData.length === 0) {
-            container.innerHTML = `
-                <div class="text-center py-8 text-gray-500">
-                    <i class="fas fa-info-circle text-2xl mb-2"></i>
-                    <p>Belum ada data terbaru</p>
-                </div>
-            `;
-            return;
-        }
-        
-        let html = '';
-        recentData.forEach(item => {
-            html += `
-                <div class="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
-                    <div class="w-8 h-8 bg-white rounded-full flex items-center justify-center">
-                        <i class="fas ${item.icon} ${item.color}"></i>
-                    </div>
-                    <div class="flex-1">
-                        <p class="text-sm font-medium text-gray-900">${item.name}</p>
-                        <p class="text-xs text-gray-500">${item.type} • ${item.date}</p>
-                    </div>
-                </div>
-            `;
-        });
-        
-        container.innerHTML = html;
-    })
-    .catch(error => {
-        console.error('Error loading recent data:', error);
-        container.innerHTML = `
-            <div class="text-center py-8 text-gray-500">
-                <i class="fas fa-exclamation-triangle text-2xl mb-2"></i>
-                <p>Gagal memuat data terbaru</p>
-            </div>
-        `;
-    });
+function updateRecentActivity(activity) {
+    document.getElementById('recent-balita-records').textContent = activity.balita_records || 0;
+    document.getElementById('recent-ibu-hamil-records').textContent = activity.ibu_hamil_records || 0;
+    document.getElementById('recent-immunizations').textContent = activity.immunizations || 0;
+    document.getElementById('growth-monitoring').textContent = activity.growth_monitoring || 0;
 }
 
 function loadUpcomingSchedules() {
-    const container = document.getElementById('upcomingSchedules');
-    
-    // Load upcoming schedules from API
-    fetch('/pulosarok/posyandu/api/schedules/')
+    fetch('/pulosarok/posyandu/api/schedules/?upcoming=true&limit=5')
         .then(response => response.json())
         .then(data => {
+            const tbody = document.getElementById('upcoming-schedules');
+            tbody.innerHTML = '';
+            
             if (data.results && data.results.length > 0) {
-                const upcomingSchedules = data.results
-                    .filter(schedule => new Date(schedule.schedule_date) >= new Date())
-                    .slice(0, 3);
-                
-                if (upcomingSchedules.length === 0) {
-                    container.innerHTML = `
-                        <div class="text-center py-8 text-gray-500">
-                            <i class="fas fa-calendar-times text-2xl mb-2"></i>
-                            <p>Tidak ada jadwal mendatang</p>
-                        </div>
+                data.results.forEach(schedule => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${schedule.schedule_date}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${schedule.location_name}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${schedule.start_time} - ${schedule.end_time}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${schedule.coordinator || '-'}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                                schedule.is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                            }">
+                                ${schedule.is_active ? 'Aktif' : 'Tidak Aktif'}
+                            </span>
+                        </td>
                     `;
-                    return;
-                }
-                
-                let html = '';
-                upcomingSchedules.forEach(schedule => {
-                    html += `
-                        <div class="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
-                            <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                                <i class="fas fa-calendar text-blue-600"></i>
-                            </div>
-                            <div class="flex-1">
-                                <p class="text-sm font-medium text-gray-900">${schedule.title}</p>
-                                <p class="text-xs text-gray-500">${schedule.location_name} • ${schedule.schedule_date} ${schedule.start_time}</p>
-                            </div>
-                        </div>
-                    `;
+                    tbody.appendChild(row);
                 });
-                
-                container.innerHTML = html;
             } else {
-                container.innerHTML = `
-                    <div class="text-center py-8 text-gray-500">
-                        <i class="fas fa-calendar-times text-2xl mb-2"></i>
-                        <p>Tidak ada jadwal tersedia</p>
-                    </div>
-                `;
+                tbody.innerHTML = '<tr><td colspan="5" class="px-6 py-4 text-center text-gray-500">Tidak ada jadwal mendatang</td></tr>';
             }
         })
         .catch(error => {
             console.error('Error loading schedules:', error);
-            container.innerHTML = `
-                <div class="text-center py-8 text-gray-500">
-                    <i class="fas fa-exclamation-triangle text-2xl mb-2"></i>
-                    <p>Gagal memuat jadwal</p>
-                </div>
-            `;
+            document.getElementById('upcoming-schedules').innerHTML = '<tr><td colspan="5" class="px-6 py-4 text-center text-red-500">Error loading schedules</td></tr>';
         });
 }
 
-function refreshRecentData() {
-    const container = document.getElementById('recentRegistrations');
-    container.innerHTML = `
-        <div class="text-center py-8 text-gray-500">
-            <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
-            <p>Memuat ulang data...</p>
-        </div>
-    `;
-    
-    setTimeout(() => {
-        loadRecentRegistrations();
-    }, 1000);
-}
-
-function refreshScheduleData() {
-    const container = document.getElementById('upcomingSchedules');
-    container.innerHTML = `
-        <div class="text-center py-8 text-gray-500">
-            <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
-            <p>Memuat ulang data...</p>
-        </div>
-    `;
-    
-    setTimeout(() => {
-        loadUpcomingSchedules();
-    }, 1000);
-}
-
-// Utility function to format numbers
-function formatNumber(num) {
-    return new Intl.NumberFormat('id-ID').format(num);
-}
-
-// Add animation to count up numbers
-function animateValue(element, start, end, duration) {
-    let startTimestamp = null;
-    const step = (timestamp) => {
-        if (!startTimestamp) startTimestamp = timestamp;
-        const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-        element.textContent = Math.floor(progress * (end - start) + start);
-        if (progress < 1) {
-            window.requestAnimationFrame(step);
-        }
-    };
-    window.requestAnimationFrame(step);
-}
-
-// Show toast notifications
-function showToast(message, type = 'info') {
-    const toast = document.createElement('div');
-    toast.className = `fixed top-4 right-4 p-4 rounded-md shadow-lg z-50 ${
-        type === 'success' ? 'bg-green-100 border border-green-400 text-green-700' :
-        type === 'error' ? 'bg-red-100 border border-red-400 text-red-700' :
-        'bg-blue-100 border border-blue-400 text-blue-700'
-    }`;
-    toast.innerHTML = `
-        <div class="flex items-center">
-            <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'} mr-2"></i>
-            <span>${message}</span>
-            <button onclick="this.parentElement.parentElement.remove()" class="ml-3 text-sm">×</button>
-        </div>
-    `;
-    
-    document.body.appendChild(toast);
-    
-    // Auto remove after 5 seconds
-    setTimeout(() => {
-        if (toast.parentElement) {
-            toast.remove();
-        }
-    }, 5000);
+function loadPosyanduLocations() {
+    fetch('/pulosarok/posyandu/api/locations/')
+        .then(response => response.json())
+        .then(data => {
+            const container = document.getElementById('posyandu-locations-chart');
+            container.innerHTML = '';
+            
+            if (data.results && data.results.length > 0) {
+                data.results.forEach(location => {
+                    const locationDiv = document.createElement('div');
+                    locationDiv.className = 'flex justify-between items-center p-3 border border-gray-200 rounded-lg';
+                    locationDiv.innerHTML = `
+                        <div>
+                            <div class="font-medium text-gray-900">${location.name}</div>
+                            <div class="text-sm text-gray-500">${location.address}</div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-sm font-medium text-gray-900">Kapasitas: ${location.capacity}</div>
+                            <div class="text-xs ${
+                                location.is_active ? 'text-green-600' : 'text-red-600'
+                            }">
+                                ${location.is_active ? 'Aktif' : 'Tidak Aktif'}
+                            </div>
+                        </div>
+                    `;
+                    container.appendChild(locationDiv);
+                });
+            } else {
+                container.innerHTML = '<div class="text-center text-gray-500 py-4">Belum ada lokasi posyandu</div>';
+            }
+        })
+        .catch(error => {
+            console.error('Error loading posyandu locations:', error);
+            document.getElementById('posyandu-locations-chart').innerHTML = '<div class="text-center text-red-500 py-4">Error loading locations</div>';
+        });
 }
 </script>
 {% endblock %}

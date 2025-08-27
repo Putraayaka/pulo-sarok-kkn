@@ -99,3 +99,61 @@ class VillageGeography(models.Model):
 
     def __str__(self):
         return f"Geografi Desa - {self.total_area} Ha"
+
+
+class GoogleMapsEmblem(models.Model):
+    """Google Maps Emblem for Village"""
+    title = models.CharField(max_length=200, default="Emblem Desa Pulosarok")
+    description = models.TextField(blank=True, null=True, help_text="Deskripsi tentang emblem desa")
+    
+    # Koordinat Google Maps
+    latitude = models.DecimalField(
+        max_digits=10, 
+        decimal_places=8, 
+        help_text="Latitude koordinat emblem di Google Maps"
+    )
+    longitude = models.DecimalField(
+        max_digits=11, 
+        decimal_places=8, 
+        help_text="Longitude koordinat emblem di Google Maps"
+    )
+    zoom_level = models.IntegerField(
+        default=15, 
+        help_text="Level zoom Google Maps (1-20)"
+    )
+    
+    # Informasi emblem
+    emblem_size = models.CharField(
+        max_length=20,
+        choices=[
+            ('small', 'Kecil'),
+            ('medium', 'Sedang'),
+            ('large', 'Besar'),
+        ],
+        default='medium',
+        help_text="Ukuran emblem di peta"
+    )
+    
+    # Status dan metadata
+    is_active = models.BooleanField(default=True)
+    is_visible = models.BooleanField(default=True, help_text="Tampilkan emblem di peta")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        verbose_name = "Google Maps Emblem"
+        verbose_name_plural = "Google Maps Emblem"
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f"{self.title} ({self.latitude}, {self.longitude})"
+    
+    @property
+    def google_maps_url(self):
+        """Generate Google Maps URL for this emblem location"""
+        return f"https://www.google.com/maps?q={self.latitude},{self.longitude}&z={self.zoom_level}"
+    
+    @property
+    def coordinates_display(self):
+        """Display coordinates in a readable format"""
+        return f"Lat: {self.latitude}, Lng: {self.longitude}"

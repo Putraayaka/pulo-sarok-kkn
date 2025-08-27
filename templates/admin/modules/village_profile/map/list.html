@@ -1,0 +1,507 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="id" class="h-full bg-gray-50">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Peta Desa - Profil Desa</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="h-full" x-data="mapList()">
+    <div class="min-h-full">
+        <!-- Navigation -->
+        <nav class="bg-white shadow-sm border-b border-gray-200">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between h-16">
+                    <div class="flex items-center space-x-4">
+                        <a href="{% url 'village_profile:dashboard' %}" class="text-sm font-medium text-gray-600 hover:text-green-600">
+                            <i class="fas fa-home mr-2"></i>
+                            Dashboard
+                        </a>
+                        <div class="h-6 border-l border-gray-300"></div>
+                        <span class="text-sm font-medium text-green-600">
+                            <i class="fas fa-map mr-2"></i>
+                            Peta Desa
+                        </span>
+                    </div>
+                    <div class="flex items-center space-x-3">
+                        <a href="{% url 'village_profile:map_add' %}" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700">
+                            <i class="fas fa-plus mr-2"></i>
+                            Tambah Peta
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+            <!-- Page Header -->
+            <div class="px-4 py-6 sm:px-0">
+                <div class="bg-white shadow rounded-lg p-6">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-4">
+                            <div class="flex-shrink-0">
+                                <div class="w-16 h-16 bg-green-100 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-map text-green-600 text-2xl"></i>
+                                </div>
+                            </div>
+                            <div>
+                                <h1 class="text-3xl font-bold text-gray-900">Peta Desa</h1>
+                                <p class="text-lg text-gray-600 mt-1">Kelola informasi peta dan lokasi penting di desa</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <div class="bg-green-50 px-4 py-2 rounded-lg">
+                                <div class="text-sm text-green-600 font-medium">Total Peta</div>
+                                <div class="text-2xl font-bold text-green-700">{{ maps.count }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Search and Filter -->
+            <div class="px-4 py-6 sm:px-0">
+                <div class="bg-white shadow rounded-lg p-6">
+                    <form method="get" class="space-y-4">
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                            <!-- Search -->
+                            <div class="md:col-span-2">
+                                <label for="search" class="block text-sm font-medium text-gray-700 mb-2">
+                                    <i class="fas fa-search mr-2"></i>
+                                    Pencarian
+                                </label>
+                                <input type="text" name="search" id="search" value="{{ request.GET.search }}" 
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500"
+                                       placeholder="Cari berdasarkan nama, deskripsi...">
+                            </div>
+                            
+                            <!-- Map Type Filter -->
+                            <div>
+                                <label for="map_type" class="block text-sm font-medium text-gray-700 mb-2">
+                                    <i class="fas fa-layer-group mr-2"></i>
+                                    Jenis Peta
+                                </label>
+                                <select name="map_type" id="map_type" 
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500">
+                                    <option value="">Semua Jenis</option>
+                                    <option value="administrative" {% if request.GET.map_type == 'administrative' %}selected{% endif %}>Administratif</option>
+                                    <option value="topographic" {% if request.GET.map_type == 'topographic' %}selected{% endif %}>Topografi</option>
+                                    <option value="land_use" {% if request.GET.map_type == 'land_use' %}selected{% endif %}>Penggunaan Lahan</option>
+                                    <option value="infrastructure" {% if request.GET.map_type == 'infrastructure' %}selected{% endif %}>Infrastruktur</option>
+                                    <option value="tourism" {% if request.GET.map_type == 'tourism' %}selected{% endif %}>Wisata</option>
+                                    <option value="other" {% if request.GET.map_type == 'other' %}selected{% endif %}>Lainnya</option>
+                                </select>
+                            </div>
+                            
+                            <!-- Active Filter -->
+                            <div>
+                                <label for="is_active" class="block text-sm font-medium text-gray-700 mb-2">
+                                    <i class="fas fa-toggle-on mr-2"></i>
+                                    Status
+                                </label>
+                                <select name="is_active" id="is_active" 
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500">
+                                    <option value="">Semua Status</option>
+                                    <option value="true" {% if request.GET.is_active == 'true' %}selected{% endif %}>Aktif</option>
+                                    <option value="false" {% if request.GET.is_active == 'false' %}selected{% endif %}>Tidak Aktif</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="flex justify-between items-center">
+                            <div class="flex space-x-3">
+                                <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700">
+                                    <i class="fas fa-search mr-2"></i>
+                                    Cari
+                                </button>
+                                <a href="{% url 'village_profile:map_list' %}" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                                    <i class="fas fa-undo mr-2"></i>
+                                    Reset
+                                </a>
+                            </div>
+                            
+                            <div class="flex items-center space-x-3">
+                                <!-- View Toggle -->
+                                <div class="flex bg-gray-100 rounded-lg p-1">
+                                    <button type="button" @click="viewMode = 'grid'" 
+                                            :class="viewMode === 'grid' ? 'bg-white shadow-sm' : ''"
+                                            class="px-3 py-1 rounded-md text-sm font-medium transition-colors">
+                                        <i class="fas fa-th-large"></i>
+                                    </button>
+                                    <button type="button" @click="viewMode = 'list'" 
+                                            :class="viewMode === 'list' ? 'bg-white shadow-sm' : ''"
+                                            class="px-3 py-1 rounded-md text-sm font-medium transition-colors">
+                                        <i class="fas fa-list"></i>
+                                    </button>
+                                    <button type="button" @click="viewMode = 'map'" 
+                                            :class="viewMode === 'map' ? 'bg-white shadow-sm' : ''"
+                                            class="px-3 py-1 rounded-md text-sm font-medium transition-colors">
+                                        <i class="fas fa-map-marked-alt"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Maps Display -->
+            <div class="px-4 py-6 sm:px-0">
+                <!-- Grid View -->
+                <div x-show="viewMode === 'grid'" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {% for map in maps %}
+                        <div class="bg-white shadow rounded-lg overflow-hidden hover:shadow-lg transition-shadow">
+                            <!-- Map Preview -->
+                            <div class="h-48 bg-gray-200 relative">
+                                {% if map.map_image %}
+                                    <img src="{{ map.map_image.url }}" alt="{{ map.name }}" class="w-full h-full object-cover">
+                                {% else %}
+                                    <div class="w-full h-full flex items-center justify-center">
+                                        <i class="fas fa-map text-gray-400 text-4xl"></i>
+                                    </div>
+                                {% endif %}
+                                
+                                <!-- Status Badge -->
+                                <div class="absolute top-3 right-3">
+                                    {% if map.is_active %}
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                            <i class="fas fa-check-circle mr-1"></i>
+                                            Aktif
+                                        </span>
+                                    {% else %}
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                            <i class="fas fa-times-circle mr-1"></i>
+                                            Tidak Aktif
+                                        </span>
+                                    {% endif %}
+                                </div>
+                                
+                                <!-- Map Type Badge -->
+                                <div class="absolute top-3 left-3">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                        {{ map.get_map_type_display }}
+                                    </span>
+                                </div>
+                            </div>
+                            
+                            <!-- Map Info -->
+                            <div class="p-6">
+                                <div class="flex items-start justify-between">
+                                    <div class="flex-1">
+                                        <h3 class="text-lg font-semibold text-gray-900 mb-2">
+                                            <a href="{% url 'village_profile:map_detail' map.pk %}" class="hover:text-green-600">
+                                                {{ map.name }}
+                                            </a>
+                                        </h3>
+                                        <p class="text-sm text-gray-600 mb-3">{{ map.description|truncatewords:15 }}</p>
+                                        
+                                        <!-- Map Details -->
+                                        <div class="space-y-2 text-sm text-gray-500">
+                                            {% if map.scale %}
+                                                <div class="flex items-center">
+                                                    <i class="fas fa-ruler mr-2"></i>
+                                                    Skala: {{ map.scale }}
+                                                </div>
+                                            {% endif %}
+                                            
+                                            {% if map.coordinate_system %}
+                                                <div class="flex items-center">
+                                                    <i class="fas fa-crosshairs mr-2"></i>
+                                                    {{ map.coordinate_system }}
+                                                </div>
+                                            {% endif %}
+                                            
+                                            <div class="flex items-center">
+                                                <i class="fas fa-calendar mr-2"></i>
+                                                {{ map.created_at|date:"d M Y" }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Actions -->
+                                <div class="mt-4 flex space-x-2">
+                                    <a href="{% url 'village_profile:map_detail' map.pk %}" class="flex-1 inline-flex items-center justify-center px-3 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                                        <i class="fas fa-eye mr-2"></i>
+                                        Detail
+                                    </a>
+                                    <a href="{% url 'village_profile:map_edit' map.pk %}" class="flex-1 inline-flex items-center justify-center px-3 py-2 border border-transparent rounded-md text-sm font-medium text-white bg-green-600 hover:bg-green-700">
+                                        <i class="fas fa-edit mr-2"></i>
+                                        Edit
+                                    </a>
+                                    <a href="{% url 'village_profile:map_delete' map.pk %}" class="inline-flex items-center justify-center px-3 py-2 border border-transparent rounded-md text-sm font-medium text-white bg-red-600 hover:bg-red-700" onclick="return confirm('Apakah Anda yakin ingin menghapus peta ini?')">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    {% empty %}
+                        <div class="col-span-full">
+                            <div class="text-center py-12">
+                                <i class="fas fa-map text-gray-400 text-6xl mb-4"></i>
+                                <h3 class="text-lg font-medium text-gray-900 mb-2">Belum ada peta</h3>
+                                <p class="text-gray-600 mb-4">Mulai dengan menambahkan peta pertama untuk desa Anda.</p>
+                                <a href="{% url 'village_profile:map_add' %}" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700">
+                                    <i class="fas fa-plus mr-2"></i>
+                                    Tambah Peta Pertama
+                                </a>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <!-- List View -->
+                <div x-show="viewMode === 'list'" class="bg-white shadow rounded-lg overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Peta
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Jenis
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Skala
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Status
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Dibuat
+                                    </th>
+                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Aksi
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                {% for map in maps %}
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="flex items-center">
+                                                <div class="flex-shrink-0 h-12 w-12">
+                                                    {% if map.map_image %}
+                                                        <img class="h-12 w-12 rounded-lg object-cover" src="{{ map.map_image.url }}" alt="{{ map.name }}">
+                                                    {% else %}
+                                                        <div class="h-12 w-12 rounded-lg bg-gray-200 flex items-center justify-center">
+                                                            <i class="fas fa-map text-gray-400"></i>
+                                                        </div>
+                                                    {% endif %}
+                                                </div>
+                                                <div class="ml-4">
+                                                    <div class="text-sm font-medium text-gray-900">
+                                                        <a href="{% url 'village_profile:map_detail' map.pk %}" class="hover:text-green-600">
+                                                            {{ map.name }}
+                                                        </a>
+                                                    </div>
+                                                    <div class="text-sm text-gray-500">{{ map.description|truncatewords:8 }}</div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                                {{ map.get_map_type_display }}
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                            {{ map.scale|default:"-" }}
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            {% if map.is_active %}
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                    <i class="fas fa-check-circle mr-1"></i>
+                                                    Aktif
+                                                </span>
+                                            {% else %}
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                                    <i class="fas fa-times-circle mr-1"></i>
+                                                    Tidak Aktif
+                                                </span>
+                                            {% endif %}
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            {{ map.created_at|date:"d M Y" }}
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                            <div class="flex justify-end space-x-2">
+                                                <a href="{% url 'village_profile:map_detail' map.pk %}" class="text-green-600 hover:text-green-900">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                <a href="{% url 'village_profile:map_edit' map.pk %}" class="text-amber-600 hover:text-amber-900">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <a href="{% url 'village_profile:map_delete' map.pk %}" class="text-red-600 hover:text-red-900" onclick="return confirm('Apakah Anda yakin ingin menghapus peta ini?')">
+                                                    <i class="fas fa-trash"></i>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% empty %}
+                                    <tr>
+                                        <td colspan="6" class="px-6 py-12 text-center">
+                                            <i class="fas fa-map text-gray-400 text-4xl mb-4"></i>
+                                            <h3 class="text-lg font-medium text-gray-900 mb-2">Belum ada peta</h3>
+                                            <p class="text-gray-600 mb-4">Mulai dengan menambahkan peta pertama untuk desa Anda.</p>
+                                            <a href="{% url 'village_profile:map_add' %}" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700">
+                                                <i class="fas fa-plus mr-2"></i>
+                                                Tambah Peta Pertama
+                                            </a>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Map View -->
+                <div x-show="viewMode === 'map'" class="bg-white shadow rounded-lg p-6">
+                    <div class="mb-4">
+                        <h3 class="text-lg font-medium text-gray-900 mb-2">
+                            <i class="fas fa-map-marked-alt mr-2 text-green-600"></i>
+                            Tampilan Peta Interaktif
+                        </h3>
+                        <p class="text-sm text-gray-600">Lihat semua lokasi peta dalam tampilan interaktif</p>
+                    </div>
+                    
+                    <!-- Interactive Map Container -->
+                    <div id="interactive-map" class="h-96 bg-gray-100 rounded-lg flex items-center justify-center">
+                        <div class="text-center">
+                            <i class="fas fa-map-marked-alt text-gray-400 text-4xl mb-4"></i>
+                            <p class="text-gray-600">Peta interaktif akan ditampilkan di sini</p>
+                            <p class="text-sm text-gray-500 mt-2">Integrasi dengan Google Maps atau Leaflet</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Map Legend -->
+                    <div class="mt-4 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+                        <div class="flex items-center space-x-2">
+                            <div class="w-4 h-4 bg-red-500 rounded"></div>
+                            <span class="text-sm text-gray-600">Administratif</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <div class="w-4 h-4 bg-green-500 rounded"></div>
+                            <span class="text-sm text-gray-600">Topografi</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <div class="w-4 h-4 bg-blue-500 rounded"></div>
+                            <span class="text-sm text-gray-600">Penggunaan Lahan</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <div class="w-4 h-4 bg-yellow-500 rounded"></div>
+                            <span class="text-sm text-gray-600">Infrastruktur</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <div class="w-4 h-4 bg-purple-500 rounded"></div>
+                            <span class="text-sm text-gray-600">Wisata</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <div class="w-4 h-4 bg-gray-500 rounded"></div>
+                            <span class="text-sm text-gray-600">Lainnya</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pagination -->
+            {% if is_paginated %}
+                <div class="px-4 py-6 sm:px-0">
+                    <div class="bg-white shadow rounded-lg p-6">
+                        <nav class="flex items-center justify-between">
+                            <div class="flex-1 flex justify-between sm:hidden">
+                                {% if page_obj.has_previous %}
+                                    <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.map_type %}&map_type={{ request.GET.map_type }}{% endif %}{% if request.GET.is_active %}&is_active={{ request.GET.is_active }}{% endif %}" class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                                        Sebelumnya
+                                    </a>
+                                {% endif %}
+                                {% if page_obj.has_next %}
+                                    <a href="?page={{ page_obj.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.map_type %}&map_type={{ request.GET.map_type }}{% endif %}{% if request.GET.is_active %}&is_active={{ request.GET.is_active }}{% endif %}" class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                                        Selanjutnya
+                                    </a>
+                                {% endif %}
+                            </div>
+                            <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                                <div>
+                                    <p class="text-sm text-gray-700">
+                                        Menampilkan
+                                        <span class="font-medium">{{ page_obj.start_index }}</span>
+                                        sampai
+                                        <span class="font-medium">{{ page_obj.end_index }}</span>
+                                        dari
+                                        <span class="font-medium">{{ page_obj.paginator.count }}</span>
+                                        hasil
+                                    </p>
+                                </div>
+                                <div>
+                                    <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                                        {% if page_obj.has_previous %}
+                                            <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.map_type %}&map_type={{ request.GET.map_type }}{% endif %}{% if request.GET.is_active %}&is_active={{ request.GET.is_active }}{% endif %}" class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                                <i class="fas fa-chevron-left"></i>
+                                            </a>
+                                        {% endif %}
+                                        
+                                        {% for num in page_obj.paginator.page_range %}
+                                            {% if page_obj.number == num %}
+                                                <span class="relative inline-flex items-center px-4 py-2 border border-green-500 bg-green-50 text-sm font-medium text-green-600">
+                                                    {{ num }}
+                                                </span>
+                                            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                                <a href="?page={{ num }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.map_type %}&map_type={{ request.GET.map_type }}{% endif %}{% if request.GET.is_active %}&is_active={{ request.GET.is_active }}{% endif %}" class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
+                                                    {{ num }}
+                                                </a>
+                                            {% endif %}
+                                        {% endfor %}
+                                        
+                                        {% if page_obj.has_next %}
+                                            <a href="?page={{ page_obj.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.map_type %}&map_type={{ request.GET.map_type }}{% endif %}{% if request.GET.is_active %}&is_active={{ request.GET.is_active }}{% endif %}" class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                                <i class="fas fa-chevron-right"></i>
+                                            </a>
+                                        {% endif %}
+                                    </nav>
+                                </div>
+                            </div>
+                        </nav>
+                    </div>
+                </div>
+            {% endif %}
+        </main>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        function mapList() {
+            return {
+                viewMode: 'grid',
+                
+                init() {
+                    // Load saved view mode
+                    const savedViewMode = localStorage.getItem('mapViewMode');
+                    if (savedViewMode) {
+                        this.viewMode = savedViewMode;
+                    }
+                    
+                    // Watch for view mode changes
+                    this.$watch('viewMode', (value) => {
+                        localStorage.setItem('mapViewMode', value);
+                        if (value === 'map') {
+                            this.initInteractiveMap();
+                        }
+                    });
+                },
+                
+                initInteractiveMap() {
+                    // Initialize interactive map when map view is selected
+                    // This would integrate with Google Maps or Leaflet
+                    console.log('Initializing interactive map...');
+                }
+            }
+        }
+    </script>
+</body>
+</html>

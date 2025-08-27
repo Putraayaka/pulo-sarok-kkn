@@ -205,7 +205,7 @@ class Letter(models.Model):
     created_by = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='letters_created',
+        related_name='created_letters',
         verbose_name='Dibuat Oleh'
     )
     created_at = models.DateTimeField(auto_now_add=True)
@@ -610,7 +610,6 @@ class APIKeySettings(models.Model):
     created_by = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='letters_api_key_created',
         verbose_name='Dibuat Oleh'
     )
     created_at = models.DateTimeField(auto_now_add=True)
@@ -845,7 +844,6 @@ class LetterSettings(models.Model):
     created_by = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='letters_settings_created',
         verbose_name='Dibuat Oleh'
     )
     created_at = models.DateTimeField(auto_now_add=True)
@@ -940,7 +938,6 @@ class LetterTemplate(models.Model):
     created_by = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='letters_template_created',
         verbose_name='Dibuat Oleh'
     )
     created_at = models.DateTimeField(auto_now_add=True)

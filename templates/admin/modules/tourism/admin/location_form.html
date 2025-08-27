@@ -1,0 +1,366 @@
+{% extends 'admin/base.html' %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="p-6">
+    <!-- Breadcrumb -->
+    <nav class="flex mb-6" aria-label="Breadcrumb">
+        <ol class="inline-flex items-center space-x-1 md:space-x-3">
+            <li class="inline-flex items-center">
+                <a href="{% url 'tourism:dashboard' %}" class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-blue-600">
+                    <i class="fas fa-home mr-2"></i>
+                    Wisata
+                </a>
+            </li>
+            <li>
+                <div class="flex items-center">
+                    <i class="fas fa-chevron-right text-gray-400 mx-2"></i>
+                    <a href="{% url 'tourism:admin_location_list' %}" class="text-sm font-medium text-gray-700 hover:text-blue-600">
+                        Kelola Wisata
+                    </a>
+                </div>
+            </li>
+            <li aria-current="page">
+                <div class="flex items-center">
+                    <i class="fas fa-chevron-right text-gray-400 mx-2"></i>
+                    <span class="text-sm font-medium text-gray-500">{{ title }}</span>
+                </div>
+            </li>
+        </ol>
+    </nav>
+
+    <!-- Form Section -->
+    <div class="bg-white rounded-lg shadow-md">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <h2 class="text-xl font-semibold text-gray-900">{{ title }}</h2>
+            <p class="text-sm text-gray-600 mt-1">Isi informasi lengkap lokasi wisata</p>
+        </div>
+        
+        <form method="POST" enctype="multipart/form-data" class="p-6 space-y-6">
+            {% csrf_token %}
+            
+            <!-- Basic Information -->
+            <div class="space-y-6">
+                <h3 class="text-lg font-medium text-gray-900 border-b border-gray-200 pb-2">📝 Informasi Dasar</h3>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label for="{{ form.title.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                            Judul Wisata <span class="text-red-500">*</span>
+                        </label>
+                        {{ form.title }}
+                        {% if form.title.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.title.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    
+                    <div>
+                        <label for="{{ form.slug.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                            Slug URL
+                        </label>
+                        {{ form.slug }}
+                        <p class="mt-1 text-xs text-gray-500">URL otomatis akan dibuat dari judul</p>
+                        {% if form.slug.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.slug.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label for="{{ form.category.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                            Kategori <span class="text-red-500">*</span>
+                        </label>
+                        {{ form.category }}
+                        {% if form.category.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.category.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    
+                    <div>
+                        <label for="{{ form.location_type.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                            Jenis Wisata <span class="text-red-500">*</span>
+                        </label>
+                        {{ form.location_type }}
+                        {% if form.location_type.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.location_type.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div>
+                    <label for="{{ form.short_description.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                        Deskripsi Singkat <span class="text-red-500">*</span>
+                    </label>
+                    {{ form.short_description }}
+                    <p class="mt-1 text-xs text-gray-500">Maksimal 500 karakter</p>
+                    {% if form.short_description.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.short_description.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                
+                <div>
+                    <label for="{{ form.full_description.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                        Deskripsi Lengkap <span class="text-red-500">*</span>
+                    </label>
+                    {{ form.full_description }}
+                    {% if form.full_description.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.full_description.errors.0 }}</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Location Information -->
+            <div class="space-y-6">
+                <h3 class="text-lg font-medium text-gray-900 border-b border-gray-200 pb-2">📍 Informasi Lokasi</h3>
+                
+                <div>
+                    <label for="{{ form.address.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                        Alamat Lengkap <span class="text-red-500">*</span>
+                    </label>
+                    {{ form.address }}
+                    {% if form.address.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.address.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label for="{{ form.latitude.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                            Latitude
+                        </label>
+                        {{ form.latitude }}
+                        <p class="mt-1 text-xs text-gray-500">Koordinat latitude (opsional)</p>
+                        {% if form.latitude.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.latitude.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    
+                    <div>
+                        <label for="{{ form.longitude.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                            Longitude
+                        </label>
+                        {{ form.longitude }}
+                        <p class="mt-1 text-xs text-gray-500">Koordinat longitude (opsional)</p>
+                        {% if form.longitude.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.longitude.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Tourism Information -->
+            <div class="space-y-6">
+                <h3 class="text-lg font-medium text-gray-900 border-b border-gray-200 pb-2">🏖️ Informasi Wisata</h3>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label for="{{ form.opening_hours.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                            Jam Buka
+                        </label>
+                        {{ form.opening_hours }}
+                        <p class="mt-1 text-xs text-gray-500">Contoh: Senin-Jumat 08:00-17:00</p>
+                        {% if form.opening_hours.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.opening_hours.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    
+                    <div>
+                        <label for="{{ form.entry_fee.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                            Biaya Masuk
+                        </label>
+                        {{ form.entry_fee }}
+                        <p class="mt-1 text-xs text-gray-500">Biaya dalam Rupiah (opsional)</p>
+                        {% if form.entry_fee.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.entry_fee.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label for="{{ form.contact_phone.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                            Nomor Telepon
+                        </label>
+                        {{ form.contact_phone }}
+                        {% if form.contact_phone.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.contact_phone.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    
+                    <div>
+                        <label for="{{ form.contact_email.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                            Email Kontak
+                        </label>
+                        {{ form.contact_email }}
+                        {% if form.contact_email.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.contact_email.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div>
+                    <label for="{{ form.website.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                        Website
+                    </label>
+                    {{ form.website }}
+                    <p class="mt-1 text-xs text-gray-500">URL website resmi (opsional)</p>
+                    {% if form.website.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.website.errors.0 }}</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Features and Activities -->
+            <div class="space-y-6">
+                <h3 class="text-lg font-medium text-gray-900 border-b border-gray-200 pb-2">🏗️ Fitur & Aktivitas</h3>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label for="{{ form.facilities.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                            Fasilitas yang Tersedia
+                        </label>
+                        {{ form.facilities }}
+                        <p class="mt-1 text-xs text-gray-500">Format JSON: ["Fasilitas 1", "Fasilitas 2"]</p>
+                        {% if form.facilities.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.facilities.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    
+                    <div>
+                        <label for="{{ form.activities.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                            Aktivitas yang Tersedia
+                        </label>
+                        {{ form.activities }}
+                        <p class="mt-1 text-xs text-gray-500">Format JSON: ["Aktivitas 1", "Aktivitas 2"]</p>
+                        {% if form.activities.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.activities.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Status and Meta -->
+            <div class="space-y-6">
+                <h3 class="text-lg font-medium text-gray-900 border-b border-gray-200 pb-2">⚙️ Status & Meta</h3>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div>
+                        <label for="{{ form.status.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                            Status <span class="text-red-500">*</span>
+                        </label>
+                        {{ form.status }}
+                        {% if form.status.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.status.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="flex items-center">
+                        {{ form.featured }}
+                        <label for="{{ form.featured.id_for_label }}" class="ml-2 text-sm font-medium text-gray-700">
+                            Wisata Unggulan
+                        </label>
+                    </div>
+                    
+                    <div class="flex items-center">
+                        {{ form.is_active }}
+                        <label for="{{ form.is_active.id_for_label }}" class="ml-2 text-sm font-medium text-gray-700">
+                            Aktif
+                        </label>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- SEO Information -->
+            <div class="space-y-6">
+                <h3 class="text-lg font-medium text-gray-900 border-b border-gray-200 pb-2">🔍 SEO & Meta</h3>
+                
+                <div>
+                    <label for="{{ form.meta_title.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                        Meta Title
+                    </label>
+                    {{ form.meta_title }}
+                    <p class="mt-1 text-xs text-gray-500">Maksimal 60 karakter untuk SEO</p>
+                    {% if form.meta_title.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.meta_title.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                
+                <div>
+                    <label for="{{ form.meta_description.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                        Meta Description
+                    </label>
+                    {{ form.meta_description }}
+                    <p class="mt-1 text-xs text-gray-500">Maksimal 160 karakter untuk SEO</p>
+                    {% if form.meta_description.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.meta_description.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                
+                <div>
+                    <label for="{{ form.meta_keywords.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                        Meta Keywords
+                    </label>
+                    {{ form.meta_keywords }}
+                    <p class="mt-1 text-xs text-gray-500">Kata kunci dipisahkan dengan koma</p>
+                    {% if form.meta_keywords.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.meta_keywords.errors.0 }}</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Form Actions -->
+            <div class="flex justify-end space-x-3 pt-6 border-t border-gray-200">
+                <a href="{% url 'tourism:admin_location_list' %}" 
+                   class="px-4 py-2 bg-gray-600 text-white text-sm font-medium rounded-md hover:bg-gray-700 transition-colors duration-200">
+                    <i class="fas fa-times mr-2"></i>
+                    Batal
+                </a>
+                <button type="submit" 
+                        class="px-6 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 transition-colors duration-200">
+                    <i class="fas fa-save mr-2"></i>
+                    {% if location %}Update{% else %}Simpan{% endif %}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Auto-generate slug from title -->
+<script>
+document.getElementById('{{ form.title.id_for_label }}').addEventListener('input', function() {
+    const title = this.value;
+    const slug = title
+        .toLowerCase()
+        .replace(/[^a-z0-9 -]/g, '')
+        .replace(/\s+/g, '-')
+        .replace(/-+/g, '-')
+        .trim('-');
+    
+    document.getElementById('{{ form.slug.id_for_label }}').value = slug;
+});
+
+// Auto-fill meta title if empty
+document.getElementById('{{ form.title.id_for_label }}').addEventListener('blur', function() {
+    const title = this.value;
+    const metaTitle = document.getElementById('{{ form.meta_title.id_for_label }}');
+    
+    if (!metaTitle.value && title) {
+        metaTitle.value = title;
+    }
+});
+
+// Auto-fill meta description if empty
+document.getElementById('{{ form.short_description.id_for_label }}').addEventListener('blur', function() {
+    const description = this.value;
+    const metaDescription = document.getElementById('{{ form.meta_description.id_for_label }}');
+    
+    if (!metaDescription.value && description) {
+        metaDescription.value = description.substring(0, 160);
+    }
+});
+</script>
+{% endblock %}

@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand
 from django.utils import timezone
-from pulosarok_website.village_profile.models import (
+from village_profile.models import (
     VillageVision, VillageHistory, VillageMap, VillageGeography
 )
 from io import BytesIO
