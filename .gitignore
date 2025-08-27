@@ -1,27 +1,42 @@
-# File Sensitif dan Konfigurasi Lokal
-.env
-.DS_Store
-.vscode/
-
-# Django
-*.pyc
+# Python
 __pycache__/
+*.py[cod]
+*.so
+
+# Virtual env
+.env/
+venv/
+ENV/
+env/
+.venv/
+
+# Django stuff
+*.log
+*.pot
+*.pyc
+*.pyo
+*.pyd
+*.sqlite3
 db.sqlite3
+media/
+staticfiles/
 
-# Log, Cache, dan Build
-/logs/
-/tmp/
-/dist/
-/build/
+# Environment variables
+.env
 
-# Node.js
-/node_modules
-npm-debug.log*
-yarn-error.log*
-.pnpm-debug.log*
-.npm/
+# IDE/editor
+.vscode/
+.idea/
+*.swp
+*.swo
 
+# macOS / Windows
+.DS_Store
+Thumbs.db
 
-# Statis dan Media Lokal
-/staticfiles
-/media
+# Data files
+data.json
+data_backup.json
+database_tables.sql
+db_viewer.py
+news_dummy_data.json
