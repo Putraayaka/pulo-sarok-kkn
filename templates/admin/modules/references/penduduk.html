@@ -189,8 +189,8 @@
                             <input type="number" name="weight" min="0" max="500" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Kewarganegaraan</label>
-                            <select name="citizenship" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Kewarganegaraan *</label>
+                            <select name="citizenship" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500">
                                 <option value="">Pilih Kewarganegaraan</option>
                             </select>
                         </div>
@@ -470,7 +470,16 @@ function editItem(id) {
 
 function populateForm(data) {
     Object.keys(data).forEach(key => {
-        const field = document.querySelector(`[name="${key}"]`);
+        let fieldName = key;
+        
+        // Map backend field names to form field names
+        if (key === 'dusun_id') {
+            fieldName = 'dusun';
+        } else if (key === 'lorong_id') {
+            fieldName = 'lorong';
+        }
+        
+        const field = document.querySelector(`[name="${fieldName}"]`);
         if (field) {
             if (field.type === 'checkbox') {
                 field.checked = data[key];
@@ -498,6 +507,30 @@ function saveData() {
         }
     });
     
+    // Convert empty strings to null for optional fields
+    Object.keys(data).forEach(key => {
+        if (data[key] === '') {
+            data[key] = null;
+        }
+    });
+    
+    // Ensure required fields are not empty
+    const requiredFields = ['nik', 'name', 'gender', 'birth_place', 'birth_date', 'religion', 'marital_status', 'dusun', 'address'];
+    const missingFields = [];
+    
+    requiredFields.forEach(field => {
+        if (!data[field] || data[field] === null) {
+            missingFields.push(field);
+        }
+    });
+    
+    if (missingFields.length > 0) {
+        showToast(`Field wajib tidak boleh kosong: ${missingFields.join(', ')}`, 'error');
+        return;
+    }
+    
+    console.log('Data to be sent:', data);
+    
     const url = currentEditId 
         ? `{% url "references:penduduk_detail" 0 %}`.replace('0', currentEditId)
         : `{% url "references:penduduk_create" %}`;
@@ -512,19 +545,39 @@ function saveData() {
         },
         body: JSON.stringify(data)
     })
-    .then(response => response.json())
+    .then(response => {
+        console.log('Response status:', response.status);
+        console.log('Response headers:', response.headers);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        return response.json();
+    })
     .then(data => {
+        console.log('Response data:', data);
+        
         if (data.success) {
             closeModal();
             loadData();
             showToast(data.message, 'success');
         } else {
-            showToast('Terjadi kesalahan saat menyimpan data', 'error');
+            // Show specific error messages if available
+            let errorMessage = 'Terjadi kesalahan saat menyimpan data';
+            if (data.errors) {
+                const errorList = Object.values(data.errors).flat();
+                errorMessage = errorList.join(', ');
+            } else if (data.error) {
+                errorMessage = data.error;
+            }
+            showToast(errorMessage, 'error');
+            console.error('Validation errors:', data.errors || data.error);
         }
     })
     .catch(error => {
         console.error('Error saving data:', error);
-        showToast('Terjadi kesalahan sistem', 'error');
+        showToast(`Terjadi kesalahan sistem: ${error.message}`, 'error');
     });
 }
 

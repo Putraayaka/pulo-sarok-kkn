@@ -239,7 +239,11 @@ def penduduk_create_api(request):
             'lorong_choices': lorong_list,
             'religion_choices': [{'value': k, 'label': v} for k, v in Penduduk.RELIGION_CHOICES],
             'gender_choices': [{'value': k, 'label': v} for k, v in Penduduk.GENDER_CHOICES],
-            'marital_status_choices': [{'value': k, 'label': v} for k, v in Penduduk.MARITAL_STATUS_CHOICES]
+            'marital_status_choices': [{'value': k, 'label': v} for k, v in Penduduk.MARITAL_STATUS_CHOICES],
+            'education_choices': [{'value': k, 'label': v} for k, v in Penduduk.EDUCATION_CHOICES],
+            'blood_type_choices': [{'value': k, 'label': v} for k, v in Penduduk.BLOOD_TYPE_CHOICES],
+            'citizenship_choices': [{'value': k, 'label': v} for k, v in Penduduk.CITIZENSHIP_CHOICES],
+            'family_head_choices': [{'id': p.id, 'name': f"{p.name} ({p.nik})"} for p in Penduduk.objects.filter(is_active=True).order_by('name')]
         })
     
     try:
