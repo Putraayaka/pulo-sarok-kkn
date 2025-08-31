@@ -1,106 +1,83 @@
 from django.urls import path
-from . import views
+from . import views, api_views
 
 app_name = 'organization'
 
 urlpatterns = [
-    # Organization module views
-    path('', views.organization_admin_view, name='organization_admin'),
-    path('struktur/', views.struktur_organisasi_view, name='struktur_organisasi'),
-    path('kategori/', views.kategori_organisasi_view, name='kategori_organisasi'),
-    path('anggota/', views.data_anggota_view, name='data_anggota'),
-    path('jabatan/', views.data_jabatan_view, name='data_jabatan'),
-    path('periode/', views.periode_kepengurusan_view, name='periode_kepengurusan'),
-    path('galeri/', views.galeri_kegiatan_view, name='galeri_kegiatan'),
+    # Dashboard Organisasi Admin
+    path('', views.organization_admin, name='organization_admin'),
     
-    # OrganizationType APIs
-    path('types/', views.organization_types_api, name='organizationtype_list'),
-    path('types/<int:type_id>/', views.organization_type_detail_api, name='organizationtype_detail'),
-    path('types/create/', views.organization_type_create_api, name='organizationtype_create'),
-    path('types/<int:type_id>/update/', views.organization_type_update_api, name='organizationtype_update'),
-    path('types/<int:type_id>/delete/', views.organization_type_delete_api, name='organizationtype_delete'),
+    # Perangkat Desa URLs
+    path('perangkat/', views.perangkat_list, name='perangkat_list'),
+    path('perangkat/add/', views.perangkat_add, name='perangkat_add'),
+    path('perangkat/<int:pk>/edit/', views.perangkat_edit, name='perangkat_edit'),
+    path('perangkat/<int:pk>/delete/', views.perangkat_delete, name='perangkat_delete'),
+    path('perangkat/<int:pk>/', views.perangkat_detail, name='perangkat_detail'),
     
-    # Organization APIs
-    path('organizations/', views.organizations_api, name='organization_list'),
-    path('organizations/<int:org_id>/', views.organization_detail_api, name='organization_detail'),
-    path('organizations/create/', views.organization_create_api, name='organization_create'),
-    path('organizations/<int:org_id>/update/', views.organization_update_api, name='organization_update'),
-    path('organizations/<int:org_id>/delete/', views.organization_delete_api, name='organization_delete'),
+    # Lembaga Adat URLs
+    path('lembaga-adat/', views.lembaga_adat_list, name='lembaga_adat_list'),
+    path('lembaga-adat/add/', views.lembaga_adat_add, name='lembaga_adat_add'),
+    path('lembaga-adat/<int:pk>/edit/', views.lembaga_adat_edit, name='lembaga_adat_edit'),
+    path('lembaga-adat/<int:pk>/delete/', views.lembaga_adat_delete, name='lembaga_adat_delete'),
+    path('lembaga-adat/<int:pk>/', views.lembaga_adat_detail, name='lembaga_adat_detail'),
     
-    # OrganizationMember APIs
-    path('members/', views.organization_members_api, name='organizationmember_list'),
-    path('members/<int:member_id>/', views.organization_member_detail_api, name='organizationmember_detail'),
-    path('members/create/', views.organization_member_create_api, name='organizationmember_create'),
-    path('members/<int:member_id>/update/', views.organization_member_update_api, name='organizationmember_update'),
-    path('members/<int:member_id>/delete/', views.organization_member_delete_api, name='organizationmember_delete'),
+    # Penggerak PKK URLs
+    path('penggerak-pkk/', views.penggerak_pkk_list, name='penggerak_pkk_list'),
+    path('penggerak-pkk/add/', views.penggerak_pkk_add, name='penggerak_pkk_add'),
+    path('penggerak-pkk/<int:pk>/edit/', views.penggerak_pkk_edit, name='penggerak_pkk_edit'),
+    path('penggerak-pkk/<int:pk>/delete/', views.penggerak_pkk_delete, name='penggerak_pkk_delete'),
+    path('penggerak-pkk/<int:pk>/', views.penggerak_pkk_detail, name='penggerak_pkk_detail'),
     
-    # OrganizationEvent APIs
-    path('events/', views.organization_events_api, name='organizationevent_list'),
-    path('events/<int:event_id>/', views.organization_event_detail_api, name='organizationevent_detail'),
-    path('events/create/', views.organization_event_create_api, name='organizationevent_create'),
-    path('events/<int:event_id>/update/', views.organization_event_update_api, name='organizationevent_update'),
-    path('events/<int:event_id>/delete/', views.organization_event_delete_api, name='organizationevent_delete'),
+    # Kepemudaan URLs
+    path('kepemudaan/', views.kepemudaan_list, name='kepemudaan_list'),
+    path('kepemudaan/add/', views.kepemudaan_add, name='kepemudaan_add'),
+    path('kepemudaan/<int:pk>/edit/', views.kepemudaan_edit, name='kepemudaan_edit'),
+    path('kepemudaan/<int:pk>/delete/', views.kepemudaan_delete, name='kepemudaan_delete'),
+    path('kepemudaan/<int:pk>/', views.kepemudaan_detail, name='kepemudaan_detail'),
     
-    # Dropdown APIs
-    path('types/dropdown/', views.organization_types_dropdown_api, name='organization_types_dropdown'),
-    path('organizations/dropdown/', views.organizations_dropdown_api, name='organizations_dropdown'),
+    # Karang Taruna URLs
+    path('karang-taruna/', views.karang_taruna_list, name='karang_taruna_list'),
+    path('karang-taruna/add/', views.karang_taruna_add, name='karang_taruna_add'),
+    path('karang-taruna/<int:pk>/edit/', views.karang_taruna_edit, name='karang_taruna_edit'),
+    path('karang-taruna/<int:pk>/delete/', views.karang_taruna_delete, name='karang_taruna_delete'),
+    path('karang-taruna/<int:pk>/', views.karang_taruna_detail, name='karang_taruna_detail'),
     
-    # Kategori Organisasi API
-    path('api/kategori-organisasi/', views.kategori_organisasi_api, name='kategori_organisasi_api'),
-    path('api/kategori-organisasi/statistics/', views.kategori_organisasi_statistics_api, name='kategori_organisasi_statistics'),
-    path('api/kategori-organisasi/create/', views.kategori_organisasi_create_api, name='kategori_organisasi_create'),
-    path('api/kategori-organisasi/<int:kategori_id>/update/', views.kategori_organisasi_update_api, name='kategori_organisasi_update'),
-    path('api/kategori-organisasi/<int:kategori_id>/delete/', views.kategori_organisasi_delete_api, name='kategori_organisasi_delete'),
+    # API untuk choices
+    path('api/penduduk-choices/', views.api_penduduk_choices, name='api_penduduk_choices'),
     
-    # Jabatan APIs
-    path('api/jabatan/', views.jabatan_api, name='jabatan_list'),
-    path('api/jabatan/statistics/', views.jabatan_statistics_api, name='jabatan_statistics'),
-    path('api/jabatan/create/', views.jabatan_create_api, name='jabatan_create'),
-    path('api/jabatan/<int:jabatan_id>/', views.jabatan_detail_api, name='jabatan_detail'),
-    path('api/jabatan/<int:jabatan_id>/update/', views.jabatan_update_api, name='jabatan_update'),
-    path('api/jabatan/<int:jabatan_id>/delete/', views.jabatan_delete_api, name='jabatan_delete'),
-    path('api/jabatan/export/', views.jabatan_export_api, name='jabatan_export'),
+    # API endpoints untuk CRUD operations
+    # Perangkat Desa API
+    path('api/perangkat-desa/', views.api_perangkat_desa_list, name='api_perangkat_desa_list'),
+    path('api/perangkat-desa/<int:pk>/', views.api_perangkat_desa_detail, name='api_perangkat_desa_detail'),
+    path('api/perangkat-desa/create/', views.api_perangkat_desa_create, name='api_perangkat_desa_create'),
+    path('api/perangkat-desa/<int:pk>/update/', views.api_perangkat_desa_update, name='api_perangkat_desa_update'),
+    path('api/perangkat-desa/<int:pk>/delete/', views.api_perangkat_desa_delete, name='api_perangkat_desa_delete'),
     
-    # Periode Kepengurusan APIs
-    path('api/periode-kepengurusan/', views.periode_kepengurusan_api, name='periode_kepengurusan_list'),
-    path('api/periode-kepengurusan/statistics/', views.periode_kepengurusan_statistics_api, name='periode_kepengurusan_statistics'),
-    path('api/periode-kepengurusan/create/', views.periode_kepengurusan_create_api, name='periode_kepengurusan_create'),
-    path('api/periode-kepengurusan/<int:periode_id>/update/', views.periode_kepengurusan_update_api, name='periode_kepengurusan_update'),
-    path('api/periode-kepengurusan/<int:periode_id>/delete/', views.periode_kepengurusan_delete_api, name='periode_kepengurusan_delete'),
-    path('api/periode-kepengurusan/export/', views.periode_kepengurusan_export_api, name='periode_kepengurusan_export'),
+    # Lembaga Adat API
+    path('api/lembaga-adat/', views.api_lembaga_adat_list, name='api_lembaga_adat_list'),
+    path('api/lembaga-adat/<int:pk>/', views.api_lembaga_adat_detail, name='api_lembaga_adat_detail'),
+    path('api/lembaga-adat/create/', views.api_lembaga_adat_create, name='api_lembaga_adat_create'),
+    path('api/lembaga-adat/<int:pk>/update/', views.api_lembaga_adat_update, name='api_lembaga_adat_update'),
+    path('api/lembaga-adat/<int:pk>/delete/', views.api_lembaga_adat_delete, name='api_lembaga_adat_delete'),
     
-    # Anggota Organisasi APIs
-    path('api/anggota-organisasi/', views.anggota_organisasi_api, name='anggota_organisasi_list'),
-    path('api/anggota-organisasi/statistics/', views.anggota_organisasi_statistics_api, name='anggota_organisasi_statistics'),
-    path('api/anggota-organisasi/create/', views.anggota_organisasi_create_api, name='anggota_organisasi_create'),
-    path('api/anggota-organisasi/<int:anggota_id>/', views.anggota_organisasi_detail_api, name='anggota_organisasi_detail'),
-    path('api/anggota-organisasi/<int:anggota_id>/update/', views.anggota_organisasi_update_api, name='anggota_organisasi_update'),
-    path('api/anggota-organisasi/<int:anggota_id>/delete/', views.anggota_organisasi_delete_api, name='anggota_organisasi_delete'),
-    path('api/anggota-organisasi/export/', views.anggota_organisasi_export_api, name='anggota_organisasi_export'),
+    # Penggerak PKK API
+    path('api/penggerak-pkk/', views.api_penggerak_pkk_list, name='api_penggerak_pkk_list'),
+    path('api/penggerak-pkk/<int:pk>/', views.api_penggerak_pkk_detail, name='api_penggerak_pkk_detail'),
+    path('api/penggerak-pkk/create/', views.api_penggerak_pkk_create, name='api_penggerak_pkk_create'),
+    path('api/penggerak-pkk/<int:pk>/update/', views.api_penggerak_pkk_update, name='api_penggerak_pkk_update'),
+    path('api/penggerak-pkk/<int:pk>/delete/', views.api_penggerak_pkk_delete, name='api_penggerak_pkk_delete'),
     
-    # Galeri Kegiatan APIs
-    path('api/galeri-kegiatan/', views.galeri_kegiatan_api, name='galeri_kegiatan_list'),
-    path('api/galeri-kegiatan/statistics/', views.galeri_kegiatan_statistics_api, name='galeri_kegiatan_statistics'),
-    path('api/galeri-kegiatan/create/', views.galeri_kegiatan_create_api, name='galeri_kegiatan_create'),
-    path('api/galeri-kegiatan/<int:galeri_id>/', views.galeri_kegiatan_detail_api, name='galeri_kegiatan_detail'),
-    path('api/galeri-kegiatan/<int:galeri_id>/update/', views.galeri_kegiatan_update_api, name='galeri_kegiatan_update'),
-    path('api/galeri-kegiatan/<int:galeri_id>/delete/', views.galeri_kegiatan_delete_api, name='galeri_kegiatan_delete'),
-    path('api/galeri-kegiatan/export/', views.galeri_kegiatan_export_api, name='galeri_kegiatan_export'),
+    # Kepemudaan API
+    path('api/kepemudaan/', views.api_kepemudaan_list, name='api_kepemudaan_list'),
+    path('api/kepemudaan/<int:pk>/', views.api_kepemudaan_detail, name='api_kepemudaan_detail'),
+    path('api/kepemudaan/create/', views.api_kepemudaan_create, name='api_kepemudaan_create'),
+    path('api/kepemudaan/<int:pk>/update/', views.api_kepemudaan_update, name='api_kepemudaan_update'),
+    path('api/kepemudaan/<int:pk>/delete/', views.api_kepemudaan_delete, name='api_kepemudaan_delete'),
     
-    # Struktur Organisasi APIs
-    path('api/struktur-organisasi/', views.struktur_organisasi_api, name='struktur_organisasi_list'),
-    path('api/struktur-organisasi/statistics/', views.struktur_organisasi_statistics_api, name='struktur_organisasi_statistics'),
-    path('api/struktur-organisasi/create/', views.struktur_organisasi_create_api, name='struktur_organisasi_create'),
-    path('api/struktur-organisasi/<int:struktur_id>/', views.struktur_organisasi_detail_api, name='struktur_organisasi_detail'),
-    path('api/struktur-organisasi/<int:struktur_id>/update/', views.struktur_organisasi_update_api, name='struktur_organisasi_update'),
-    path('api/struktur-organisasi/<int:struktur_id>/delete/', views.struktur_organisasi_delete_api, name='struktur_organisasi_delete'),
-    path('api/struktur-organisasi/export/', views.struktur_organisasi_export_api, name='struktur_organisasi_export'),
-    
-    # Organizations API
-    path('api/organizations/', views.organizations_api, name='organizations_api'),
-    path('api/organizations/chart-data/', views.organizations_chart_data_api, name='organizations_chart_data'),
-    
-    # Statistics API
-    path('api/statistics/', views.organization_statistics_api, name='organization_statistics'),
-    path('statistics/', views.organization_statistics_api, name='organization_statistics_legacy')
+    # Karang Taruna API
+    path('api/karang-taruna/', views.api_karang_taruna_list, name='api_karang_taruna_list'),
+    path('api/karang-taruna/<int:pk>/', views.api_karang_taruna_detail, name='api_karang_taruna_detail'),
+    path('api/karang-taruna/create/', views.api_karang_taruna_create, name='api_karang_taruna_create'),
+    path('api/karang-taruna/<int:pk>/update/', views.api_karang_taruna_update, name='api_karang_taruna_update'),
+    path('api/karang-taruna/<int:pk>/delete/', views.api_karang_taruna_delete, name='api_karang_taruna_delete'),
 ]

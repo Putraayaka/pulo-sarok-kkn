@@ -41,7 +41,7 @@ class TourismLocationForm(ModelForm):
             'full_description', 'address', 'latitude', 'longitude', 'opening_hours',
             'entry_fee', 'contact_phone', 'contact_email', 'website', 'facilities',
             'activities', 'status', 'featured', 'is_active', 'meta_title',
-            'meta_description', 'meta_keywords'
+            'meta_description', 'meta_keywords', 'main_image'
         ]
         widgets = {
             'title': TextInput(attrs={
@@ -139,6 +139,10 @@ class TourismLocationForm(ModelForm):
             'meta_keywords': TextInput(attrs={
                 'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent',
                 'placeholder': 'Kata kunci untuk SEO (pisahkan dengan koma)'
+            }),
+            'main_image': forms.ClearableFileInput(attrs={
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent',
+                'accept': 'image/*'
             })
         }
 
@@ -146,49 +150,32 @@ class TourismGalleryForm(ModelForm):
     class Meta:
         model = TourismGallery
         fields = [
-            'tourism_location', 'media_type', 'title', 'description', 
-            'image', 'video_url', 'video_file', 'alt_text', 'caption',
-            'is_featured', 'is_active', 'order'
+            'package', 'title', 'description', 
+            'image', 'order', 'is_active'
         ]
         widgets = {
-            'tourism_location': Select(attrs={
-                'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent'
-            }),
-            'media_type': Select(attrs={
+            'package': Select(attrs={
                 'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent'
             }),
             'title': TextInput(attrs={
                 'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent',
-                'placeholder': 'Judul media'
+                'placeholder': 'Judul gambar'
             }),
             'description': Textarea(attrs={
                 'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent',
                 'rows': 3,
-                'placeholder': 'Deskripsi media'
+                'placeholder': 'Deskripsi gambar'
             }),
-            'video_url': TextInput(attrs={
+            'image': forms.ClearableFileInput(attrs={
                 'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent',
-                'type': 'url',
-                'placeholder': 'URL video (YouTube, Vimeo, dll)'
-            }),
-            'alt_text': TextInput(attrs={
-                'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent',
-                'placeholder': 'Alt text untuk aksesibilitas'
-            }),
-            'caption': TextInput(attrs={
-                'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent',
-                'placeholder': 'Caption untuk media'
+                'accept': 'image/*'
             }),
             'order': NumberInput(attrs={
                 'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent',
-                'min': 0,
                 'placeholder': 'Urutan tampilan'
             }),
-            'is_featured': CheckboxInput(attrs={
-                'class': 'h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded'
-            }),
             'is_active': CheckboxInput(attrs={
-                'class': 'h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded'
+                'class': 'h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500'
             })
         }
 

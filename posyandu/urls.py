@@ -15,6 +15,7 @@ urlpatterns = [
     path('balita/', views.view_balita, name='view_balita'),
     path('lansia/', views.view_lansia, name='view_lansia'),
     path('stunting/', views.stunting_admin, name='stunting_admin'),
+    path('penduduk/', views.penduduk_admin, name='penduduk_admin'),
     
     # Posyandu Location APIs
     path('api/locations/', views.posyandu_location_list, name='posyandu_location_list'),
@@ -34,9 +35,13 @@ urlpatterns = [
     path('api/stats/', views.posyandu_stats, name='posyandu_stats'),
     
     # Helper APIs
+    path('api/posyandu/list/', views.get_posyandu_locations, name='get_posyandu_list'),
+    path('api/residents/list/', views.get_residents_for_posyandu, name='get_residents_list'),
     path('api/locations-dropdown/', views.get_posyandu_locations, name='get_posyandu_locations'),
     path('api/residents/', views.get_residents_for_posyandu, name='get_residents_for_posyandu'),
     path('api/ibu-hamil/dropdown/', views.get_ibu_hamil_dropdown, name='get_ibu_hamil_dropdown'),
+    path('api/ibu-hamil/list/', views.get_ibu_hamil_dropdown, name='get_ibu_hamil_list'),
+    path('api/children/list/', views.get_children_for_posyandu, name='get_children_list'),
     
     # Template compatibility URLs
     path('get-posyandu-locations/', views.get_posyandu_locations, name='get_posyandu_locations_compat'),
@@ -89,4 +94,12 @@ urlpatterns = [
     path('api/stunting/create/', views.stunting_create_api, name='stunting_create_api'),
     path('api/stunting/<int:stunting_id>/update/', views.stunting_update_api, name='stunting_update_api'),
     path('api/stunting/<int:stunting_id>/delete/', views.stunting_delete_api, name='stunting_delete_api'),
+    
+    # Penduduk APIs
+    path('api/penduduk/', views.penduduk_list_api, name='penduduk_list_api'),
+    path('api/penduduk/<int:penduduk_id>/', views.penduduk_detail_api, name='penduduk_detail_api'),
+    path('api/penduduk/create/', views.penduduk_create_api, name='penduduk_create_api'),
+    path('api/penduduk/update/<int:penduduk_id>/', views.penduduk_update_api, name='penduduk_update_api'),
+    path('api/penduduk/delete/<int:penduduk_id>/', views.penduduk_delete_api, name='penduduk_delete_api'),
+    path('api/dusun/dropdown/', views.get_dusun_dropdown, name='get_dusun_dropdown'),
 ]

@@ -522,22 +522,33 @@ function loadDusunOptions() {
 }
 
 function loadPosyanduOptions() {
-    fetch('/pulosarok/posyandu/api/locations-dropdown/')
-        .then(response => response.json())
+    fetch('/pulosarok/posyandu/api/posyandu/list/')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
         .then(data => {
             const select = document.getElementById('schedule-posyandu');
             const firstOption = select.querySelector('option');
             select.innerHTML = '';
             select.appendChild(firstOption);
             
-            data.forEach(posyandu => {
-                const option = document.createElement('option');
-                option.value = posyandu.id;
-                option.textContent = posyandu.name;
-                select.appendChild(option);
-            });
+            const posyandus = data.results || data;
+            if (Array.isArray(posyandus)) {
+                posyandus.forEach(posyandu => {
+                    const option = document.createElement('option');
+                    option.value = posyandu.id;
+                    option.textContent = posyandu.name;
+                    select.appendChild(option);
+                });
+            }
         })
-        .catch(error => console.error('Error loading posyandu options:', error));
+        .catch(error => {
+            console.error('Error loading posyandu options:', error);
+            showNotification('Error loading posyandu options: ' + error.message, 'error');
+        });
 }
 
 function openLocationModal() {

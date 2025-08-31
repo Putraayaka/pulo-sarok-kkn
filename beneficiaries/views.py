@@ -1051,6 +1051,21 @@ def data_bantuan_page(request):
     """Render data bantuan page"""
     return render(request, 'admin/modules/beneficiaries/data_bantuan.html')
 
+def create_bantuan_page(request):
+    """Render create bantuan page"""
+    return render(request, 'admin/modules/beneficiaries/create_bantuan.html')
+
+def edit_bantuan_page(request, bantuan_id):
+    """Render edit bantuan page"""
+    try:
+        bantuan = DataBantuan.objects.get(id=bantuan_id)
+        context = {
+            'bantuan_id': bantuan_id
+        }
+        return render(request, 'admin/modules/beneficiaries/edit_bantuan.html', context)
+    except DataBantuan.DoesNotExist:
+        return redirect('beneficiaries:data_bantuan_page')
+
 def upload_dokumen_page(request):
     """Render upload dokumen page"""
     return render(request, 'admin/modules/beneficiaries/upload_dokumen.html')

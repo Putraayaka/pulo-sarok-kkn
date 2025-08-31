@@ -330,14 +330,26 @@ document.addEventListener('DOMContentLoaded', function() {
     loadAsetData();
 });
 
+// Get CSRF token
+async function getCSRFToken() {
+    try {
+        const response = await fetch('/pulosarok/business/csrf-token/');
+        const data = await response.json();
+        return data.csrf_token;
+    } catch (error) {
+        console.error('Error getting CSRF token:', error);
+        return getCookie('csrftoken') || '';
+    }
+}
+
 // Load Aset data from API
 async function loadAsetData(page = 1) {
     try {
-        const searchTerm = document.getElementById('searchInput').value;
-        const kategoriFilter = document.getElementById('kategoriFilter').value;
-        const kondisiFilter = document.getElementById('kondisiFilter').value;
+        const searchTerm = document.getElementById('searchInput')?.value || '';
+        const kategoriFilter = document.getElementById('kategoriFilter')?.value || '';
+        const kondisiFilter = document.getElementById('kondisiFilter')?.value || '';
         
-        let url = `/pulosarok/business/api/aset/?page=${page}&page_size=${recordsPerPage}`;
+        let url = `/pulosarok/business/api/aset/?page=${page}`;
         
         if (searchTerm) {
             url += `&search=${encodeURIComponent(searchTerm)}`;
@@ -351,27 +363,25 @@ async function loadAsetData(page = 1) {
             url += `&kondisi=${kondisiFilter}`;
         }
         
-        const response = await fetch(url);
+        const token = await getCSRFToken();
+        const response = await fetch(url, {
+            headers: {
+                'X-CSRFToken': token
+            }
+        });
         const data = await response.json();
         
-        if (data.success) {
-            asetData = data.data;
-            currentPage = data.current_page;
-            totalRecords = data.total;
-            renderTable();
-            updatePagination();
-            updateStatistics();
-        } else {
-            console.error('Error loading Aset data:', data.message);
-        }
+        asetData = data.results || [];
+        currentPage = page;
+        totalPages = data.num_pages || 1;
+        totalRecords = data.count || 0;
+        displayAsetData();
+        updatePagination(totalPages, currentPage);
+        updateStatistics();
     } catch (error) {
         console.error('Error fetching Aset data:', error);
+        showToast('Gagal memuat data aset', 'error');
     }
-}
-    
-    renderTable();
-    updatePagination();
-    updateStatistics();
 }
 
 // Format currency
@@ -419,50 +429,95 @@ function updateStatistics() {
     document.getElementById('totalNilai').textContent = formatCurrency(totalNilai);
 }
 
-// Render table
-function renderTable() {
+// Display Aset data
+function displayAsetData() {
     const tbody = document.getElementById('asetTableBody');
-    tbody.innerHTML = '';
+    const mobileContainer = document.getElementById('mobileCards');
     
-    asetData.forEach((item, index) => {
-        const kondisiColors = {
-            'baik': 'bg-green-100 text-green-800',
-            'rusak_ringan': 'bg-yellow-100 text-yellow-800',
-            'rusak_berat': 'bg-orange-100 text-orange-800',
-            'tidak_dapat_digunakan': 'bg-red-100 text-red-800'
-        };
+    if (tbody) {
+        tbody.innerHTML = '';
         
-        const row = `
-            <tr>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${index + 1}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${item.kode_aset}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${item.nama_aset}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    <span class="px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">
-                        ${getCategoryName(item.kategori)}
-                    </span>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${formatCurrency(item.nilai_saat_ini || 0)}</td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${kondisiColors[item.kondisi]}">
-                        ${getConditionName(item.kondisi)}
-                    </span>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${item.lokasi}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <button onclick="editAset(${item.id})" class="text-blue-600 hover:text-blue-900 mr-3">
-                        <i class="fas fa-edit"></i>
-                    </button>
-                    <button onclick="deleteAset(${item.id})" class="text-red-600 hover:text-red-900">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </td>
-            </tr>
-        `;
-        tbody.innerHTML += row;
-    });
+        asetData.forEach((item, index) => {
+            const rowNumber = (currentPage - 1) * 10 + index + 1;
+            const kondisiColors = {
+                'baik': 'bg-green-100 text-green-800',
+                'rusak_ringan': 'bg-yellow-100 text-yellow-800',
+                'rusak_berat': 'bg-orange-100 text-orange-800',
+                'tidak_dapat_digunakan': 'bg-red-100 text-red-800'
+            };
+            
+            const row = `
+                <tr>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${rowNumber}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${item.kode_aset || '-'}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${item.nama_aset || '-'}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <span class="px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">
+                            ${getCategoryName(item.kategori || 'lainnya')}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${formatCurrency(item.nilai_saat_ini || 0)}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${kondisiColors[item.kondisi] || 'bg-gray-100 text-gray-800'}">
+                            ${getConditionName(item.kondisi || 'baik')}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${item.lokasi || '-'}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <button onclick="editAset(${item.id})" class="text-blue-600 hover:text-blue-900 mr-3" title="Edit">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button onclick="deleteAset(${item.id})" class="text-red-600 hover:text-red-900" title="Hapus">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `;
+            tbody.innerHTML += row;
+        });
+    }
     
-    document.getElementById('totalRecords').textContent = asetData.length;
+    // Mobile view
+    if (mobileContainer) {
+        mobileContainer.innerHTML = '';
+        
+        asetData.forEach((item, index) => {
+            const rowNumber = (currentPage - 1) * 10 + index + 1;
+            const kondisiColors = {
+                'baik': 'bg-green-100 text-green-800',
+                'rusak_ringan': 'bg-yellow-100 text-yellow-800',
+                'rusak_berat': 'bg-orange-100 text-orange-800',
+                'tidak_dapat_digunakan': 'bg-red-100 text-red-800'
+            };
+            
+            const card = `
+                <div class="bg-white p-4 rounded-lg shadow border">
+                    <div class="flex justify-between items-start mb-2">
+                        <h3 class="font-semibold text-gray-900">${item.nama_aset || '-'}</h3>
+                        <span class="px-2 py-1 text-xs font-medium rounded-full ${kondisiColors[item.kondisi] || 'bg-gray-100 text-gray-800'}">
+                            ${getConditionName(item.kondisi || 'baik')}
+                        </span>
+                    </div>
+                    <div class="space-y-1 text-sm text-gray-600">
+                        <p><span class="font-medium">No:</span> ${rowNumber}</p>
+                        <p><span class="font-medium">Kode:</span> ${item.kode_aset || '-'}</p>
+                        <p><span class="font-medium">Kategori:</span> ${getCategoryName(item.kategori || 'lainnya')}</p>
+                        <p><span class="font-medium">Nilai:</span> ${formatCurrency(item.nilai_saat_ini || 0)}</p>
+                        <p><span class="font-medium">Lokasi:</span> ${item.lokasi || '-'}</p>
+                    </div>
+                    <div class="flex justify-end space-x-2 mt-3">
+                        <button onclick="editAset(${item.id})" class="text-blue-600 hover:text-blue-900" title="Edit">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button onclick="deleteAset(${item.id})" class="text-red-600 hover:text-red-900" title="Hapus">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+            mobileContainer.innerHTML += card;
+        });
+    }
 }
 
 // Open add modal
@@ -507,8 +562,7 @@ async function deleteAset(id) {
             const response = await fetch(`/pulosarok/business/api/aset/${id}/`, {
                 method: 'DELETE',
                 headers: {
-                    'X-CSRFToken': getCookie('csrftoken'),
-                    'Content-Type': 'application/json'
+                    'X-CSRFToken': getCookie('csrftoken')
                 }
             });
             
@@ -560,12 +614,13 @@ document.getElementById('asetForm').addEventListener('submit', async function(e)
         const asetId = document.getElementById('asetId').value;
         const url = asetId ? `/pulosarok/business/api/aset/${asetId}/` : '/pulosarok/business/api/aset/';
         const method = asetId ? 'PUT' : 'POST';
+        const token = await getCSRFToken();
         
         const response = await fetch(url, {
             method: method,
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRFToken': getCookie('csrftoken')
+                'X-CSRFToken': token
             },
             body: JSON.stringify(formData)
         });

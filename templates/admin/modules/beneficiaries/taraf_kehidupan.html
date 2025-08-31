@@ -203,8 +203,9 @@
                     </button>
                 </div>
                 
-                <form id="tarafForm" method="POST">
+                <form id="tarafForm" onsubmit="submitForm(event)">
                     {% csrf_token %}
+                    <input type="hidden" name="id" id="taraf_id">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="md:col-span-2">
                             <label class="block text-sm font-medium text-gray-700 mb-2">Nama Kepala Keluarga *</label>
@@ -282,6 +283,234 @@
 
 {% block extra_js %}
 <script>
+    // Load data from API when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        loadTarafKehidupanData();
+    });
+    
+    function loadTarafKehidupanData() {
+        // Get filter parameters from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const search = urlParams.get('search') || '';
+        const dusun = urlParams.get('dusun') || '';
+        const kategori = urlParams.get('kategori') || '';
+        const page = urlParams.get('page') || 1;
+        
+        // Fetch data from API
+        fetch(`/api/beneficiaries/taraf-kehidupan/?search=${search}&dusun=${dusun}&kategori_taraf=${kategori}&page=${page}&per_page=10`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.results) {
+                    // Update table with data
+                    updateTable(data.results, data.pagination);
+                }
+            })
+            .catch(error => console.error('Error loading data:', error));
+    }
+    
+    function updateTable(data, pagination) {
+        const tableBody = document.querySelector('tbody');
+        tableBody.innerHTML = '';
+        
+        if (data.length === 0) {
+            const emptyRow = document.createElement('tr');
+            emptyRow.innerHTML = `<td colspan="9" class="px-6 py-4 text-center text-gray-500">Tidak ada data</td>`;
+            tableBody.appendChild(emptyRow);
+            return;
+        }
+        
+        data.forEach((item, index) => {
+            const row = document.createElement('tr');
+            row.className = index % 2 === 0 ? 'bg-white' : 'bg-gray-50';
+            row.innerHTML = `
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${(pagination.current_page - 1) * 10 + index + 1}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${item.person_name}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${item.person_nik}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${item.dusun_name}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${item.jumlah_anggota}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusClass(item.kategori_taraf)}">
+                        ${getStatusLabel(item.kategori_taraf)}
+                    </span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Rp ${item.penghasilan_bulanan.toLocaleString()}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${item.tanggal_survei}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <div class="flex space-x-2">
+                        <button onclick="editData(${item.id})" class="btn-action bg-blue-100 text-blue-600 hover:bg-blue-200">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button onclick="deleteData(${item.id})" class="btn-action bg-red-100 text-red-600 hover:bg-red-200">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </td>
+            `;
+            tableBody.appendChild(row);
+        });
+        
+        // Update pagination
+        updatePagination(pagination);
+    }
+    
+    function updatePagination(pagination) {
+        const paginationContainer = document.querySelector('.pagination');
+        if (!paginationContainer) return;
+        
+        let paginationHTML = '';
+        
+        // Previous button
+        paginationHTML += `
+            <a href="${pagination.has_previous ? '?page=' + (pagination.current_page - 1) : '#'}" 
+               class="${pagination.has_previous ? 'text-primary-600 hover:text-primary-900' : 'text-gray-400 cursor-not-allowed'} px-3 py-1 rounded-md">
+                <i class="fas fa-chevron-left"></i>
+            </a>
+        `;
+        
+        // Page numbers
+        for (let i = 1; i <= pagination.total_pages; i++) {
+            if (i === pagination.current_page) {
+                paginationHTML += `<span class="bg-primary-100 text-primary-700 px-3 py-1 rounded-md">${i}</span>`;
+            } else {
+                paginationHTML += `<a href="?page=${i}" class="text-primary-600 hover:text-primary-900 px-3 py-1 rounded-md">${i}</a>`;
+            }
+        }
+        
+        // Next button
+        paginationHTML += `
+            <a href="${pagination.has_next ? '?page=' + (pagination.current_page + 1) : '#'}" 
+               class="${pagination.has_next ? 'text-primary-600 hover:text-primary-900' : 'text-gray-400 cursor-not-allowed'} px-3 py-1 rounded-md">
+                <i class="fas fa-chevron-right"></i>
+            </a>
+        `;
+        
+        paginationContainer.innerHTML = paginationHTML;
+    }
+    
+    function getStatusClass(status) {
+        switch(status) {
+            case 'miskin': return 'bg-red-100 text-red-800';
+            case 'sedang': return 'bg-yellow-100 text-yellow-800';
+            case 'mampu': return 'bg-green-100 text-green-800';
+            default: return 'bg-gray-100 text-gray-800';
+        }
+    }
+    
+    function getStatusLabel(status) {
+        switch(status) {
+            case 'miskin': return 'Miskin';
+            case 'sedang': return 'Sedang';
+            case 'mampu': return 'Mampu';
+            default: return status;
+        }
+    }
+    
+    function submitForm(event) {
+        event.preventDefault();
+        
+        const form = event.target;
+        const formData = new FormData(form);
+        const tarafId = formData.get('id');
+        
+        // Convert FormData to JSON
+        const data = {};
+        formData.forEach((value, key) => {
+            data[key] = value;
+        });
+        
+        // Determine if this is a create or update request
+        const url = tarafId ? 
+            `/api/beneficiaries/taraf-kehidupan/${tarafId}/update/` : 
+            '/api/beneficiaries/taraf-kehidupan/create/';
+        
+        const method = tarafId ? 'PUT' : 'POST';
+        
+        // Send request to API
+        fetch(url, {
+            method: method,
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Close modal and reload data
+                closeModal('addModal');
+                loadTarafKehidupanData();
+                alert(data.message || 'Data berhasil disimpan');
+            } else {
+                alert('Gagal menyimpan data: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Terjadi kesalahan saat menyimpan data');
+        });
+    }
+    
+    function editData(id) {
+        // Fetch data from API
+        fetch(`/api/beneficiaries/taraf-kehidupan/${id}/`)
+            .then(response => response.json())
+            .then(data => {
+                if (data) {
+                    // Set form title
+                    document.getElementById('modalTitle').textContent = 'Edit Data Taraf Kehidupan';
+                    
+                    // Set hidden ID field
+                    document.getElementById('taraf_id').value = data.id;
+                    
+                    // Fill form fields
+                    const form = document.getElementById('tarafForm');
+                    form.querySelector('[name="nama_kepala_keluarga"]').value = data.person_name;
+                    form.querySelector('[name="nik"]').value = data.person_nik;
+                    form.querySelector('[name="dusun"]').value = data.dusun_id;
+                    form.querySelector('[name="alamat"]').value = data.alamat;
+                    form.querySelector('[name="jumlah_anggota"]').value = data.jumlah_anggota;
+                    form.querySelector('[name="kategori_taraf"]').value = data.kategori_taraf;
+                    form.querySelector('[name="penghasilan_bulanan"]').value = data.penghasilan_bulanan;
+                    form.querySelector('[name="status"]').value = data.status;
+                    form.querySelector('[name="keterangan"]').value = data.keterangan || '';
+                    
+                    // Open modal
+                    openModal('addModal');
+                } else {
+                    alert('Gagal memuat data: Data tidak ditemukan');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Terjadi kesalahan saat memuat data');
+            });
+    }
+    
+    function deleteData(id) {
+        if (confirm('Apakah Anda yakin ingin menghapus data ini?')) {
+            fetch(`/api/beneficiaries/taraf-kehidupan/${id}/delete/`, {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    loadTarafKehidupanData();
+                    alert(data.message || 'Data berhasil dihapus');
+                } else {
+                    alert('Gagal menghapus data: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Terjadi kesalahan saat menghapus data');
+            });
+        }
+    }
+    
     function openModal(modalId) {
         document.getElementById(modalId).classList.remove('hidden');
     }
@@ -290,26 +519,38 @@
         document.getElementById(modalId).classList.add('hidden');
         if (modalId === 'addModal') {
             document.getElementById('tarafForm').reset();
+            document.getElementById('taraf_id').value = '';
             document.getElementById('modalTitle').textContent = 'Tambah Data Taraf Kehidupan';
         }
     }
     
     function editData(id) {
-        // Fetch data and populate form
-        fetch(`/admin/beneficiaries/taraf-kehidupan/${id}/edit/`)
+        // Fetch data from API
+        fetch(`/api/beneficiaries/taraf-kehidupan/${id}/`)
             .then(response => response.json())
             .then(data => {
-                document.getElementById('modalTitle').textContent = 'Edit Data Taraf Kehidupan';
-                const form = document.getElementById('tarafForm');
-                form.action = `/admin/beneficiaries/taraf-kehidupan/${id}/update/`;
-                
-                // Populate form fields
-                Object.keys(data).forEach(key => {
-                    const field = form.querySelector(`[name="${key}"]`);
-                    if (field) field.value = data[key];
-                });
-                
-                openModal('addModal');
+                if (data.success) {
+                    // Populate form with data
+                    const form = document.getElementById('tarafForm');
+                    form.elements['nama_kepala_keluarga'].value = data.data.person_name;
+                    form.elements['nik'].value = data.data.person_nik;
+                    form.elements['dusun'].value = data.data.dusun_id;
+                    form.elements['alamat'].value = data.data.alamat || '';
+                    form.elements['jumlah_anggota'].value = data.data.jumlah_anggota;
+                    form.elements['kategori_taraf'].value = data.data.kategori_taraf;
+                    form.elements['penghasilan_bulanan'].value = data.data.penghasilan_bulanan || 0;
+                    form.elements['status'].value = data.data.status;
+                    form.elements['keterangan'].value = data.data.keterangan || '';
+                    
+                    // Update form action and modal title
+                    form.action = `/api/beneficiaries/taraf-kehidupan/${id}/update/`;
+                    document.getElementById('modalTitle').textContent = 'Edit Data Taraf Kehidupan';
+                    
+                    // Open modal
+                    openModal('addModal');
+                } else {
+                    alert('Gagal mengambil data: ' + data.message);
+                }
             })
             .catch(error => {
                 console.error('Error:', error);
@@ -323,24 +564,19 @@
     
     function deleteData(id) {
         if (confirm('Apakah Anda yakin ingin menghapus data ini?')) {
-            fetch(`/admin/beneficiaries/taraf-kehidupan/${id}/delete/`, {
-                method: 'DELETE',
-                headers: {
-                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
-                    'Content-Type': 'application/json'
-                }
-            })
-            .then(response => {
-                if (response.ok) {
-                    location.reload();
-                } else {
-                    alert('Terjadi kesalahan saat menghapus data');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Terjadi kesalahan saat menghapus data');
-            });
+            // Create a form for DELETE request using Django standard approach
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = `/admin/beneficiaries/taraf-kehidupan/${id}/delete/`;
+            
+            const csrfToken = document.createElement('input');
+            csrfToken.type = 'hidden';
+            csrfToken.name = 'csrfmiddlewaretoken';
+            csrfToken.value = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            
+            form.appendChild(csrfToken);
+            document.body.appendChild(form);
+            form.submit();
         }
     }
     
@@ -350,33 +586,11 @@
         window.open(`/admin/beneficiaries/taraf-kehidupan/export/?${params.toString()}`, '_blank');
     }
     
-    // Form submission
+    // Form submission using Django standard approach
     document.getElementById('tarafForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        const formData = new FormData(this);
-        const url = this.action || '/admin/beneficiaries/taraf-kehidupan/create/';
-        
-        fetch(url, {
-            method: 'POST',
-            body: formData,
-            headers: {
-                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-            }
-        })
-        .then(response => {
-            if (response.ok) {
-                location.reload();
-            } else {
-                return response.json().then(data => {
-                    throw new Error(data.message || 'Terjadi kesalahan');
-                });
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert(error.message || 'Terjadi kesalahan saat menyimpan data');
-        });
+        // Let the form submit normally to Django view
+        // No need to prevent default or use fetch API
+        return true;
     });
 </script>
 {% endblock %}

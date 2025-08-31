@@ -1,11 +1,25 @@
-from django.urls import path
+from django.urls import path, include
 from . import views
 
 app_name = 'core'
 
 urlpatterns = [
+    # API endpoints
+    path('', include('core.api_urls')),
     # Core module view
     path('', views.core_module_view, name='core_module'),
+    
+    # Dashboard view
+    path('dashboard-view/', views.dashboard_view, name='dashboard_view'),
+    
+    # Settings view
+    path('settings-view/', views.settings_view, name='settings_view'),
+    
+    # Modules Management
+    path('modules/', views.modules_view, name='modules'),
+    path('modules/list/', views.modules_list_api, name='modules_list_api'),
+    path('modules/create/', views.modules_create_api, name='modules_create_api'),
+    path('modules/<int:module_id>/update/', views.modules_update_api, name='modules_update_api'),
     
     # Statistics API
     path('stats/', views.core_stats_api, name='core_stats'),
@@ -40,4 +54,25 @@ urlpatterns = [
     
     # Helper APIs
     path('business-types/', views.business_types_dropdown_api, name='business_types_dropdown'),
+    
+    # Website Settings API
+    path('website-settings/', views.website_settings_api, name='website_settings'),
+    
+    # Module Settings API
+    path('modules/', views.module_settings_list_api, name='module_settings_list'),
+    path('modules/create/', views.module_settings_create_api, name='module_settings_create'),
+    path('modules/<int:module_id>/update/', views.module_settings_update_api, name='module_settings_update'),
+    
+    # API Endpoints Registry
+    path('api-endpoints/', views.api_endpoints_list_api, name='api_endpoints_list'),
+    
+    # Dashboard Aggregator
+    path('dashboard/', views.dashboard_aggregator_api, name='dashboard_aggregator'),
+    
+    # API Aggregator
+    path('api-aggregator/', views.api_aggregator, name='api_aggregator'),
+    
+    # Reports
+    path('reports/', views.reports_view, name='reports_view'),
+    path('export-report/', views.export_report_api, name='export_report_api'),
 ]

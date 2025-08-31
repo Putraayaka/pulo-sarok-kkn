@@ -328,6 +328,7 @@
                     <div>
                         <form id="letterForm" method="POST">
                             {% csrf_token %}
+                            <input type="hidden" name="letter_id" id="letter_id">
                             
                             <!-- Template Selection -->
                             <div class="form-section">
@@ -648,59 +649,215 @@
     }
     
     function viewLetter(id) {
-        window.open(`/admin/beneficiaries/surat/${id}/view/`, '_blank');
+        // Fetch letter data from API
+        fetch(`/api/beneficiaries/surat/${id}/`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const letter = data.data;
+                
+                // Create detail modal if it doesn't exist
+                let detailModal = document.getElementById('letterDetailModal');
+                if (!detailModal) {
+                    detailModal = document.createElement('div');
+                    detailModal.id = 'letterDetailModal';
+                    detailModal.className = 'fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50';
+                    detailModal.innerHTML = `
+                        <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white">
+                            <div class="flex justify-between items-center border-b pb-3">
+                                <h3 class="text-xl font-medium text-gray-900" id="letterDetailTitle">Detail Surat</h3>
+                                <button type="button" onclick="closeDetailModal()" class="text-gray-400 hover:text-gray-500">
+                                    <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                            <div class="mt-4" id="letterDetailContent"></div>
+                            <div class="mt-4 flex justify-end space-x-3">
+                                <button onclick="closeDetailModal()" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300">Tutup</button>
+                                <button onclick="editLetter(${id})" class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600">Edit</button>
+                                <button onclick="printLetter(${id})" class="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600">Cetak</button>
+                            </div>
+                        </div>
+                    `;
+                    document.body.appendChild(detailModal);
+                } else {
+                    // Update existing modal
+                    document.getElementById('letterDetailContent').innerHTML = '';
+                    detailModal.style.display = 'block';
+                }
+                
+                // Populate letter details
+                const detailContent = document.getElementById('letterDetailContent');
+                
+                // Format date
+                const tanggalSurat = new Date(letter.tanggal_surat).toLocaleDateString('id-ID', {
+                    day: 'numeric',
+                    month: 'long',
+                    year: 'numeric'
+                });
+                
+                // Get status class and label
+                const statusClass = getStatusClass(letter.status);
+                const statusLabel = getStatusLabel(letter.status);
+                
+                // Create detail HTML
+                detailContent.innerHTML = `
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <p class="text-sm font-medium text-gray-500">Nomor Surat</p>
+                            <p class="text-base">${letter.nomor_surat}</p>
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium text-gray-500">Tanggal Surat</p>
+                            <p class="text-base">${tanggalSurat}</p>
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium text-gray-500">Perihal</p>
+                            <p class="text-base">${letter.perihal}</p>
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium text-gray-500">Jenis Surat</p>
+                            <p class="text-base">${letter.jenis_surat}</p>
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium text-gray-500">Penerima</p>
+                            <p class="text-base">${letter.penerima}</p>
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium text-gray-500">Status</p>
+                            <p class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusClass}">
+                                ${statusLabel}
+                            </p>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <p class="text-sm font-medium text-gray-500">Isi Surat</p>
+                        <div class="mt-2 p-4 border rounded-md bg-gray-50">
+                            <pre class="whitespace-pre-wrap">${letter.isi_surat}</pre>
+                        </div>
+                    </div>
+                `;
+            } else {
+                alert('Gagal memuat data surat: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Terjadi kesalahan saat memuat data surat');
+        });
+    }
+    
+    function closeDetailModal() {
+        const detailModal = document.getElementById('letterDetailModal');
+        if (detailModal) {
+            detailModal.style.display = 'none';
+        }
+    }
+    
+    function getStatusClass(status) {
+        switch(status) {
+            case 'draft':
+                return 'bg-gray-100 text-gray-800';
+            case 'published':
+                return 'bg-green-100 text-green-800';
+            case 'pending':
+                return 'bg-yellow-100 text-yellow-800';
+            default:
+                return 'bg-gray-100 text-gray-800';
+        }
+    }
+    
+    function getStatusLabel(status) {
+        switch(status) {
+            case 'draft':
+                return 'Draft';
+            case 'published':
+                return 'Terbit';
+            case 'pending':
+                return 'Menunggu';
+            default:
+                return status;
+        }
     }
     
     function editLetter(id) {
-        fetch(`/admin/beneficiaries/surat/${id}/edit/`)
-            .then(response => response.json())
-            .then(data => {
-                document.getElementById('letterModalTitle').textContent = 'Edit Surat';
-                const form = document.getElementById('letterForm');
-                form.action = `/admin/beneficiaries/surat/${id}/update/`;
+        // Fetch letter data from API
+        fetch(`/api/beneficiaries/surat/${id}/`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const letter = data.data;
                 
                 // Fill form fields
-                Object.keys(data).forEach(key => {
-                    const field = form.querySelector(`[name="${key}"]`);
-                    if (field) {
-                        field.value = data[key];
-                    }
-                });
+                document.querySelector('[name="nomor_surat"]').value = letter.nomor_surat;
+                document.querySelector('[name="tanggal_surat"]').value = letter.tanggal_surat;
+                document.querySelector('[name="perihal"]').value = letter.perihal;
+                document.querySelector('[name="jenis"]').value = letter.jenis;
+                document.querySelector('[name="penerima"]').value = letter.penerima;
+                document.querySelector('[name="alamat_penerima"]').value = letter.alamat_penerima || '';
+                document.querySelector('[name="catatan"]').value = letter.catatan || '';
                 
-                // Select template if exists
-                if (data.template_id) {
-                    selectTemplate(data.template_id);
+                // Set content
+                if (letter.content) {
+                    document.querySelector('[name="content"]').value = letter.content;
                 }
                 
+                // Add hidden input for letter ID
+                let idInput = document.querySelector('input[name="letter_id"]');
+                if (!idInput) {
+                    idInput = document.createElement('input');
+                    idInput.type = 'hidden';
+                    idInput.name = 'letter_id';
+                    document.getElementById('letterForm').appendChild(idInput);
+                }
+                idInput.value = id;
+                
+                // Update form action for API update
+                document.getElementById('letterForm').action = `/api/beneficiaries/surat/${id}/update/`;
+                document.getElementById('letterForm').method = 'PUT';
+                
+                // Update modal title
+                document.getElementById('modalTitle').textContent = 'Edit Surat';
+                
+                // Open modal
                 openModal('letterModal');
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Terjadi kesalahan saat mengambil data surat');
-            });
+            } else {
+                alert('Gagal memuat data surat: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Terjadi kesalahan saat memuat data surat');
+        });
     }
     
     function printLetter(id) {
-        window.open(`/admin/beneficiaries/surat/${id}/print/`, '_blank');
+        // Open print view in new tab using API
+        window.open(`/api/beneficiaries/surat/${id}/print/`, '_blank');
     }
     
     function downloadLetter(id) {
-        window.open(`/admin/beneficiaries/surat/${id}/download/`, '_blank');
+        // Download letter using API
+        window.open(`/api/beneficiaries/surat/${id}/download/`, '_blank');
     }
     
     function deleteLetter(id) {
         if (confirm('Apakah Anda yakin ingin menghapus surat ini?')) {
-            fetch(`/admin/beneficiaries/surat/${id}/delete/`, {
+            // Use API to delete letter
+            fetch(`/api/beneficiaries/surat/${id}/delete/`, {
                 method: 'DELETE',
                 headers: {
                     'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
                 }
             })
-            .then(response => {
-                if (response.ok) {
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message || 'Surat berhasil dihapus');
                     location.reload();
                 } else {
-                    alert('Terjadi kesalahan saat menghapus surat');
+                    alert('Gagal menghapus surat: ' + data.message);
                 }
             })
             .catch(error => {
@@ -711,38 +868,218 @@
     }
     
     function saveDraft() {
-        document.querySelector('[name="status"]').value = 'draft';
-        document.getElementById('letterForm').dispatchEvent(new Event('submit'));
+        const form = document.getElementById('letterForm');
+        const formData = new FormData(form);
+        
+        // Add draft status
+        formData.append('status', 'draft');
+        
+        // Get letter ID if exists
+        const id = formData.get('letter_id');
+        
+        // Convert FormData to JSON
+        const data = {};
+        formData.forEach((value, key) => {
+            data[key] = value;
+        });
+        
+        // Determine if this is a create or update request
+        const url = id ? 
+            `/api/beneficiaries/surat/${id}/update/` : 
+            '/api/beneficiaries/surat/create/';
+        
+        const method = id ? 'PUT' : 'POST';
+        
+        // Send request to API
+        fetch(url, {
+            method: method,
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.message || 'Draft berhasil disimpan');
+                location.reload();
+            } else {
+                alert('Gagal menyimpan draft: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Terjadi kesalahan saat menyimpan draft');
+        });
     }
     
     function exportLetters() {
-        const params = new URLSearchParams(window.location.search);
-        params.set('export', 'excel');
-        window.open(`/admin/beneficiaries/surat/export/?${params.toString()}`, '_blank');
+        // Export letters using API
+        window.open('/api/beneficiaries/surat/export/', '_blank');
     }
     
     function createTemplate() {
-        // Redirect to template creation page
-        window.location.href = '/admin/beneficiaries/surat/template/create/';
+        const templateName = document.getElementById('templateName').value.trim();
+        const templateContent = document.getElementById('templateContent').value.trim();
+        
+        if (!templateName) {
+            alert('Nama template harus diisi!');
+            return;
+        }
+        
+        if (!templateContent) {
+            alert('Isi template harus diisi!');
+            return;
+        }
+        
+        // Prepare data for API
+        const data = {
+            name: templateName,
+            content: templateContent
+        };
+        
+        // Send request to API
+        fetch('/api/beneficiaries/surat-template/create/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Close modal and reload page
+                closeModal('templateModal');
+                alert(data.message || 'Template berhasil disimpan');
+                location.reload();
+            } else {
+                alert('Gagal menyimpan template: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Terjadi kesalahan saat menyimpan template');
+        });
     }
     
     function editTemplate(id) {
-        window.location.href = `/admin/beneficiaries/surat/template/${id}/edit/`;
+        // Fetch template data from API
+        fetch(`/api/beneficiaries/surat-template/${id}/`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const template = data.data;
+                
+                // Open modal with template data
+                document.getElementById('letterModalTitle').textContent = 'Edit Template';
+                
+                // Create template edit form if it doesn't exist
+                let templateForm = document.getElementById('templateForm');
+                if (!templateForm) {
+                    const modalContent = document.querySelector('#templateModal .p-6');
+                    
+                    // Create form
+                    templateForm = document.createElement('form');
+                    templateForm.id = 'templateForm';
+                    templateForm.innerHTML = `
+                        <input type="hidden" name="template_id" id="template_id" value="${id}">
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Nama Template</label>
+                            <input type="text" id="templateName" name="name" class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Deskripsi</label>
+                            <input type="text" id="templateDesc" name="description" class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Konten Template</label>
+                            <textarea id="templateContent" name="content" rows="10" class="w-full px-3 py-2 border border-gray-300 rounded-md"></textarea>
+                        </div>
+                        <div class="flex justify-end space-x-3">
+                            <button type="button" onclick="closeModal('templateModal')" class="px-4 py-2 text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300">Batal</button>
+                            <button type="submit" class="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700">Simpan Template</button>
+                        </div>
+                    `;
+                    
+                    // Add form to modal
+                    modalContent.appendChild(templateForm);
+                }
+                
+                // Fill form with template data
+                document.getElementById('template_id').value = id;
+                document.getElementById('templateName').value = template.nama;
+                document.getElementById('templateDesc').value = template.deskripsi || '';
+                document.getElementById('templateContent').value = template.content;
+                
+                // Set form submission handler
+                templateForm.onsubmit = function(e) {
+                    e.preventDefault();
+                    
+                    // Get form data
+                    const formData = new FormData(templateForm);
+                    const data = {};
+                    formData.forEach((value, key) => {
+                        data[key] = value;
+                    });
+                    
+                    // Send request to API
+                    fetch(`/api/beneficiaries/surat-template/${id}/update/`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                        },
+                        body: JSON.stringify(data)
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            closeModal('templateModal');
+                            alert(data.message || 'Template berhasil diperbarui');
+                            location.reload();
+                        } else {
+                            alert('Gagal memperbarui template: ' + data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Terjadi kesalahan saat memperbarui template');
+                    });
+                    
+                    return false;
+                };
+                
+                // Open modal
+                openModal('templateModal');
+            } else {
+                alert('Gagal memuat data template: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Terjadi kesalahan saat memuat data template');
+        });
     }
     
     function deleteTemplate(id) {
         if (confirm('Apakah Anda yakin ingin menghapus template ini?')) {
-            fetch(`/admin/beneficiaries/surat/template/${id}/delete/`, {
+            // Use API to delete template
+            fetch(`/api/beneficiaries/surat-template/${id}/delete/`, {
                 method: 'DELETE',
                 headers: {
                     'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
                 }
             })
-            .then(response => {
-                if (response.ok) {
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message || 'Template berhasil dihapus');
                     location.reload();
                 } else {
-                    alert('Terjadi kesalahan saat menghapus template');
+                    alert('Gagal menghapus template: ' + data.message);
                 }
             })
             .catch(error => {
@@ -752,33 +1089,86 @@
         }
     }
     
-    // Form submission
+    // Form submission with validation
     document.getElementById('letterForm').addEventListener('submit', function(e) {
         e.preventDefault();
         
-        const formData = new FormData(this);
-        const url = this.action || '/admin/beneficiaries/surat/create/';
+        // Validate required fields
+        const nomorSurat = document.querySelector('[name="nomor_surat"]').value.trim();
+        const tanggalSurat = document.querySelector('[name="tanggal_surat"]').value;
+        const perihal = document.querySelector('[name="perihal"]').value.trim();
+        const jenis = document.querySelector('[name="jenis"]').value;
+        const penerima = document.querySelector('[name="penerima"]').value.trim();
         
+        if (!nomorSurat) {
+            alert('Nomor surat harus diisi!');
+            return false;
+        }
+        
+        if (!tanggalSurat) {
+            alert('Tanggal surat harus diisi!');
+            return false;
+        }
+        
+        if (!perihal) {
+            alert('Perihal surat harus diisi!');
+            return false;
+        }
+        
+        if (!jenis) {
+            alert('Jenis surat harus dipilih!');
+            return false;
+        }
+        
+        if (!penerima) {
+            alert('Nama penerima harus diisi!');
+            return false;
+        }
+        
+        // Get form data
+        const form = this;
+        const formData = new FormData(form);
+        const id = formData.get('letter_id');
+        
+        // Convert FormData to JSON
+        const data = {};
+        formData.forEach((value, key) => {
+            data[key] = value;
+        });
+        
+        // Determine if this is a create or update request
+        const url = id ? 
+            `/api/beneficiaries/surat/${id}/update/` : 
+            '/api/beneficiaries/surat/create/';
+        
+        const method = id ? 'PUT' : 'POST';
+        
+        // Send request to API
         fetch(url, {
-            method: 'POST',
-            body: formData,
+            method: method,
             headers: {
+                'Content-Type': 'application/json',
                 'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-            }
+            },
+            body: JSON.stringify(data)
         })
-        .then(response => {
-            if (response.ok) {
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Close modal and reload page
+                closeModal('letterModal');
+                alert(data.message || 'Surat berhasil disimpan');
                 location.reload();
             } else {
-                return response.json().then(data => {
-                    throw new Error(data.message || 'Terjadi kesalahan');
-                });
+                alert('Gagal menyimpan surat: ' + data.message);
             }
         })
         .catch(error => {
             console.error('Error:', error);
-            alert(error.message || 'Terjadi kesalahan saat menyimpan surat');
+            alert('Terjadi kesalahan saat menyimpan surat');
         });
+        
+        return false;
     });
     
     // Auto-update preview when form fields change

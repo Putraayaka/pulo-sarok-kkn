@@ -247,7 +247,7 @@
             </div>
             
             <form id="koperasiForm" class="space-y-4">
-                <input type="hidden" id="koperasiId">
+                <input type="hidden" name="id" id="koperasiId">
                 {% csrf_token %}
                 
                 <!-- Basic Information -->
@@ -258,11 +258,11 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Nama Koperasi *</label>
-                            <input type="text" id="namaKoperasi" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500">
+                            <input type="text" name="nama" id="namaKoperasi" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Jenis Koperasi *</label>
-                            <select id="jenisKoperasi" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500">
+                            <select name="jenis_koperasi" id="jenisKoperasi" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500">
                                 <option value="">Pilih Jenis Koperasi</option>
                                 <option value="simpan_pinjam">Simpan Pinjam</option>
                                 <option value="konsumen">Konsumen</option>
@@ -277,17 +277,17 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Nomor Badan Hukum</label>
-                            <input type="text" id="nomorBadanHukum" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500">
+                            <input type="text" name="nomor_badan_hukum" id="nomorBadanHukum" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Tanggal Berdiri</label>
-                            <input type="date" id="tanggalBerdiri" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500">
+                            <input type="date" name="tanggal_berdiri" id="tanggalBerdiri" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500">
                         </div>
                     </div>
                     
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2 mt-4">Alamat *</label>
-                        <textarea id="alamat" required rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"></textarea>
+                        <textarea name="alamat" id="alamat" required rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"></textarea>
                     </div>
                 </div>
                 
@@ -299,15 +299,15 @@
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Nama Ketua *</label>
-                            <input type="text" id="namaKetua" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500">
+                            <input type="text" name="ketua" id="namaKetua" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Nama Sekretaris</label>
-                            <input type="text" id="namaSekretaris" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500">
+                            <input type="text" name="sekretaris" id="namaSekretaris" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Nama Bendahara</label>
-                            <input type="text" id="namaBendahara" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500">
+                            <input type="text" name="bendahara" id="namaBendahara" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500">
                         </div>
                     </div>
                 </div>
@@ -320,11 +320,11 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Nomor Telepon</label>
-                            <input type="tel" id="noTelepon" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500">
+                            <input type="tel" name="telepon" id="noTelepon" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
-                            <input type="email" id="email" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500">
+                            <input type="email" name="email" id="email" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500">
                         </div>
                     </div>
                 </div>
@@ -337,32 +337,51 @@
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Jumlah Anggota *</label>
-                            <input type="number" id="jumlahAnggota" required min="1" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500">
+                            <input type="number" name="jumlah_anggota" id="jumlahAnggota" required min="1" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Modal Awal</label>
-                            <input type="number" id="modalAwal" min="0" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500">
+                            <input type="number" name="modal_awal" id="modalAwal" min="0" step="1000" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Modal Sekarang</label>
-                            <input type="number" id="modalSekarang" min="0" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500">
+                            <input type="number" name="modal_sekarang" id="modalSekarang" min="0" step="1000" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500">
                         </div>
                     </div>
                     
                     <div class="mt-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Status *</label>
-                        <select id="status" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500">
-                            <option value="aktif">Aktif</option>
-                            <option value="tidak_aktif">Tidak Aktif</option>
-                        </select>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Jenis Usaha</label>
+                        <textarea name="jenis_usaha" id="jenisUsaha" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"></textarea>
                     </div>
                 </div>
                 
-                <div class="bg-purple-50 rounded-lg p-4">
+                <!-- Status & Additional Information -->
+                <div class="bg-purple-50 rounded-lg p-4 border-b pb-4">
                     <h4 class="text-md font-medium text-gray-900 mb-3 flex items-center">
-                        <i class="fas fa-file-alt mr-2 text-purple-600"></i>Deskripsi
+                        <i class="fas fa-cog mr-2 text-purple-600"></i>Status & Informasi Tambahan
                     </h4>
-                    <textarea id="deskripsi" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"></textarea>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                            <select name="status" id="status" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500">
+                                <option value="aktif">Aktif</option>
+                                <option value="tidak_aktif">Tidak Aktif</option>
+                                <option value="pending">Pending</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Aktif</label>
+                            <div class="flex items-center">
+                                <input type="checkbox" name="is_active" id="isActive" checked class="rounded border-gray-300 text-red-600 focus:ring-red-500">
+                                <label for="isActive" class="ml-2 text-sm text-gray-700">Ya</label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Keterangan</label>
+                        <textarea name="keterangan" id="deskripsi" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"></textarea>
+                    </div>
                 </div>
                 
                 <div class="flex justify-end space-x-3 pt-4">
@@ -387,8 +406,46 @@ const recordsPerPage = 10;
 
 // Load data on page load
 document.addEventListener('DOMContentLoaded', function() {
+    loadJenisKoperasiOptions();
     loadKoperasiData();
 });
+
+// Load jenis koperasi options
+async function loadJenisKoperasiOptions() {
+    try {
+        const response = await fetch('/pulosarok/business/api/jenis-koperasi/');
+        const data = await response.json();
+        
+        const jenisKoperasiSelect = document.getElementById('jenisKoperasi');
+        if (jenisKoperasiSelect && data.data) {
+            // Clear existing options except the first one
+            jenisKoperasiSelect.innerHTML = '<option value="">Pilih Jenis Koperasi</option>';
+            
+            // Add options from API
+            data.data.forEach(jenis => {
+                const option = document.createElement('option');
+                option.value = jenis.id;
+                option.textContent = jenis.nama;
+                jenisKoperasiSelect.appendChild(option);
+            });
+        }
+    } catch (error) {
+        console.error('Error loading jenis koperasi options:', error);
+        // Keep the hardcoded options as fallback
+    }
+}
+
+// Get CSRF token
+async function getCSRFToken() {
+    try {
+        const response = await fetch('/pulosarok/business/csrf-token/');
+        const data = await response.json();
+        return data.csrf_token;
+    } catch (error) {
+        console.error('Error getting CSRF token:', error);
+        return document.querySelector('[name=csrfmiddlewaretoken]')?.value || '';
+    }
+}
 
 // Load koperasi data from API
 async function loadKoperasiData(page = 1) {
@@ -396,30 +453,43 @@ async function loadKoperasiData(page = 1) {
         const searchTerm = document.getElementById('searchInput').value;
         const statusFilter = document.getElementById('statusFilter').value;
         
-        let url = `/pulosarok/business/api/koperasi/?page=${page}&page_size=${recordsPerPage}`;
+        const params = new URLSearchParams({
+            page: page,
+            page_size: recordsPerPage,
+            ordering: '-created_at'
+        });
         
         if (searchTerm) {
-            url += `&search=${encodeURIComponent(searchTerm)}`;
+            params.append('search', searchTerm);
         }
         
         if (statusFilter) {
-            url += `&status=${statusFilter}`;
+            params.append('status', statusFilter);
         }
         
-        const response = await fetch(url);
+        const response = await fetch(`/pulosarok/business/api/koperasi/?${params}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': await getCSRFToken()
+            }
+        });
+        
         const data = await response.json();
         
-        if (data.success) {
-            koperasiData = data.data;
-            currentPage = data.current_page;
-            totalRecords = data.total;
+        if (response.ok) {
+            koperasiData = data.results || [];
+            currentPage = page;
+            totalRecords = data.count || 0;
             renderTable();
             updatePagination();
         } else {
-            console.error('Error loading koperasi data:', data.message);
+            console.error('Error loading koperasi data:', data.error || 'Unknown error');
+            alert('Gagal memuat data koperasi: ' + (data.error || 'Unknown error'));
         }
     } catch (error) {
         console.error('Error fetching koperasi data:', error);
+        alert('Terjadi kesalahan saat memuat data koperasi.');
     }
 }
 
@@ -573,6 +643,84 @@ function closeDetailModal() {
     document.getElementById('detailModal').classList.add('hidden');
 }
 
+// Display koperasi data in table
+function displayKoperasiData(data) {
+    const tableBody = document.getElementById('koperasiTableBody');
+    const cardContainer = document.getElementById('koperasiCardContainer');
+    
+    if (!data || data.length === 0) {
+        tableBody.innerHTML = '<tr><td colspan="6" class="px-4 py-8 text-center text-gray-500">Tidak ada data koperasi</td></tr>';
+        cardContainer.innerHTML = '<div class="p-8 text-center text-gray-500">Tidak ada data koperasi</div>';
+        return;
+    }
+    
+    // Desktop table view
+    let tableHTML = '';
+    data.forEach((koperasi, index) => {
+        const rowNumber = (currentPage - 1) * recordsPerPage + index + 1;
+        tableHTML += `
+            <tr class="hover:bg-gray-50">
+                <td class="px-4 py-3 text-sm text-gray-900">${rowNumber}</td>
+                <td class="px-4 py-3 text-sm text-gray-900">${koperasi.nama || '-'}</td>
+                <td class="px-4 py-3 text-sm text-gray-900">${koperasi.ketua || '-'}</td>
+                <td class="px-4 py-3 text-sm text-gray-900">${koperasi.jumlah_anggota || 0}</td>
+                <td class="px-4 py-3 text-sm">
+                    <span class="px-2 py-1 text-xs font-semibold rounded-full ${
+                        koperasi.status === 'aktif' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                    }">
+                        ${koperasi.status === 'aktif' ? 'Aktif' : 'Tidak Aktif'}
+                    </span>
+                </td>
+                <td class="px-4 py-3 text-sm text-center">
+                    <button onclick="viewDetail(${koperasi.id})" class="text-blue-600 hover:text-blue-900 mr-2" title="Lihat Detail">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                    <button onclick="editKoperasi(${koperasi.id})" class="text-green-600 hover:text-green-900 mr-2" title="Edit">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button onclick="deleteKoperasi(${koperasi.id})" class="text-red-600 hover:text-red-900" title="Hapus">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            </tr>
+        `;
+    });
+    tableBody.innerHTML = tableHTML;
+    
+    // Mobile card view
+    let cardHTML = '';
+    data.forEach((koperasi) => {
+        cardHTML += `
+            <div class="border-b border-gray-200 p-4">
+                <div class="flex justify-between items-start mb-2">
+                    <h4 class="font-medium text-gray-900">${koperasi.nama || '-'}</h4>
+                    <span class="px-2 py-1 text-xs font-semibold rounded-full ${
+                        koperasi.status === 'aktif' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                    }">
+                        ${koperasi.status === 'aktif' ? 'Aktif' : 'Tidak Aktif'}
+                    </span>
+                </div>
+                <p class="text-sm text-gray-600 mb-2">Ketua: ${koperasi.ketua || '-'}</p>
+                <p class="text-sm text-gray-600 mb-2">Jenis: ${koperasi.jenis_koperasi || '-'}</p>
+                <p class="text-sm text-gray-600 mb-3">Anggota: ${koperasi.jumlah_anggota || 0} orang</p>
+                <p class="text-sm text-gray-600 mb-3">Modal Awal: Rp ${koperasi.modal_awal ? koperasi.modal_awal.toLocaleString('id-ID') : '0'}</p>
+                <div class="flex space-x-2">
+                    <button onclick="viewDetail(${koperasi.id})" class="text-blue-600 hover:text-blue-900">
+                        <i class="fas fa-eye"></i> Detail
+                    </button>
+                    <button onclick="editKoperasi(${koperasi.id})" class="text-green-600 hover:text-green-900">
+                        <i class="fas fa-edit"></i> Edit
+                    </button>
+                    <button onclick="deleteKoperasi(${koperasi.id})" class="text-red-600 hover:text-red-900">
+                        <i class="fas fa-trash"></i> Hapus
+                    </button>
+                </div>
+            </div>
+        `;
+    });
+    cardContainer.innerHTML = cardHTML;
+}
+
 // Edit koperasi
 function editKoperasi(id) {
     const koperasi = koperasiData.find(item => item.id === id);
@@ -631,7 +779,6 @@ async function confirmDelete() {
         const response = await fetch(`/pulosarok/business/api/koperasi/${deleteKoperasiId}/`, {
             method: 'DELETE',
             headers: {
-                'Content-Type': 'application/json',
                 'X-CSRFToken': csrfToken.value
             }
         });
@@ -689,14 +836,16 @@ document.getElementById('koperasiForm').addEventListener('submit', async functio
     
     try {
         let response;
+        const csrfToken = await getCSRFToken();
+        
         if (koperasiId) {
             // Update existing
             formData.id = koperasiId;
-            response = await fetch('/pulosarok/business/api/koperasi/', {
+            response = await fetch(`/pulosarok/business/api/koperasi/${koperasiId}/`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                    'X-CSRFToken': csrfToken
                 },
                 body: JSON.stringify(formData)
             });
@@ -706,7 +855,7 @@ document.getElementById('koperasiForm').addEventListener('submit', async functio
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                    'X-CSRFToken': csrfToken
                 },
                 body: JSON.stringify(formData)
             });
@@ -714,12 +863,12 @@ document.getElementById('koperasiForm').addEventListener('submit', async functio
         
         const data = await response.json();
         
-        if (data.success) {
+        if (response.ok && data.success) {
             alert(koperasiId ? 'Data koperasi berhasil diperbarui!' : 'Data koperasi berhasil ditambahkan!');
             loadKoperasiData(currentPage);
             closeModal();
         } else {
-            alert('Error: ' + data.message);
+            alert('Error: ' + (data.message || data.error || 'Unknown error'));
         }
     } catch (error) {
         console.error('Error saving koperasi:', error);
@@ -765,12 +914,44 @@ function exportData() {
 
 // Update pagination
 function updatePagination() {
-    const start = (currentPage - 1) * recordsPerPage + 1;
+    const start = totalRecords > 0 ? (currentPage - 1) * recordsPerPage + 1 : 0;
     const end = Math.min(currentPage * recordsPerPage, totalRecords);
     
     document.getElementById('showingStart').textContent = start;
     document.getElementById('showingEnd').textContent = end;
     document.getElementById('totalRecords').textContent = totalRecords;
+    
+    generatePaginationButtons();
+}
+
+// Generate pagination buttons
+function generatePaginationButtons() {
+    const paginationContainer = document.getElementById('pagination');
+    if (!paginationContainer) return;
+    
+    const totalPages = Math.ceil(totalRecords / recordsPerPage);
+    let paginationHTML = '';
+    
+    // Previous button
+    if (currentPage > 1) {
+        paginationHTML += `<button onclick="loadKoperasiData(${currentPage - 1})" class="px-3 py-2 text-sm bg-white border border-gray-300 rounded-md hover:bg-gray-50">Previous</button>`;
+    }
+    
+    // Page numbers
+    const startPage = Math.max(1, currentPage - 2);
+    const endPage = Math.min(totalPages, currentPage + 2);
+    
+    for (let i = startPage; i <= endPage; i++) {
+        const isActive = i === currentPage;
+        paginationHTML += `<button onclick="loadKoperasiData(${i})" class="px-3 py-2 text-sm ${isActive ? 'bg-red-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-50'} border border-gray-300 rounded-md">${i}</button>`;
+    }
+    
+    // Next button
+    if (currentPage < totalPages) {
+        paginationHTML += `<button onclick="loadKoperasiData(${currentPage + 1})" class="px-3 py-2 text-sm bg-white border border-gray-300 rounded-md hover:bg-gray-50">Next</button>`;
+    }
+    
+    paginationContainer.innerHTML = paginationHTML;
 }
 </script>
 {% endblock %}

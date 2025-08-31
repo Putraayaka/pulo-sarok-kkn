@@ -145,26 +145,20 @@
             </table>
         </div>
         
-        <!-- Pagination -->
-        <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
-            <div class="flex-1 flex justify-between sm:hidden">
-                <button id="prev-mobile" class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
-                    Previous
-                </button>
-                <button id="next-mobile" class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
-                    Next
-                </button>
+        <!-- Standardized Pagination -->
+        <div class="pagination-container">
+            <div class="pagination-info">
+                <span id="pagination-info">Menampilkan 0 dari 0 data</span>
             </div>
-            <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-                <div>
-                    <p class="text-sm text-gray-700">
-                        Showing <span id="showing-start">0</span> to <span id="showing-end">0</span> of <span id="total-items">0</span> results
-                    </p>
-                </div>
-                <div>
-                    <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" id="pagination-nav">
-                        <!-- Pagination buttons will be generated here -->
-                    </nav>
+            <div class="pagination-controls">
+                <div class="pagination-nav">
+                    <button id="prev-btn" onclick="previousPage()" class="pagination-btn" disabled>
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <div id="page-numbers" class="pagination flex space-x-1"></div>
+                    <button id="next-btn" onclick="nextPage()" class="pagination-btn" disabled>
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
                 </div>
             </div>
         </div>
@@ -183,6 +177,7 @@
             </div>
             
             <form id="balita-form" class="space-y-4">
+                {% csrf_token %}
                 <input type="hidden" id="balita-id">
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -336,15 +331,27 @@ function loadBalitaData(page = 1) {
     });
     
     fetch(`/pulosarok/posyandu/api/balita/?${params}`)
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
         .then(data => {
-            updateTable(data.results);
-            updatePagination(data.pagination);
+            if (data.error) {
+                throw new Error(data.error);
+            }
+            updateTable(data.results || []);
+            const pagination = data.pagination || {};
+            currentPage = pagination.current_page || page;
+            totalPages = pagination.total_pages || 1;
+            updatePagination(pagination);
             updateStats();
         })
         .catch(error => {
             console.error('Error loading balita data:', error);
-            showNotification('Error loading data', 'error');
+            document.getElementById('balita-table-body').innerHTML = '<tr><td colspan="7" class="px-6 py-4 text-center text-red-500">Error loading data: ' + error.message + '</td></tr>';
+            showNotification('Error loading data: ' + error.message, 'error');
         });
 }
 
@@ -412,30 +419,50 @@ function getStatusText(status) {
 }
 
 function updatePagination(pagination) {
-    document.getElementById('showing-start').textContent = ((pagination.current_page - 1) * 10) + 1;
-    document.getElementById('showing-end').textContent = Math.min(pagination.current_page * 10, pagination.total_items);
-    document.getElementById('total-items').textContent = pagination.total_items;
+    // Update pagination info
+    const start = ((pagination.current_page - 1) * 10) + 1;
+    const end = Math.min(pagination.current_page * 10, pagination.total_items);
+    document.getElementById('pagination-info').textContent = `Menampilkan ${start}-${end} dari ${pagination.total_items} data`;
     
-    // Generate pagination buttons
-    const nav = document.getElementById('pagination-nav');
-    nav.innerHTML = '';
+    // Update navigation buttons
+    const prevBtn = document.getElementById('prev-btn');
+    const nextBtn = document.getElementById('next-btn');
     
-    // Previous button
-    if (pagination.has_previous) {
-        nav.innerHTML += `<button onclick="loadBalitaData(${pagination.current_page - 1})" class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">Previous</button>`;
+    prevBtn.disabled = !pagination.has_previous;
+    nextBtn.disabled = !pagination.has_next;
+    
+    // Generate page numbers
+    const pageNumbers = document.getElementById('page-numbers');
+    pageNumbers.innerHTML = '';
+    
+    // Calculate page range
+    const startPage = Math.max(1, pagination.current_page - 2);
+    const endPage = Math.min(pagination.total_pages, pagination.current_page + 2);
+    
+    for (let i = startPage; i <= endPage; i++) {
+        const pageBtn = document.createElement('button');
+        pageBtn.className = `pagination-btn ${
+            i === pagination.current_page ? 'active' : ''
+        }`;
+        pageBtn.textContent = i;
+        pageBtn.onclick = () => loadBalitaData(i);
+        pageNumbers.appendChild(pageBtn);
     }
-    
-    // Page numbers
-    for (let i = Math.max(1, pagination.current_page - 2); i <= Math.min(pagination.total_pages, pagination.current_page + 2); i++) {
-        const isActive = i === pagination.current_page;
-        nav.innerHTML += `<button onclick="loadBalitaData(${i})" class="relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
-            isActive ? 'z-10 bg-blue-50 border-blue-500 text-blue-600' : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
-        }">${i}</button>`;
+}
+
+// Add navigation functions
+let currentPage = 1;
+let totalPages = 1;
+
+function previousPage() {
+    if (currentPage > 1) {
+        loadBalitaData(currentPage - 1);
     }
-    
-    // Next button
-    if (pagination.has_next) {
-        nav.innerHTML += `<button onclick="loadBalitaData(${pagination.current_page + 1})" class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">Next</button>`;
+}
+
+function nextPage() {
+    if (currentPage < totalPages) {
+        loadBalitaData(currentPage + 1);
     }
 }
 
@@ -443,20 +470,44 @@ function updateStats() {
     // This would typically fetch stats from an API endpoint
     // For now, we'll update based on current table data
     fetch('/pulosarok/posyandu/api/balita/stats/')
-        .then(response => response.json())
-        .then(data => {
-            document.getElementById('total-balita').textContent = data.total || 0;
-            document.getElementById('gizi-normal').textContent = data.normal || 0;
-            document.getElementById('gizi-kurang').textContent = data.kurang || 0;
-            document.getElementById('stunting-count').textContent = data.stunting || 0;
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
         })
-        .catch(error => console.error('Error loading stats:', error));
+        .then(data => {
+            if (data.error) {
+                throw new Error(data.error);
+            }
+            const stats = data.data || data;
+            document.getElementById('total-balita').textContent = stats.total || 0;
+            document.getElementById('gizi-normal').textContent = stats.normal || 0;
+            document.getElementById('gizi-kurang').textContent = stats.kurang || 0;
+            document.getElementById('stunting-count').textContent = stats.stunting || 0;
+        })
+        .catch(error => {
+            console.error('Error loading stats:', error);
+            // Set default values on error
+            document.getElementById('total-balita').textContent = 0;
+            document.getElementById('gizi-normal').textContent = 0;
+            document.getElementById('gizi-kurang').textContent = 0;
+            document.getElementById('stunting-count').textContent = 0;
+        });
 }
 
 function loadPosyanduOptions() {
-    fetch('/pulosarok/posyandu/api/locations-dropdown/')
-        .then(response => response.json())
+    fetch('/pulosarok/posyandu/api/posyandu/list/')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
         .then(data => {
+            if (data.error) {
+                throw new Error(data.error);
+            }
             const selects = ['posyandu-filter', 'posyandu-select'];
             selects.forEach(selectId => {
                 const select = document.getElementById(selectId);
@@ -465,35 +516,55 @@ function loadPosyanduOptions() {
                 select.innerHTML = '';
                 select.appendChild(firstOption);
                 
-                data.results.forEach(posyandu => {
-                    const option = document.createElement('option');
-                    option.value = posyandu.id;
-                    option.textContent = posyandu.name;
-                    select.appendChild(option);
-                });
+                const posyandus = data.results || data.data || data;
+                if (posyandus && Array.isArray(posyandus)) {
+                    posyandus.forEach(posyandu => {
+                        const option = document.createElement('option');
+                        option.value = posyandu.id;
+                        option.textContent = posyandu.name;
+                        select.appendChild(option);
+                    });
+                }
             });
         })
-        .catch(error => console.error('Error loading posyandu options:', error));
+        .catch(error => {
+            console.error('Error loading posyandu options:', error);
+            showNotification('Error loading posyandu options: ' + error.message, 'error');
+        });
 }
 
 function loadPendudukOptions() {
     // Load children (balita) from residents API
-    fetch('/pulosarok/posyandu/api/residents/?age_max=5')
-        .then(response => response.json())
+    fetch('/pulosarok/posyandu/api/residents/list/?age_max=5')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
         .then(data => {
+            if (data.error) {
+                throw new Error(data.error);
+            }
             const select = document.getElementById('penduduk-select');
             const firstOption = select.querySelector('option');
             select.innerHTML = '';
             select.appendChild(firstOption);
             
-            data.results.forEach(penduduk => {
-                const option = document.createElement('option');
-                option.value = penduduk.id;
-                option.textContent = `${penduduk.name} (${penduduk.nik})`;
-                select.appendChild(option);
-            });
+            const penduduks = data.results || data.data || data;
+            if (penduduks && Array.isArray(penduduks)) {
+                penduduks.forEach(penduduk => {
+                    const option = document.createElement('option');
+                    option.value = penduduk.id;
+                    option.textContent = `${penduduk.name} (${penduduk.nik})`;
+                    select.appendChild(option);
+                });
+            }
         })
-        .catch(error => console.error('Error loading penduduk options:', error));
+        .catch(error => {
+            console.error('Error loading resident options:', error);
+            showNotification('Error loading resident options: ' + error.message, 'error');
+        });
 }
 
 function openAddModal() {
@@ -509,29 +580,35 @@ function editBalita(id) {
     
     // Fetch balita data
     fetch(`/pulosarok/posyandu/api/balita/${id}/`)
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                const balita = data.data;
-                document.getElementById('penduduk-select').value = balita.patient_id;
-                document.getElementById('posyandu-select').value = balita.posyandu_id;
-                document.getElementById('measurement-date').value = balita.measurement_date;
-                document.getElementById('age-months').value = balita.age_months;
-                document.getElementById('weight').value = balita.weight;
-                document.getElementById('height').value = balita.height;
-                document.getElementById('head-circumference').value = balita.head_circumference || '';
-                document.getElementById('arm-circumference').value = balita.arm_circumference || '';
-                document.getElementById('nutrition-status').value = balita.nutrition_status;
-                document.getElementById('vitamin-a').checked = balita.vitamin_a_given;
-                document.getElementById('iron-supplement').checked = balita.iron_supplement_given;
-                document.getElementById('notes').value = balita.notes || '';
-                
-                document.getElementById('balita-modal').classList.remove('hidden');
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
             }
+            return response.json();
+        })
+        .then(data => {
+            if (data.error) {
+                throw new Error(data.error);
+            }
+            const balita = data.data || data;
+            document.getElementById('penduduk-select').value = balita.patient_id;
+            document.getElementById('posyandu-select').value = balita.posyandu_id;
+            document.getElementById('measurement-date').value = balita.measurement_date;
+            document.getElementById('age-months').value = balita.age_months;
+            document.getElementById('weight').value = balita.weight;
+            document.getElementById('height').value = balita.height;
+            document.getElementById('head-circumference').value = balita.head_circumference || '';
+            document.getElementById('arm-circumference').value = balita.arm_circumference || '';
+            document.getElementById('nutrition-status').value = balita.nutrition_status;
+            document.getElementById('vitamin-a').checked = balita.vitamin_a_given;
+            document.getElementById('iron-supplement').checked = balita.iron_supplement_given;
+            document.getElementById('notes').value = balita.notes || '';
+            
+            document.getElementById('balita-modal').classList.remove('hidden');
         })
         .catch(error => {
             console.error('Error loading balita data:', error);
-            showNotification('Error loading data', 'error');
+            showNotification('Error loading data: ' + error.message, 'error');
         });
 }
 
@@ -543,25 +620,30 @@ function deleteBalita(id) {
 function confirmDelete() {
     if (!deleteId) return;
     
+    const formData = new FormData();
+    formData.append('csrfmiddlewaretoken', getCookie('csrftoken'));
+    
     fetch(`/pulosarok/posyandu/api/balita/${deleteId}/delete/`, {
-        method: 'DELETE',
-        headers: {
-            'X-CSRFToken': getCookie('csrftoken')
-        }
+        method: 'POST',
+        body: formData
     })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            showNotification(data.message, 'success');
-            loadBalitaData(currentPage);
-        } else {
-            showNotification(data.message, 'error');
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
         }
+        return response.json();
+    })
+    .then(data => {
+        if (data.error) {
+            throw new Error(data.error);
+        }
+        showNotification('Data berhasil dihapus', 'success');
         closeDeleteModal();
+        loadBalitaData(currentPage);
     })
     .catch(error => {
         console.error('Error deleting balita:', error);
-        showNotification('Error deleting data', 'error');
+        showNotification('Gagal menghapus data: ' + error.message, 'error');
         closeDeleteModal();
     });
 }
@@ -569,46 +651,50 @@ function confirmDelete() {
 function handleFormSubmit(e) {
     e.preventDefault();
     
-    const formData = {
-        patient_id: document.getElementById('penduduk-select').value,
-        posyandu_id: document.getElementById('posyandu-select').value,
-        measurement_date: document.getElementById('measurement-date').value,
-        age_months: document.getElementById('age-months').value,
-        weight: document.getElementById('weight').value,
-        height: document.getElementById('height').value,
-        head_circumference: document.getElementById('head-circumference').value,
-        arm_circumference: document.getElementById('arm-circumference').value,
-        nutrition_status: document.getElementById('nutrition-status').value,
-        vitamin_a_given: document.getElementById('vitamin-a').checked,
-        iron_supplement_given: document.getElementById('iron-supplement').checked,
-        notes: document.getElementById('notes').value
-    };
-    
+    const formData = new FormData();
     const balitaId = document.getElementById('balita-id').value;
+    
+    // Add CSRF token
+    formData.append('csrfmiddlewaretoken', getCookie('csrftoken'));
+    
+    // Collect form data
+    formData.append('patient_id', document.getElementById('penduduk-select').value);
+    formData.append('posyandu_id', document.getElementById('posyandu-select').value);
+    formData.append('measurement_date', document.getElementById('measurement-date').value);
+    formData.append('age_months', document.getElementById('age-months').value);
+    formData.append('weight', document.getElementById('weight').value);
+    formData.append('height', document.getElementById('height').value);
+    formData.append('head_circumference', document.getElementById('head-circumference').value);
+    formData.append('arm_circumference', document.getElementById('arm-circumference').value);
+    formData.append('nutrition_status', document.getElementById('nutrition-status').value);
+    formData.append('vitamin_a_given', document.getElementById('vitamin-a').checked);
+    formData.append('iron_supplement_given', document.getElementById('iron-supplement').checked);
+    formData.append('notes', document.getElementById('notes').value);
+    
     const url = balitaId ? `/pulosarok/posyandu/api/balita/${balitaId}/update/` : '/pulosarok/posyandu/api/balita/create/';
     const method = balitaId ? 'PUT' : 'POST';
     
     fetch(url, {
         method: method,
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': getCookie('csrftoken')
-        },
-        body: JSON.stringify(formData)
+        body: formData
     })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            showNotification(data.message, 'success');
-            closeModal();
-            loadBalitaData(currentPage);
-        } else {
-            showNotification(data.message, 'error');
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
         }
+        return response.json();
+    })
+    .then(data => {
+        if (data.error) {
+            throw new Error(data.error);
+        }
+        showNotification(balitaId ? 'Data berhasil diperbarui' : 'Data berhasil ditambahkan', 'success');
+        closeModal();
+        loadBalitaData(currentPage);
     })
     .catch(error => {
         console.error('Error saving balita data:', error);
-        showNotification('Error saving data', 'error');
+        showNotification('Terjadi kesalahan: ' + error.message, 'error');
     });
 }
 

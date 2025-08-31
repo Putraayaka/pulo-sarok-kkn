@@ -1,12 +1,13 @@
 from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse, HttpResponse
-from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.http import require_http_methods
 from django.core.paginator import Paginator
-from django.db.models import Q, Count, Sum
+from django.db.models import Q, Count, Sum, Avg
 from django.utils.dateparse import parse_date
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.middleware.csrf import get_token
 import json
 from datetime import datetime, date
 from decimal import Decimal
@@ -17,6 +18,12 @@ from openpyxl.utils import get_column_letter
 from .models import (BusinessCategory, Business, BusinessOwner, BusinessProduct, 
                     BusinessFinance, Koperasi, BUMG, UKM, Aset, LayananJasa, JenisKoperasi)
 from references.models import Penduduk
+
+
+@login_required
+def get_csrf_token(request):
+    """Get CSRF token for AJAX requests"""
+    return JsonResponse({'csrf_token': get_token(request)})
 
 
 @login_required
@@ -81,7 +88,7 @@ def jasa_view(request):
 
 # CRUD Operations for Koperasi
 @login_required
-@csrf_exempt
+@csrf_protect
 def koperasi_api(request):
     if request.method == 'GET':
         koperasi_list = Koperasi.objects.all().order_by('-created_at')
@@ -137,6 +144,15 @@ def koperasi_api(request):
     elif request.method == 'POST':
         try:
             data = json.loads(request.body)
+            
+            # Handle jenis_koperasi
+            jenis_koperasi = None
+            if data.get('jenis_koperasi'):
+                try:
+                    jenis_koperasi = JenisKoperasi.objects.get(id=data['jenis_koperasi'])
+                except JenisKoperasi.DoesNotExist:
+                    pass
+            
             koperasi = Koperasi.objects.create(
                 nama=data['nama'],
                 nomor_badan_hukum=data['nomor_badan_hukum'],
@@ -148,6 +164,7 @@ def koperasi_api(request):
                 jumlah_anggota=data.get('jumlah_anggota', 0),
                 modal_awal=Decimal(str(data.get('modal_awal', 0))),
                 modal_sekarang=Decimal(str(data.get('modal_sekarang', 0))),
+                jenis_koperasi=jenis_koperasi,
                 jenis_usaha=data['jenis_usaha'],
                 telepon=data.get('telepon', ''),
                 email=data.get('email', ''),
@@ -164,6 +181,14 @@ def koperasi_api(request):
             koperasi_id = data.get('id')
             koperasi = get_object_or_404(Koperasi, id=koperasi_id)
             
+            # Handle jenis_koperasi
+            jenis_koperasi = None
+            if data.get('jenis_koperasi'):
+                try:
+                    jenis_koperasi = JenisKoperasi.objects.get(id=data['jenis_koperasi'])
+                except JenisKoperasi.DoesNotExist:
+                    pass
+            
             koperasi.nama = data['nama']
             koperasi.nomor_badan_hukum = data['nomor_badan_hukum']
             koperasi.tanggal_berdiri = parse_date(data['tanggal_berdiri'])
@@ -174,6 +199,7 @@ def koperasi_api(request):
             koperasi.jumlah_anggota = data.get('jumlah_anggota', 0)
             koperasi.modal_awal = Decimal(str(data.get('modal_awal', 0)))
             koperasi.modal_sekarang = Decimal(str(data.get('modal_sekarang', 0)))
+            koperasi.jenis_koperasi = jenis_koperasi
             koperasi.jenis_usaha = data['jenis_usaha']
             koperasi.telepon = data.get('telepon', '')
             koperasi.email = data.get('email', '')
@@ -198,7 +224,7 @@ def koperasi_api(request):
 
 # CRUD Operations for BUMG
 @login_required
-@csrf_exempt
+@csrf_protect
 def bumg_api(request):
     if request.method == 'GET':
         bumg_list = BUMG.objects.all().order_by('-created_at')
@@ -311,7 +337,7 @@ def bumg_api(request):
 
 # CRUD Operations for UKM
 @login_required
-@csrf_exempt
+@csrf_protect
 def ukm_api(request):
     if request.method == 'GET':
         ukm_list = UKM.objects.all().order_by('-created_at')
@@ -442,7 +468,7 @@ def ukm_api(request):
 
 # CRUD Operations for Aset
 @login_required
-@csrf_exempt
+@csrf_protect
 def aset_api(request):
     if request.method == 'GET':
         aset_list = Aset.objects.all().order_by('-created_at')
@@ -561,7 +587,7 @@ def aset_api(request):
 
 # CRUD Operations for LayananJasa
 @login_required
-@csrf_exempt
+@csrf_protect
 def jasa_api(request):
     if request.method == 'GET':
         jasa_list = LayananJasa.objects.all().order_by('-created_at')
@@ -768,7 +794,7 @@ def business_category_list(request):
     })
 
 
-@csrf_exempt
+@csrf_protect
 @require_http_methods(["POST"])
 @login_required
 def business_category_create(request):
@@ -815,7 +841,7 @@ def business_category_detail(request, category_id):
     })
 
 
-@csrf_exempt
+@csrf_protect
 @require_http_methods(["PUT"])
 @login_required
 def business_category_update(request, category_id):
@@ -840,7 +866,7 @@ def business_category_update(request, category_id):
         }, status=400)
 
 
-@csrf_exempt
+@csrf_protect
 @require_http_methods(["DELETE"])
 @login_required
 def business_category_delete(request, category_id):
@@ -932,7 +958,7 @@ def businesses_list(request):
     })
 
 
-@csrf_exempt
+@csrf_protect
 @require_http_methods(["POST"])
 @login_required
 def business_create(request):
@@ -1021,7 +1047,7 @@ def business_detail(request, business_id):
     })
 
 
-@csrf_exempt
+@csrf_protect
 @require_http_methods(["PUT"])
 @login_required
 def business_update(request, business_id):
@@ -1058,7 +1084,7 @@ def business_update(request, business_id):
         }, status=400)
 
 
-@csrf_exempt
+@csrf_protect
 @require_http_methods(["DELETE"])
 @login_required
 def business_delete(request, business_id):
@@ -1632,13 +1658,110 @@ def public_business_statistics(request):
     return JsonResponse({'error': 'Method not allowed'}, status=405)
 
 
+# Statistics API for each module
+def koperasi_statistics_api(request):
+    """Get detailed Koperasi statistics"""
+    if request.method == 'GET':
+        total = Koperasi.objects.count()
+        active = Koperasi.objects.filter(status='aktif').count()
+        total_members = Koperasi.objects.aggregate(Sum('jumlah_anggota'))['jumlah_anggota__sum'] or 0
+        total_assets = Koperasi.objects.aggregate(Sum('total_aset'))['total_aset__sum'] or 0
+        
+        return JsonResponse({
+            'total_koperasi': total,
+            'koperasi_aktif': active,
+            'total_anggota': total_members,
+            'total_aset': float(total_assets)
+        })
+    return JsonResponse({'error': 'Method not allowed'}, status=405)
+
+def bumg_statistics_api(request):
+    """Get detailed BUMG statistics"""
+    if request.method == 'GET':
+        total = BUMG.objects.count()
+        active = BUMG.objects.filter(status='aktif').count()
+        total_employees = BUMG.objects.aggregate(Sum('jumlah_karyawan'))['jumlah_karyawan__sum'] or 0
+        total_assets = BUMG.objects.aggregate(Sum('total_aset'))['total_aset__sum'] or 0
+        
+        return JsonResponse({
+            'total_bumg': total,
+            'bumg_aktif': active,
+            'total_karyawan': total_employees,
+            'total_aset': float(total_assets)
+        })
+    return JsonResponse({'error': 'Method not allowed'}, status=405)
+
+def ukm_statistics_api(request):
+    """Get detailed UKM statistics"""
+    if request.method == 'GET':
+        total = UKM.objects.count()
+        active = UKM.objects.filter(status='aktif').count()
+        total_workers = UKM.objects.aggregate(Sum('jumlah_pekerja'))['jumlah_pekerja__sum'] or 0
+        total_turnover = UKM.objects.aggregate(Sum('omzet_bulanan'))['omzet_bulanan__sum'] or 0
+        
+        return JsonResponse({
+            'total_ukm': total,
+            'ukm_aktif': active,
+            'total_pekerja': total_workers,
+            'omzet_bulanan': float(total_turnover)
+        })
+    return JsonResponse({'error': 'Method not allowed'}, status=405)
+
+def aset_statistics_api(request):
+    """Get detailed Aset statistics"""
+    if request.method == 'GET':
+        total = Aset.objects.count()
+        good_condition = Aset.objects.filter(kondisi='baik').count()
+        needs_repair = Aset.objects.filter(kondisi='perlu_perbaikan').count()
+        total_value = Aset.objects.aggregate(Sum('nilai_perolehan'))['nilai_perolehan__sum'] or 0
+        
+        return JsonResponse({
+            'total_aset': total,
+            'aset_baik': good_condition,
+            'perlu_perbaikan': needs_repair,
+            'total_nilai': float(total_value)
+        })
+    return JsonResponse({'error': 'Method not allowed'}, status=405)
+
+def layanan_statistics_api(request):
+    """Get detailed Layanan Jasa statistics"""
+    if request.method == 'GET':
+        total = LayananJasa.objects.count()
+        active = LayananJasa.objects.filter(status='aktif').count()
+        providers = LayananJasa.objects.values('penyedia_jasa').distinct().count()
+        avg_tariff = LayananJasa.objects.aggregate(avg_tariff=Avg('tarif'))['avg_tariff'] or 0
+        
+        return JsonResponse({
+            'total_layanan': total,
+            'layanan_aktif': active,
+            'penyedia_jasa': providers,
+            'rata_rata_tarif': float(avg_tariff)
+        })
+    return JsonResponse({'error': 'Method not allowed'}, status=405)
+
+def kategori_statistics_api(request):
+    """Get detailed Kategori statistics"""
+    if request.method == 'GET':
+        total = BusinessCategory.objects.count()
+        active = BusinessCategory.objects.filter(is_active=True).count()
+        parent_categories = BusinessCategory.objects.filter(parent__isnull=True).count()
+        sub_categories = BusinessCategory.objects.filter(parent__isnull=False).count()
+        
+        return JsonResponse({
+            'total_kategori': total,
+            'kategori_aktif': active,
+            'kategori_induk': parent_categories,
+            'sub_kategori': sub_categories
+        })
+    return JsonResponse({'error': 'Method not allowed'}, status=405)
+
 # CRUD Operations for Business Categories
 @login_required
-@csrf_exempt
+@csrf_protect
 def category_api(request):
     """API endpoint for business category CRUD operations"""
     if request.method == 'GET':
-        categories = BusinessCategory.objects.filter(is_active=True).order_by('name')
+        categories = BusinessCategory.objects.all().order_by('name')
         
         # Search functionality
         search = request.GET.get('search', '')
@@ -1736,7 +1859,7 @@ def category_list_api(request):
 
 # CRUD Operations for Jenis Koperasi
 @login_required
-@csrf_exempt
+@csrf_protect
 def jenis_koperasi_api(request):
     """API endpoint for Jenis Koperasi CRUD operations"""
     if request.method == 'GET':

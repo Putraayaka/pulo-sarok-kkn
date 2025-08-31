@@ -12,10 +12,10 @@ urlpatterns = [
     path('', views.admin_dashboard, name='dashboard'),
     
     # API endpoints
-    path('api/dashboard-stats/', views.dashboard_stats_api, name='dashboard_stats_api'),
-    path('api/recent-activities/', views.recent_activities_api, name='recent_activities_api'),
-    path('api/system-info/', views.system_info_api, name='system_info_api'),
-    path('api/search/', views.search_global, name='search_global'),
+    path('dashboard-stats/', views.dashboard_stats_api, name='dashboard_stats_api'),
+    path('recent-activities/', views.recent_activities_api, name='recent_activities_api'),
+    path('system-info/', views.system_info_api, name='system_info_api'),
+    path('search/', views.search_global, name='search_global'),
     
     # Module views
     path('module/<str:module_name>/', views.module_view, name='module_view'),
@@ -24,15 +24,16 @@ urlpatterns = [
     path('profile/', views.admin_profile, name='profile'),
     path('settings/', views.admin_settings, name='settings'),
     
-    # Include API URLs from each app
-    path('api/core/', include('core.urls')),
-    path('api/references/', include('references.urls')),
-    path('api/village_profile/', include('village_profile.urls')),
-    path('api/posyandu/', include('posyandu.urls')),
-    path('api/organization/', include('organization.urls')),
-    path('api/news/', include('news.urls')),
-    path('api/letters/', include('letters.urls')),
-    path('api/documents/', include('documents.urls')),
-    path('api/business/', include('business.urls')),
-    path('api/beneficiaries/', include('beneficiaries.urls')),
+    # Include API URLs from each app (references sudah di-include di main urls.py)
+    path('core/', include('core.urls')),
+    # path('references/', include('references.urls')),  # Commented out to avoid conflict
+    path('village_profile/', include('village_profile.urls')),
+    path('posyandu/', include('posyandu.urls')),
+    # path('organization/', include('organization.urls')),  # Commented out to avoid double routing
+    path('news/', include('news.urls')),
+    path('letters/', include('letters.urls')),
+    path('documents/', include('documents.urls')),
+    path('business/', include('business.urls')),
+    path('beneficiaries/', include('beneficiaries.urls')),
+    path('organization/', include('organization.urls')),
 ]

@@ -25,6 +25,16 @@ from core import views as core_views
 
 # Tambahkan di awal urlpatterns
 urlpatterns = [
+    # Django admin interface
+    path('admin/', admin.site.urls),
+    
+    # Public pages and API (root level)
+    path('', include('public.urls')),
+    
+    # Additional API endpoints (no authentication required)
+    path('api/references/', include('references.urls')),
+    
+    # Custom admin interface
     # Frontend public pages
     path('', core_views.index_view, name='home'),
     path('profil/', core_views.profil_view, name='profil'),
@@ -46,8 +56,9 @@ urlpatterns = [
     path('pulosarok/organization/', include('organization.urls')),
     path('pulosarok/business/', include('business.urls')),
     path('pulosarok/posyandu/', include('posyandu.urls')),
-    path('pulosarok/events/', include('events.urls')),
+    
     path('pulosarok/beneficiaries/', include('beneficiaries.urls')),
+    path('pulosarok/api/beneficiaries/', include('beneficiaries.api_urls')),
     path('pulosarok/documents/', include('documents.urls')),
     path('pulosarok/news/', include('news.urls')),
     path('pulosarok/letters/', include('letters.urls')),
@@ -58,5 +69,10 @@ urlpatterns = [
 
 # Serve media files during development
 if settings.DEBUG:
+    import debug_toolbar
+    urlpatterns = [
+        path('__debug__/', include(debug_toolbar.urls)),
+    ] + urlpatterns
+    
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATICFILES_DIRS[0] if settings.STATICFILES_DIRS else None)

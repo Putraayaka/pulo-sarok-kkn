@@ -94,39 +94,31 @@ class TourismLocationAdmin(admin.ModelAdmin):
 @admin.register(TourismGallery)
 class TourismGalleryAdmin(admin.ModelAdmin):
     list_display = [
-        'title', 'tourism_location', 'media_type', 'media_preview', 
-        'is_featured', 'is_active', 'order', 'created_at'
+        'title', 'package', 'media_preview', 
+        'is_active', 'order', 'created_at'
     ]
-    list_filter = ['media_type', 'is_featured', 'is_active', 'created_at']
-    search_fields = ['title', 'description', 'tourism_location__title']
-    list_editable = ['is_featured', 'is_active', 'order']
+    list_filter = ['package', 'is_active', 'created_at']
+    search_fields = ['title', 'description', 'package__title']
+    list_editable = ['is_active', 'order']
     ordering = ['order', '-created_at']
     
     fieldsets = (
         ('Informasi Media', {
-            'fields': ('tourism_location', 'media_type', 'title', 'description')
+            'fields': ('package', 'title', 'description')
         }),
         ('File Media', {
-            'fields': ('image', 'video_url', 'video_file')
+            'fields': ('image',)
         }),
         ('Metadata', {
-            'fields': ('alt_text', 'caption', 'is_featured', 'is_active', 'order')
+            'fields': ('is_active', 'order')
         }),
     )
     
     def media_preview(self, obj):
-        if obj.media_type == 'image' and obj.image:
+        if obj.image:
             return format_html(
                 '<img src="{}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px;" />',
                 obj.image.url
-            )
-        elif obj.media_type == 'video':
-            return format_html(
-                '<span style="color: #ef4444;"><i class="fas fa-video"></i> Video</span>'
-            )
-        elif obj.media_type == '360':
-            return format_html(
-                '<span style="color: #8b5cf6;"><i class="fas fa-cube"></i> 360°</span>'
             )
         return '-'
     media_preview.short_description = 'Preview Media'
