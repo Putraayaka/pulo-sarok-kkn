@@ -568,8 +568,13 @@ function updateStats() {
 }
 
 function loadPosyanduOptions() {
-    fetch('/pulosarok/posyandu/api/locations-dropdown/')
-        .then(response => response.json())
+    fetch('/pulosarok/posyandu/api/posyandu/list/')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
         .then(data => {
             const selects = ['posyandu-filter', 'posyandu-select'];
             selects.forEach(selectId => {
@@ -578,34 +583,51 @@ function loadPosyanduOptions() {
                 select.innerHTML = '';
                 select.appendChild(firstOption);
                 
-                data.forEach(posyandu => {
-                    const option = document.createElement('option');
-                    option.value = posyandu.id;
-                    option.textContent = posyandu.name;
-                    select.appendChild(option);
-                });
+                const posyandus = data.results || data;
+                if (Array.isArray(posyandus)) {
+                    posyandus.forEach(posyandu => {
+                        const option = document.createElement('option');
+                        option.value = posyandu.id;
+                        option.textContent = posyandu.name;
+                        select.appendChild(option);
+                    });
+                }
             });
         })
-        .catch(error => console.error('Error loading posyandu options:', error));
+        .catch(error => {
+            console.error('Error loading posyandu options:', error);
+            showNotification('Error loading posyandu options: ' + error.message, 'error');
+        });
 }
 
 function loadChildrenOptions() {
-    fetch('/pulosarok/posyandu/api/residents/?age_max=5')
-        .then(response => response.json())
+    fetch('/pulosarok/posyandu/api/children/list/')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
         .then(data => {
             const select = document.getElementById('child-select');
             const firstOption = select.querySelector('option');
             select.innerHTML = '';
             select.appendChild(firstOption);
             
-            data.forEach(child => {
-                const option = document.createElement('option');
-                option.value = child.id;
-                option.textContent = `${child.name} (${child.nik})`;
-                select.appendChild(option);
-            });
+            const children = data.results || data;
+            if (Array.isArray(children)) {
+                children.forEach(child => {
+                    const option = document.createElement('option');
+                    option.value = child.id;
+                    option.textContent = `${child.name} (${child.nik})`;
+                    select.appendChild(option);
+                });
+            }
         })
-        .catch(error => console.error('Error loading children options:', error));
+        .catch(error => {
+            console.error('Error loading children options:', error);
+            showNotification('Error loading children options: ' + error.message, 'error');
+        });
 }
 
 function calculateZScores() {

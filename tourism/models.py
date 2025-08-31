@@ -11,6 +11,9 @@ class TourismCategory(models.Model):
     description = models.TextField(blank=True, verbose_name="Deskripsi")
     icon = models.CharField(max_length=50, blank=True, verbose_name="Icon FontAwesome")
     color = models.CharField(max_length=7, default="#3B82F6", verbose_name="Warna")
+    image = models.ImageField(upload_to='tourism/categories/', blank=True, null=True, verbose_name="Gambar Kategori")
+    video = models.FileField(upload_to='tourism/categories/videos/', blank=True, null=True, verbose_name="Video Kategori")
+    youtube_link = models.URLField(blank=True, null=True, verbose_name="Link YouTube")
     is_active = models.BooleanField(default=True, verbose_name="Aktif")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -71,6 +74,9 @@ class TourismLocation(models.Model):
     featured = models.BooleanField(default=False, verbose_name="Wisata Unggulan")
     is_active = models.BooleanField(default=True, verbose_name="Aktif")
     
+    # Gambar Utama
+    main_image = models.ImageField(upload_to='tourism/locations/', null=True, blank=True, verbose_name="Gambar Utama")
+    
     # SEO dan Meta
     meta_title = models.CharField(max_length=60, blank=True, verbose_name="Meta Title")
     meta_description = models.CharField(max_length=160, blank=True, verbose_name="Meta Description")
@@ -94,6 +100,40 @@ class TourismLocation(models.Model):
     def save(self, *args, **kwargs):
         if self.status == 'published' and not self.published_at:
             self.published_at = timezone.now()
+            
+    @property
+    def get_featured_image(self):
+        """Return the featured image for this location"""
+        if self.main_image:
+            return self.main_image.url
+        
+        # Try to get a featured image from gallery
+        featured_image = self.gallery.filter(is_active=True, is_featured=True, media_type='image').first()
+        if featured_image:
+            return featured_image.file.url
+        
+        # Otherwise get the first image from gallery
+        first_image = self.gallery.filter(is_active=True, media_type='image').first()
+        if first_image:
+            return first_image.file.url
+        
+        # Return a placeholder if no image is available
+        return '/static/img/placeholder.jpg'
+    
+    @property
+    def location_type_display(self):
+        """Return the display value of location_type"""
+        return dict(self.LOCATION_TYPE_CHOICES).get(self.location_type, self.location_type)
+        
+    @property
+    def average_rating(self):
+        """Calculate the average rating for this location"""
+        from django.db.models import Avg
+        # Get average from TourismReview
+        reviews = self.reviews.filter(is_active=True)
+        if reviews.exists():
+            return reviews.aggregate(Avg('rating'))['rating__avg'] or 0
+        return 0
         super().save(*args, **kwargs)
 
     @property
@@ -106,6 +146,24 @@ class TourismLocation(models.Model):
     @property
     def total_reviews(self):
         return self.ratings.count()
+        
+    @property
+    def get_featured_image(self):
+        if self.main_image:
+            return self.main_image
+        # Try to get featured image from gallery
+        featured_gallery = self.gallery.filter(is_featured=True).first()
+        if featured_gallery and featured_gallery.image:
+            return featured_gallery.image
+        # Get first image from gallery
+        first_gallery = self.gallery.filter(media_type='image').first()
+        if first_gallery and first_gallery.image:
+            return first_gallery.image
+        return None
+        
+    @property
+    def location_type_display(self):
+        return self.get_location_type_display()
 
 class TourismGallery(models.Model):
     MEDIA_TYPE_CHOICES = [
@@ -261,6 +319,14 @@ class TourismPackage(models.Model):
     price = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Harga")
     currency = models.CharField(max_length=3, default='IDR', verbose_name="Mata Uang")
     
+    # Contact info
+    whatsapp = models.CharField(max_length=20, blank=True, null=True, verbose_name="Nomor WhatsApp")
+    
+    # Media
+    image = models.ImageField(upload_to='tourism/packages/', null=True, blank=True, verbose_name="Gambar Paket")
+    video = models.FileField(upload_to='tourism/packages/videos/', null=True, blank=True, verbose_name="Video Paket")
+    youtube_link = models.URLField(blank=True, null=True, verbose_name="Link YouTube")
+    
     # Package features
     includes = models.JSONField(default=list, verbose_name="Yang Termasuk")
     excludes = models.JSONField(default=list, verbose_name="Yang Tidak Termasuk")
@@ -286,6 +352,26 @@ class TourismPackage(models.Model):
 
     def __str__(self):
         return f"{self.title} - {self.tourism_location.title}"
+
+class TourismGallery(models.Model):
+    package = models.ForeignKey(TourismPackage, on_delete=models.CASCADE, related_name='gallery', verbose_name="Paket Wisata")
+    image = models.ImageField(upload_to='tourism/packages/gallery/', verbose_name="Gambar")
+    title = models.CharField(max_length=100, blank=True, null=True, verbose_name="Judul Gambar")
+    description = models.TextField(blank=True, null=True, verbose_name="Deskripsi Gambar")
+    order = models.PositiveIntegerField(default=0, verbose_name="Urutan")
+    is_active = models.BooleanField(default=True, verbose_name="Aktif")
+    
+    # Timestamps
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Galeri Paket Wisata"
+        verbose_name_plural = "Galeri Paket Wisata"
+        ordering = ['order']
+
+    def __str__(self):
+        return f"Gambar {self.order} - {self.package.title}"
 
 class TourismFAQ(models.Model):
     tourism_location = models.ForeignKey(TourismLocation, on_delete=models.CASCADE, related_name='faqs', verbose_name="Lokasi Wisata")

@@ -1,360 +1,235 @@
 from django import forms
-from django.core.exceptions import ValidationError
-from .models import (
-    OrganizationType, Organization, OrganizationMember, OrganizationEvent, 
-    OrganizationDocument, Jabatan, PeriodeKepengurusan, AnggotaOrganisasi,
-    GaleriKegiatan, StrukturOrganisasi
-)
+from .models import PerangkatDesa, LembagaAdat, PenggerakPKK, Kepemudaan, KarangTaruna
+from references.models import Penduduk
 
-
-class OrganizationTypeForm(forms.ModelForm):
+class PerangkatDesaForm(forms.ModelForm):
     class Meta:
-        model = OrganizationType
-        fields = '__all__'
+        model = PerangkatDesa
+        fields = ['penduduk', 'jabatan', 'nip', 'sk_pengangkatan', 'tanggal_mulai_tugas', 
+                 'tanggal_selesai_tugas', 'status', 'gaji_pokok', 'tunjangan', 'foto_profil', 
+                 'deskripsi_tugas', 'kontak_whatsapp', 'email_dinas']
         widgets = {
-            'description': forms.Textarea(attrs={'rows': 3}),
+            'penduduk': forms.Select(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500'}),
+            'jabatan': forms.Select(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500'}),
+            'nip': forms.TextInput(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500', 'placeholder': 'NIP'}),
+            'sk_pengangkatan': forms.TextInput(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500', 'placeholder': 'Nomor SK Pengangkatan'}),
+            'tanggal_mulai_tugas': forms.DateInput(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500', 'type': 'date'}),
+            'tanggal_selesai_tugas': forms.DateInput(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500', 'type': 'date'}),
+            'status': forms.Select(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500'}),
+            'gaji_pokok': forms.NumberInput(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500', 'placeholder': 'Gaji Pokok'}),
+            'tunjangan': forms.NumberInput(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500', 'placeholder': 'Tunjangan'}),
+            'foto_profil': forms.FileInput(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500', 'accept': 'image/*'}),
+            'deskripsi_tugas': forms.Textarea(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500', 'rows': 3, 'placeholder': 'Deskripsi Tugas'}),
+            'kontak_whatsapp': forms.TextInput(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500', 'placeholder': 'Nomor WhatsApp'}),
+            'email_dinas': forms.EmailInput(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500', 'placeholder': 'Email Dinas'}),
         }
-
-
-class OrganizationForm(forms.ModelForm):
-    class Meta:
-        model = Organization
-        fields = '__all__'
-        widgets = {
-            'established_date': forms.DateInput(attrs={'type': 'date'}),
-            'description': forms.Textarea(attrs={'rows': 4}),
-            'address': forms.Textarea(attrs={'rows': 3}),
-        }
-
-
-class OrganizationMemberForm(forms.ModelForm):
-    class Meta:
-        model = OrganizationMember
-        fields = '__all__'
-        widgets = {
-            'join_date': forms.DateInput(attrs={'type': 'date'}),
-            'end_date': forms.DateInput(attrs={'type': 'date'}),
-            'notes': forms.Textarea(attrs={'rows': 3}),
-        }
-
-
-class OrganizationEventForm(forms.ModelForm):
-    class Meta:
-        model = OrganizationEvent
-        fields = '__all__'
-        widgets = {
-            'event_date': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
-            'description': forms.Textarea(attrs={'rows': 4}),
-        }
-
-
-class OrganizationDocumentForm(forms.ModelForm):
-    class Meta:
-        model = OrganizationDocument
-        fields = '__all__'
-        widgets = {
-            'document_date': forms.DateInput(attrs={'type': 'date'}),
-            'description': forms.Textarea(attrs={'rows': 3}),
-        }
-
-
-class JabatanForm(forms.ModelForm):
-    """Form untuk input jabatan organisasi"""
-    class Meta:
-        model = Jabatan
-        fields = '__all__'
-        widgets = {
-            'nama_jabatan': forms.TextInput(attrs={
-                'class': 'form-control',
-                'placeholder': 'Masukkan nama jabatan'
-            }),
-            'deskripsi': forms.Textarea(attrs={
-                'class': 'form-control',
-                'rows': 3,
-                'placeholder': 'Deskripsi jabatan (opsional)'
-            }),
-            'level_hierarki': forms.NumberInput(attrs={
-                'class': 'form-control',
-                'min': 1,
-                'max': 10
-            }),
-            'warna_badge': forms.TextInput(attrs={
-                'class': 'form-control',
-                'type': 'color'
-            }),
-            'is_active': forms.CheckboxInput(attrs={
-                'class': 'form-check-input'
-            })
-        }
-
-    def clean_nama_jabatan(self):
-        nama = self.cleaned_data.get('nama_jabatan')
-        if nama:
-            nama = nama.strip().title()
-        return nama
-
-
-class PeriodeKepengurusan(forms.ModelForm):
-    """Form untuk periode kepengurusan"""
-    class Meta:
-        model = PeriodeKepengurusan
-        fields = '__all__'
-        widgets = {
-            'nama_periode': forms.TextInput(attrs={
-                'class': 'form-control',
-                'placeholder': 'Contoh: Periode 2024-2026'
-            }),
-            'tanggal_mulai': forms.DateInput(attrs={
-                'class': 'form-control',
-                'type': 'date'
-            }),
-            'tanggal_selesai': forms.DateInput(attrs={
-                'class': 'form-control',
-                'type': 'date'
-            }),
-            'deskripsi': forms.Textarea(attrs={
-                'class': 'form-control',
-                'rows': 3,
-                'placeholder': 'Deskripsi periode (opsional)'
-            }),
-            'is_active': forms.CheckboxInput(attrs={
-                'class': 'form-check-input'
-            })
-        }
-
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Set required fields
+        self.fields['penduduk'].required = True
+        self.fields['jabatan'].required = True
+        self.fields['tanggal_mulai_tugas'].required = True
+        
     def clean(self):
         cleaned_data = super().clean()
-        tanggal_mulai = cleaned_data.get('tanggal_mulai')
-        tanggal_selesai = cleaned_data.get('tanggal_selesai')
+        tanggal_mulai = cleaned_data.get('tanggal_mulai_tugas')
+        tanggal_selesai = cleaned_data.get('tanggal_selesai_tugas')
         
         if tanggal_mulai and tanggal_selesai:
             if tanggal_selesai <= tanggal_mulai:
-                raise ValidationError('Tanggal selesai harus setelah tanggal mulai')
+                raise forms.ValidationError('Tanggal selesai tugas harus setelah tanggal mulai tugas.')
         
         return cleaned_data
 
-
-class AnggotaOrganisasiForm(forms.ModelForm):
-    """Form untuk anggota organisasi dengan foto profil"""
+class LembagaAdatForm(forms.ModelForm):
     class Meta:
-        model = AnggotaOrganisasi
-        fields = '__all__'
+        model = LembagaAdat
+        fields = ['nama_lembaga', 'jenis_lembaga', 'ketua', 'sekretaris', 'bendahara', 
+                 'tanggal_terbentuk', 'alamat_sekretariat', 'deskripsi', 'kegiatan_rutin', 
+                 'jumlah_anggota', 'status', 'kontak_phone', 'foto_kegiatan']
         widgets = {
-            'nomor_anggota': forms.TextInput(attrs={
-                'class': 'form-control',
-                'placeholder': 'Nomor anggota (opsional)'
-            }),
-            'tanggal_bergabung': forms.DateInput(attrs={
-                'class': 'form-control',
-                'type': 'date'
-            }),
-            'tanggal_keluar': forms.DateInput(attrs={
-                'class': 'form-control',
-                'type': 'date'
-            }),
-            'status': forms.Select(attrs={
-                'class': 'form-control'
-            }),
-            'bio': forms.Textarea(attrs={
-                'class': 'form-control',
-                'rows': 4,
-                'placeholder': 'Biografi singkat anggota'
-            }),
-            'kontak_whatsapp': forms.TextInput(attrs={
-                'class': 'form-control',
-                'placeholder': '08xxxxxxxxxx'
-            }),
-            'email_pribadi': forms.EmailInput(attrs={
-                'class': 'form-control',
-                'placeholder': 'email@example.com'
-            }),
-            'alamat_lengkap': forms.Textarea(attrs={
-                'class': 'form-control',
-                'rows': 2,
-                'placeholder': 'Alamat lengkap'
-            }),
-            'pendidikan_terakhir': forms.TextInput(attrs={
-                'class': 'form-control',
-                'placeholder': 'Contoh: S1 Teknik Informatika'
-            }),
-            'pekerjaan': forms.TextInput(attrs={
-                'class': 'form-control',
-                'placeholder': 'Pekerjaan saat ini'
-            }),
-            'keahlian': forms.Textarea(attrs={
-                'class': 'form-control',
-                'rows': 3,
-                'placeholder': 'Keahlian yang dimiliki'
-            }),
-            'prestasi': forms.Textarea(attrs={
-                'class': 'form-control',
-                'rows': 3,
-                'placeholder': 'Prestasi yang pernah diraih'
-            }),
-            'is_featured': forms.CheckboxInput(attrs={
-                'class': 'form-check-input'
-            }),
-            'foto_profil': forms.FileInput(attrs={
-                'class': 'form-control',
-                'accept': 'image/*'
-            })
+            'nama_lembaga': forms.TextInput(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500', 'placeholder': 'Nama Lembaga'}),
+            'jenis_lembaga': forms.Select(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500'}),
+            'ketua': forms.Select(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500'}),
+            'sekretaris': forms.Select(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500'}),
+            'bendahara': forms.Select(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500'}),
+            'tanggal_terbentuk': forms.DateInput(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500', 'type': 'date'}),
+            'alamat_sekretariat': forms.Textarea(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500', 'rows': 3, 'placeholder': 'Alamat Sekretariat'}),
+            'deskripsi': forms.Textarea(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500', 'rows': 3, 'placeholder': 'Deskripsi Lembaga'}),
+            'kegiatan_rutin': forms.Textarea(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500', 'rows': 3, 'placeholder': 'Kegiatan Rutin'}),
+            'jumlah_anggota': forms.NumberInput(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500', 'placeholder': 'Jumlah Anggota'}),
+            'status': forms.Select(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500'}),
+            'kontak_phone': forms.TextInput(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500', 'placeholder': 'Nomor Telepon'}),
+            'foto_kegiatan': forms.FileInput(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500', 'accept': 'image/*'}),
         }
 
-    def clean_foto_profil(self):
-        foto = self.cleaned_data.get('foto_profil')
-        if foto:
-            if foto.size > 5 * 1024 * 1024:  # 5MB
-                raise ValidationError('Ukuran foto tidak boleh lebih dari 5MB')
-            
-            valid_extensions = ['.jpg', '.jpeg', '.png', '.gif']
-            if not any(foto.name.lower().endswith(ext) for ext in valid_extensions):
-                raise ValidationError('Format foto harus JPG, JPEG, PNG, atau GIF')
+class PenggerakPKKForm(forms.ModelForm):
+    class Meta:
+        model = PenggerakPKK
+        fields = ['penduduk', 'jabatan', 'nomor_anggota', 'tanggal_bergabung', 'tanggal_keluar', 
+                 'status', 'keahlian', 'pengalaman_organisasi', 'prestasi', 'foto_profil', 
+                 'kontak_whatsapp', 'alamat_lengkap', 'email', 'deskripsi_tugas', 'sk_pengangkatan',
+                 'tanggal_mulai_tugas', 'tanggal_selesai_tugas']
+        widgets = {
+            'penduduk': forms.Select(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500'}),
+            'jabatan': forms.Select(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500'}),
+            'nomor_anggota': forms.TextInput(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500', 'placeholder': 'Nomor Anggota'}),
+            'tanggal_bergabung': forms.DateInput(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500', 'type': 'date'}),
+            'tanggal_keluar': forms.DateInput(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500', 'type': 'date'}),
+            'status': forms.Select(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500'}),
+            'keahlian': forms.Textarea(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500', 'rows': 3, 'placeholder': 'Keahlian yang dimiliki'}),
+            'pengalaman_organisasi': forms.Textarea(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500', 'rows': 3, 'placeholder': 'Pengalaman Organisasi'}),
+            'prestasi': forms.Textarea(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500', 'rows': 3, 'placeholder': 'Prestasi'}),
+            'foto_profil': forms.FileInput(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500', 'accept': 'image/*'}),
+            'kontak_whatsapp': forms.TextInput(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500', 'placeholder': 'Nomor WhatsApp'}),
+            'alamat_lengkap': forms.Textarea(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500', 'rows': 3, 'placeholder': 'Alamat Lengkap'}),
+            'email': forms.EmailInput(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500', 'placeholder': 'Email'}),
+            'deskripsi_tugas': forms.Textarea(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500', 'rows': 3, 'placeholder': 'Deskripsi Tugas'}),
+            'sk_pengangkatan': forms.TextInput(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500', 'placeholder': 'Nomor SK Pengangkatan'}),
+            'tanggal_mulai_tugas': forms.DateInput(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500', 'type': 'date'}),
+            'tanggal_selesai_tugas': forms.DateInput(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500', 'type': 'date'}),
+        }
         
-        return foto
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Set required fields
+        self.fields['penduduk'].required = True
+        self.fields['jabatan'].required = True
+        self.fields['tanggal_mulai_tugas'].required = True
+        self.fields['status'].required = True
 
-    def clean_kontak_whatsapp(self):
-        whatsapp = self.cleaned_data.get('kontak_whatsapp')
-        if whatsapp:
-            # Remove non-numeric characters
-            whatsapp = ''.join(filter(str.isdigit, whatsapp))
-            if len(whatsapp) < 10 or len(whatsapp) > 15:
-                raise ValidationError('Nomor WhatsApp tidak valid')
-        return whatsapp
-
-
-class GaleriKegiatanForm(forms.ModelForm):
-    """Form untuk galeri kegiatan organisasi"""
+class KepemudaanForm(forms.ModelForm):
+    # Tambahkan field yang tidak ada di model tapi ada di template
+    wakil_ketua = forms.ModelChoiceField(
+        queryset=Penduduk.objects.all(),
+        required=False,
+        widget=forms.Select(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500'})
+    )
+    jumlah_anggota = forms.IntegerField(
+        required=False,
+        widget=forms.NumberInput(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500', 'placeholder': 'Jumlah Anggota'})
+    )
+    tanggal_berdiri = forms.DateField(
+        required=False,
+        widget=forms.DateInput(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500', 'type': 'date'})
+    )
+    sk_kepengurusan = forms.CharField(
+        required=False,
+        widget=forms.TextInput(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500', 'placeholder': 'SK Kepengurusan'})
+    )
+    lokasi_sekretariat = forms.CharField(
+        required=False,
+        widget=forms.Textarea(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500', 'rows': 3, 'placeholder': 'Lokasi Sekretariat'})
+    )
+    kontak = forms.CharField(
+        required=False,
+        widget=forms.TextInput(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500', 'placeholder': 'Kontak'})
+    )
+    foto_profil = forms.ImageField(
+        required=False,
+        widget=forms.FileInput(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500', 'accept': 'image/*'})
+    )
+    # Tambahkan field untuk media sosial
+    media_sosial = forms.CharField(
+        required=False,
+        widget=forms.TextInput(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500', 'placeholder': 'Media Sosial (Instagram/Facebook)'})
+    )
+    # Tambahkan field untuk visi misi
+    visi_misi = forms.CharField(
+        required=False,
+        widget=forms.Textarea(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500', 'rows': 3, 'placeholder': 'Visi dan Misi'})
+    )
+    
     class Meta:
-        model = GaleriKegiatan
-        fields = '__all__'
+        model = Kepemudaan
+        fields = ['nama_organisasi', 'jenis_organisasi', 'ketua', 'sekretaris', 'bendahara', 
+                 'tanggal_terbentuk', 'jumlah_anggota_aktif', 'rentang_usia', 
+                 'kegiatan_rutin', 'prestasi', 'alamat_sekretariat', 'status', 
+                 'kontak_phone', 'email', 'foto_kegiatan', 'deskripsi', 'media_sosial', 'visi_misi']
         widgets = {
-            'judul': forms.TextInput(attrs={
-                'class': 'form-control',
-                'placeholder': 'Judul kegiatan'
-            }),
-            'deskripsi': forms.Textarea(attrs={
-                'class': 'form-control',
-                'rows': 4,
-                'placeholder': 'Deskripsi kegiatan'
-            }),
-            'tanggal_kegiatan': forms.DateInput(attrs={
-                'class': 'form-control',
-                'type': 'date'
-            }),
-            'lokasi': forms.TextInput(attrs={
-                'class': 'form-control',
-                'placeholder': 'Lokasi kegiatan'
-            }),
-            'fotografer': forms.TextInput(attrs={
-                'class': 'form-control',
-                'placeholder': 'Nama fotografer (opsional)'
-            }),
-            'tags': forms.TextInput(attrs={
-                'class': 'form-control',
-                'placeholder': 'Tag1, Tag2, Tag3 (pisahkan dengan koma)'
-            }),
-            'is_featured': forms.CheckboxInput(attrs={
-                'class': 'form-check-input'
-            }),
-            'foto': forms.FileInput(attrs={
-                'class': 'form-control',
-                'accept': 'image/*'
-            })
+            'nama_organisasi': forms.TextInput(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500', 'placeholder': 'Nama Organisasi'}),
+            'jenis_organisasi': forms.Select(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500'}),
+            'ketua': forms.Select(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500'}),
+            'sekretaris': forms.Select(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500'}),
+            'bendahara': forms.Select(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500'}),
+            'tanggal_terbentuk': forms.DateInput(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500', 'type': 'date'}),
+            'jumlah_anggota_aktif': forms.NumberInput(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500', 'placeholder': 'Jumlah Anggota Aktif'}),
+            'rentang_usia': forms.TextInput(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500', 'placeholder': 'Contoh: 15-30 tahun'}),
+            'kegiatan_rutin': forms.Textarea(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500', 'rows': 3, 'placeholder': 'Kegiatan Rutin'}),
+            'prestasi': forms.Textarea(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500', 'rows': 3, 'placeholder': 'Prestasi'}),
+            'alamat_sekretariat': forms.Textarea(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500', 'rows': 3, 'placeholder': 'Alamat Sekretariat'}),
+            'status': forms.Select(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500'}),
+            'kontak_phone': forms.TextInput(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500', 'placeholder': 'Nomor Telepon'}),
+            'email': forms.EmailInput(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500', 'placeholder': 'Email'}),
+            'foto_kegiatan': forms.FileInput(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500', 'accept': 'image/*'}),
+            'deskripsi': forms.Textarea(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500', 'rows': 3, 'placeholder': 'Deskripsi'}),
         }
-
-    def clean_foto(self):
-        foto = self.cleaned_data.get('foto')
-        if foto:
-            if foto.size > 10 * 1024 * 1024:  # 10MB
-                raise ValidationError('Ukuran foto tidak boleh lebih dari 10MB')
-            
-            valid_extensions = ['.jpg', '.jpeg', '.png', '.gif']
-            if not any(foto.name.lower().endswith(ext) for ext in valid_extensions):
-                raise ValidationError('Format foto harus JPG, JPEG, PNG, atau GIF')
         
-        return foto
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Set required fields
+        self.fields['nama_organisasi'].required = True
+        self.fields['jenis_organisasi'].required = True
+        self.fields['ketua'].required = True
+        self.fields['status'].required = True
+        self.fields['tanggal_berdiri'].required = True
+        
+        # Jika instance sudah ada, isi field tambahan dengan data yang sesuai
+        if self.instance and self.instance.pk:
+            # Memetakan field dari model ke field form
+            self.fields['tanggal_berdiri'].initial = self.instance.tanggal_terbentuk
+            self.fields['jumlah_anggota'].initial = self.instance.jumlah_anggota_aktif
+            self.fields['lokasi_sekretariat'].initial = self.instance.alamat_sekretariat
+            self.fields['kontak'].initial = self.instance.kontak_phone
+            self.fields['foto_profil'].initial = self.instance.foto_kegiatan
+            
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        # Menyimpan data dari field tambahan ke field model yang sesuai
+        # tanggal_berdiri wajib diisi dan disimpan ke tanggal_terbentuk
+        instance.tanggal_terbentuk = self.cleaned_data.get('tanggal_berdiri')
+        
+        if self.cleaned_data.get('jumlah_anggota'):
+            instance.jumlah_anggota_aktif = self.cleaned_data.get('jumlah_anggota')
+        if self.cleaned_data.get('lokasi_sekretariat'):
+            instance.alamat_sekretariat = self.cleaned_data.get('lokasi_sekretariat')
+        if self.cleaned_data.get('kontak'):
+            instance.kontak_phone = self.cleaned_data.get('kontak')
+        if self.cleaned_data.get('foto_profil'):
+            instance.foto_kegiatan = self.cleaned_data.get('foto_profil')
+        if self.cleaned_data.get('media_sosial'):
+            instance.media_sosial = self.cleaned_data.get('media_sosial')
+        if self.cleaned_data.get('visi_misi'):
+            instance.visi_misi = self.cleaned_data.get('visi_misi')
+            
+        if commit:
+            instance.save()
+        return instance
 
-
-class StrukturOrganisasiForm(forms.ModelForm):
-    """Form untuk struktur organisasi"""
+class KarangTarunaForm(forms.ModelForm):
     class Meta:
-        model = StrukturOrganisasi
-        fields = '__all__'
+        model = KarangTaruna
+        fields = ['penduduk', 'jabatan', 'nomor_anggota', 'tanggal_bergabung', 'tanggal_keluar', 
+                 'status', 'bidang_keahlian', 'pengalaman_organisasi', 'prestasi_individu', 
+                 'kontribusi', 'foto_profil', 'kontak_whatsapp', 'email_pribadi', 'alamat_lengkap', 
+                 'pendidikan_terakhir', 'pekerjaan', 'is_pengurus_inti']
         widgets = {
-            'posisi_x': forms.NumberInput(attrs={
-                'class': 'form-control',
-                'min': 0
-            }),
-            'posisi_y': forms.NumberInput(attrs={
-                'class': 'form-control',
-                'min': 0
-            }),
-            'urutan': forms.NumberInput(attrs={
-                'class': 'form-control',
-                'min': 1
-            }),
-            'is_visible': forms.CheckboxInput(attrs={
-                'class': 'form-check-input'
-            })
+            'penduduk': forms.Select(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500'}),
+            'jabatan': forms.Select(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500'}),
+            'nomor_anggota': forms.TextInput(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500', 'placeholder': 'Nomor Anggota'}),
+            'tanggal_bergabung': forms.DateInput(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500', 'type': 'date'}),
+            'tanggal_keluar': forms.DateInput(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500', 'type': 'date'}),
+            'status': forms.Select(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500'}),
+            'bidang_keahlian': forms.Textarea(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500', 'rows': 3, 'placeholder': 'Bidang Keahlian'}),
+            'pengalaman_organisasi': forms.Textarea(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500', 'rows': 3, 'placeholder': 'Pengalaman Organisasi'}),
+            'prestasi_individu': forms.Textarea(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500', 'rows': 3, 'placeholder': 'Prestasi Individu'}),
+            'kontribusi': forms.Textarea(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500', 'rows': 3, 'placeholder': 'Kontribusi'}),
+            'foto_profil': forms.FileInput(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500', 'accept': 'image/*'}),
+            'kontak_whatsapp': forms.TextInput(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500', 'placeholder': 'Nomor WhatsApp'}),
+            'email_pribadi': forms.EmailInput(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500', 'placeholder': 'Email Pribadi'}),
+            'alamat_lengkap': forms.Textarea(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500', 'rows': 3, 'placeholder': 'Alamat Lengkap'}),
+            'pendidikan_terakhir': forms.TextInput(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500', 'placeholder': 'Pendidikan Terakhir'}),
+            'pekerjaan': forms.TextInput(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500', 'placeholder': 'Pekerjaan'}),
+            'is_pengurus_inti': forms.CheckboxInput(attrs={'class': 'rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50'}),
         }
-
-
-# Form untuk pencarian dan filter
-class OrganizationSearchForm(forms.Form):
-    """Form untuk pencarian organisasi"""
-    search = forms.CharField(
-        max_length=200,
-        required=False,
-        widget=forms.TextInput(attrs={
-            'class': 'form-control',
-            'placeholder': 'Cari organisasi...',
-            'id': 'search-input'
-        })
-    )
-    
-    organization_type = forms.ModelChoiceField(
-        queryset=OrganizationType.objects.filter(is_active=True),
-        required=False,
-        empty_label='Semua Jenis',
-        widget=forms.Select(attrs={
-            'class': 'form-control'
-        })
-    )
-    
-    is_active = forms.ChoiceField(
-        choices=[('', 'Semua Status'), ('true', 'Aktif'), ('false', 'Non-Aktif')],
-        required=False,
-        widget=forms.Select(attrs={
-            'class': 'form-control'
-        })
-    )
-
-
-class AnggotaSearchForm(forms.Form):
-    """Form untuk pencarian anggota"""
-    search = forms.CharField(
-        max_length=200,
-        required=False,
-        widget=forms.TextInput(attrs={
-            'class': 'form-control',
-            'placeholder': 'Cari nama anggota...',
-            'id': 'search-input'
-        })
-    )
-    
-    jabatan = forms.ModelChoiceField(
-        queryset=Jabatan.objects.filter(is_active=True),
-        required=False,
-        empty_label='Semua Jabatan',
-        widget=forms.Select(attrs={
-            'class': 'form-control'
-        })
-    )
-    
-    status = forms.ChoiceField(
-        choices=[('', 'Semua Status')] + AnggotaOrganisasi._meta.get_field('status').choices,
-        required=False,
-        widget=forms.Select(attrs={
-            'class': 'form-control'
-        })
-    )

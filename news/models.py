@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth import get_user_model
 from django.utils.text import slugify
+from django.utils import timezone
 from django.urls import reverse
 from PIL import Image
 import os
@@ -14,6 +15,7 @@ class NewsCategory(models.Model):
     slug = models.SlugField(max_length=120, unique=True, blank=True)
     color = models.CharField(max_length=7, default='#007bff', help_text='Hex color code')
     is_active = models.BooleanField(default=True)
+    order = models.PositiveIntegerField(default=0, help_text='Urutan kategori')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -72,6 +74,9 @@ class News(models.Model):
     content = models.TextField()
     excerpt = models.TextField(max_length=300, blank=True)
     featured_image = models.ImageField(upload_to='news/images/', blank=True)
+    featured_image_alt = models.CharField(max_length=200, blank=True, help_text='Alt text untuk gambar utama')
+    youtube_url = models.URLField(blank=True, help_text='URL video YouTube untuk embed')
+    video_file = models.FileField(upload_to='news/videos/', blank=True, help_text='File video lokal')
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='draft')
     priority = models.CharField(max_length=10, choices=PRIORITY_CHOICES, default='normal')
     is_featured = models.BooleanField(default=False)
@@ -79,10 +84,7 @@ class News(models.Model):
     published_date = models.DateTimeField(null=True, blank=True)
     scheduled_date = models.DateTimeField(null=True, blank=True, help_text='Tanggal untuk publikasi otomatis')
     author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='news_articles')
-    views_count = models.PositiveIntegerField(default=0)
-    likes_count = models.PositiveIntegerField(default=0)
     comments_count = models.PositiveIntegerField(default=0)
-    shares_count = models.PositiveIntegerField(default=0)
     reading_time = models.PositiveIntegerField(default=0, help_text='Estimasi waktu baca dalam menit')
     meta_title = models.CharField(max_length=60, blank=True)
     meta_description = models.CharField(max_length=160, blank=True)
@@ -103,11 +105,29 @@ class News(models.Model):
         super().save(*args, **kwargs)
     
     def update_counts(self):
-        """Update all count fields"""
-        self.likes_count = self.likes.count()
+        """Update all related counts"""
         self.comments_count = self.comments.filter(status='approved').count()
-        self.shares_count = self.shares.count()
-        self.save(update_fields=['likes_count', 'comments_count', 'shares_count'])
+        self.save(update_fields=['comments_count'])
+        
+    def get_views_count(self):
+        return self.view_records.count()
+    get_views_count.short_description = 'Views'
+    
+    def get_likes_count(self):
+        return self.likes.count()
+    get_likes_count.short_description = 'Likes'
+    
+    def get_shares_count(self):
+        return self.shares.count()
+    get_shares_count.short_description = 'Shares'
+    
+    @property
+    def views_count(self):
+        return self.view_records.count()
+    
+    @property
+    def likes_count(self):
+        return self.likes.count()
     
     def is_published(self):
         """Check if news is published"""
@@ -299,9 +319,81 @@ class NewsShare(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     
     def __str__(self):
-        return f'{self.news.title} shared on {self.get_platform_display()}'
+        return f'{self.news.title} - {self.platform}'
     
     class Meta:
         verbose_name = 'Share Berita'
         verbose_name_plural = 'Share Berita'
         ordering = ['-created_at']
+
+
+class Announcement(models.Model):
+    TYPE_CHOICES = [
+        ('info', 'Informasi'),
+        ('warning', 'Peringatan'),
+        ('urgent', 'Mendesak'),
+        ('schedule', 'Jadwal'),
+        ('event', 'Acara'),
+        ('service', 'Layanan'),
+    ]
+    
+    STATUS_CHOICES = [
+        ('draft', 'Draft'),
+        ('published', 'Dipublikasi'),
+        ('archived', 'Diarsipkan'),
+    ]
+    
+    PRIORITY_CHOICES = [
+        ('low', 'Rendah'),
+        ('normal', 'Normal'),
+        ('high', 'Tinggi'),
+        ('urgent', 'Mendesak'),
+    ]
+    
+    title = models.CharField(max_length=200, verbose_name='Judul')
+    slug = models.SlugField(max_length=220, unique=True, blank=True)
+    content = models.TextField(verbose_name='Isi Pengumuman')
+    excerpt = models.TextField(max_length=300, blank=True, verbose_name='Ringkasan')
+    announcement_type = models.CharField(max_length=20, choices=TYPE_CHOICES, default='info', verbose_name='Jenis Pengumuman')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='draft', verbose_name='Status')
+    priority = models.CharField(max_length=10, choices=PRIORITY_CHOICES, default='normal', verbose_name='Prioritas')
+    is_pinned = models.BooleanField(default=False, verbose_name='Pin di Atas')
+    is_popup = models.BooleanField(default=False, verbose_name='Tampilkan sebagai Popup')
+    start_date = models.DateTimeField(verbose_name='Tanggal Mulai')
+    end_date = models.DateTimeField(null=True, blank=True, verbose_name='Tanggal Berakhir')
+    target_audience = models.CharField(max_length=100, blank=True, verbose_name='Target Audiens', help_text='Contoh: Semua Warga, Ibu-ibu PKK, Remaja, dll')
+    contact_person = models.CharField(max_length=100, blank=True, verbose_name='Narahubung')
+    contact_phone = models.CharField(max_length=20, blank=True, verbose_name='No. Telepon')
+    location = models.CharField(max_length=200, blank=True, verbose_name='Lokasi')
+    author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='announcements', verbose_name='Penulis')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.title)
+        if not self.excerpt and self.content:
+            self.excerpt = self.content[:297] + '...' if len(self.content) > 300 else self.content
+        super().save(*args, **kwargs)
+    
+    def is_active(self):
+        """Check if announcement is currently active"""
+        now = timezone.now()
+        if self.status != 'published':
+            return False
+        if self.start_date > now:
+            return False
+        if self.end_date and self.end_date < now:
+            return False
+        return True
+    
+    def get_absolute_url(self):
+        return reverse('public:announcement_detail', kwargs={'slug': self.slug})
+    
+    def __str__(self):
+        return self.title
+    
+    class Meta:
+        verbose_name = 'Pengumuman'
+        verbose_name_plural = 'Pengumuman'
+        ordering = ['-is_pinned', '-priority', '-start_date']

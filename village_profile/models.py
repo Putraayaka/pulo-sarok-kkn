@@ -1,159 +1,132 @@
 from django.db import models
 from django.utils import timezone
+from django.core.validators import MinValueValidator, MaxValueValidator
 
 
-class VillageVision(models.Model):
-    """Village Vision and Mission"""
-    title = models.CharField(max_length=200)
-    vision_text = models.TextField()
-    mission_text = models.TextField()
-    description = models.TextField(blank=True, null=True)
-    is_active = models.BooleanField(default=True)
-    effective_date = models.DateField()
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        verbose_name = "Visi Misi Desa"
-        verbose_name_plural = "Visi Misi Desa"
-        ordering = ['-effective_date']
-
-    def __str__(self):
-        return f"{self.title} ({self.effective_date})"
+# Enhanced Village History models with multi-photo support
 
 
 class VillageHistory(models.Model):
-    """Village History"""
-    title = models.CharField(max_length=200)
-    content = models.TextField()
-    period_start = models.CharField(max_length=50, blank=True, null=True)
-    period_end = models.CharField(max_length=50, blank=True, null=True)
-    historical_image = models.ImageField(upload_to='village_history/', blank=True, null=True)
-    is_featured = models.BooleanField(default=False)
-    is_active = models.BooleanField(default=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    """Enhanced Village History with comprehensive features"""
+    HISTORY_TYPE_CHOICES = [
+        ('FOUNDING', 'Sejarah Berdiri'),
+        ('DEVELOPMENT', 'Perkembangan'),
+        ('CULTURE', 'Budaya & Tradisi'),
+        ('ECONOMY', 'Ekonomi'),
+        ('SOCIAL', 'Sosial'),
+        ('GOVERNMENT', 'Pemerintahan'),
+        ('OTHER', 'Lainnya'),
+    ]
+    
+    title = models.CharField(max_length=200, verbose_name="Judul")
+    slug = models.SlugField(max_length=220, unique=True, blank=True, verbose_name="Slug")
+    summary = models.TextField(max_length=500, blank=True, null=True, verbose_name="Ringkasan", 
+                              help_text="Ringkasan singkat sejarah (maksimal 500 karakter)")
+    content = models.TextField(verbose_name="Konten Lengkap")
+    history_type = models.CharField(max_length=20, choices=HISTORY_TYPE_CHOICES, default='OTHER', verbose_name="Jenis Sejarah")
+    
+    # Period information
+    period_start = models.CharField(max_length=50, blank=True, null=True, verbose_name="Periode Mulai")
+    period_end = models.CharField(max_length=50, blank=True, null=True, verbose_name="Periode Berakhir")
+    year_start = models.IntegerField(blank=True, null=True, verbose_name="Tahun Mulai",
+                                   validators=[MinValueValidator(1000), MaxValueValidator(2100)])
+    year_end = models.IntegerField(blank=True, null=True, verbose_name="Tahun Berakhir",
+                                 validators=[MinValueValidator(1000), MaxValueValidator(2100)])
+    
+    # Main image
+    featured_image = models.ImageField(upload_to='village_history/featured/', blank=True, null=True, 
+                                     verbose_name="Gambar Utama")
+    featured_image_caption = models.CharField(max_length=200, blank=True, null=True, 
+                                            verbose_name="Keterangan Gambar Utama")
+    
+    # Additional information
+    source = models.CharField(max_length=200, blank=True, null=True, verbose_name="Sumber",
+                            help_text="Sumber informasi sejarah")
+    author = models.CharField(max_length=100, blank=True, null=True, verbose_name="Penulis")
+    
+    # Status and metadata
+    is_featured = models.BooleanField(default=False, verbose_name="Unggulan")
+    is_active = models.BooleanField(default=True, verbose_name="Aktif")
+    view_count = models.PositiveIntegerField(default=0, verbose_name="Jumlah Dilihat")
+    
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Dibuat")
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="Diperbarui")
 
     class Meta:
         verbose_name = "Sejarah Desa"
         verbose_name_plural = "Sejarah Desa"
-        ordering = ['period_start']
+        ordering = ['-is_featured', 'year_start', 'period_start']
+        indexes = [
+            models.Index(fields=['is_active', 'is_featured']),
+            models.Index(fields=['history_type']),
+            models.Index(fields=['year_start']),
+        ]
 
     def __str__(self):
         return self.title
-
-
-class VillageMap(models.Model):
-    """Village Map and Geographic Information"""
-    MAP_TYPE_CHOICES = [
-        ('ADMINISTRATIVE', 'Peta Administrasi'),
-        ('TOPOGRAPHIC', 'Peta Topografi'),
-        ('LAND_USE', 'Peta Penggunaan Lahan'),
-        ('TOURISM', 'Peta Wisata'),
-    ]
-
-    title = models.CharField(max_length=200)
-    map_type = models.CharField(max_length=20, choices=MAP_TYPE_CHOICES)
-    description = models.TextField(blank=True, null=True)
-    map_image = models.ImageField(upload_to='village_maps/')
-    map_file = models.FileField(upload_to='village_maps/files/', blank=True, null=True, help_text="PDF or other map files")
-    coordinates_center_lat = models.DecimalField(max_digits=10, decimal_places=8, blank=True, null=True)
-    coordinates_center_lng = models.DecimalField(max_digits=11, decimal_places=8, blank=True, null=True)
-    zoom_level = models.IntegerField(default=15)
-    is_active = models.BooleanField(default=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        verbose_name = "Peta Desa"
-        verbose_name_plural = "Peta Desa"
-
-    def __str__(self):
-        return f"{self.title} ({self.get_map_type_display()})"
-
-
-class VillageGeography(models.Model):
-    """Village Geographic and Demographic Information"""
-    total_area = models.DecimalField(max_digits=10, decimal_places=2, help_text="Total area in hectares")
-    agricultural_area = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
-    residential_area = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
-    forest_area = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
-    water_area = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
-    altitude_min = models.IntegerField(blank=True, null=True, help_text="Minimum altitude in meters")
-    altitude_max = models.IntegerField(blank=True, null=True, help_text="Maximum altitude in meters")
-    climate_type = models.CharField(max_length=100, blank=True, null=True)
-    rainfall_average = models.DecimalField(max_digits=6, decimal_places=2, blank=True, null=True, help_text="Average rainfall in mm/year")
-    temperature_min = models.DecimalField(max_digits=4, decimal_places=1, blank=True, null=True)
-    temperature_max = models.DecimalField(max_digits=4, decimal_places=1, blank=True, null=True)
-    boundaries_north = models.CharField(max_length=200, blank=True, null=True)
-    boundaries_south = models.CharField(max_length=200, blank=True, null=True)
-    boundaries_east = models.CharField(max_length=200, blank=True, null=True)
-    boundaries_west = models.CharField(max_length=200, blank=True, null=True)
-    is_active = models.BooleanField(default=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        verbose_name = "Geografi Desa"
-        verbose_name_plural = "Geografi Desa"
-
-    def __str__(self):
-        return f"Geografi Desa - {self.total_area} Ha"
-
-
-class GoogleMapsEmblem(models.Model):
-    """Google Maps Emblem for Village"""
-    title = models.CharField(max_length=200, default="Emblem Desa Pulosarok")
-    description = models.TextField(blank=True, null=True, help_text="Deskripsi tentang emblem desa")
     
-    # Koordinat Google Maps
-    latitude = models.DecimalField(
-        max_digits=10, 
-        decimal_places=8, 
-        help_text="Latitude koordinat emblem di Google Maps"
-    )
-    longitude = models.DecimalField(
-        max_digits=11, 
-        decimal_places=8, 
-        help_text="Longitude koordinat emblem di Google Maps"
-    )
-    zoom_level = models.IntegerField(
-        default=15, 
-        help_text="Level zoom Google Maps (1-20)"
-    )
-    
-    # Informasi emblem
-    emblem_size = models.CharField(
-        max_length=20,
-        choices=[
-            ('small', 'Kecil'),
-            ('medium', 'Sedang'),
-            ('large', 'Besar'),
-        ],
-        default='medium',
-        help_text="Ukuran emblem di peta"
-    )
-    
-    # Status dan metadata
-    is_active = models.BooleanField(default=True)
-    is_visible = models.BooleanField(default=True, help_text="Tampilkan emblem di peta")
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    
-    class Meta:
-        verbose_name = "Google Maps Emblem"
-        verbose_name_plural = "Google Maps Emblem"
-        ordering = ['-created_at']
-    
-    def __str__(self):
-        return f"{self.title} ({self.latitude}, {self.longitude})"
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            from django.utils.text import slugify
+            self.slug = slugify(self.title)
+        super().save(*args, **kwargs)
     
     @property
-    def google_maps_url(self):
-        """Generate Google Maps URL for this emblem location"""
-        return f"https://www.google.com/maps?q={self.latitude},{self.longitude}&z={self.zoom_level}"
+    def period_display(self):
+        """Display period in a readable format"""
+        if self.year_start and self.year_end:
+            return f"{self.year_start} - {self.year_end}"
+        elif self.year_start:
+            return f"Sejak {self.year_start}"
+        elif self.period_start and self.period_end:
+            return f"{self.period_start} - {self.period_end}"
+        elif self.period_start:
+            return self.period_start
+        return "Periode tidak diketahui"
     
     @property
-    def coordinates_display(self):
-        """Display coordinates in a readable format"""
-        return f"Lat: {self.latitude}, Lng: {self.longitude}"
+    def photo_count(self):
+        """Get total number of photos"""
+        return self.photos.filter(is_active=True).count()
+
+
+class VillageHistoryPhoto(models.Model):
+    """Multiple photos for Village History"""
+    history = models.ForeignKey(VillageHistory, on_delete=models.CASCADE, related_name='photos', verbose_name="Sejarah")
+    image = models.ImageField(upload_to='village_history/photos/', verbose_name="Foto")
+    caption = models.CharField(max_length=200, blank=True, null=True, verbose_name="Keterangan")
+    description = models.TextField(blank=True, null=True, verbose_name="Deskripsi")
+    
+    # Photo metadata
+    photographer = models.CharField(max_length=100, blank=True, null=True, verbose_name="Fotografer")
+    photo_date = models.DateField(blank=True, null=True, verbose_name="Tanggal Foto")
+    location = models.CharField(max_length=200, blank=True, null=True, verbose_name="Lokasi")
+    
+    # Display options
+    is_featured = models.BooleanField(default=False, verbose_name="Foto Unggulan")
+    is_active = models.BooleanField(default=True, verbose_name="Aktif")
+    display_order = models.PositiveIntegerField(default=0, verbose_name="Urutan Tampil")
+    
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Dibuat")
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="Diperbarui")
+
+    class Meta:
+        verbose_name = "Foto Sejarah"
+        verbose_name_plural = "Foto Sejarah"
+        ordering = ['display_order', '-is_featured', 'created_at']
+        indexes = [
+            models.Index(fields=['history', 'is_active']),
+            models.Index(fields=['is_featured']),
+        ]
+
+    def __str__(self):
+        return f"Foto: {self.history.title} - {self.caption or 'Tanpa keterangan'}"
+
+
+# VillageMap model removed
+
+
+# VillageGeography model removed
+
+
+# GoogleMapsEmblem model removed

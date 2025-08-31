@@ -9,7 +9,8 @@ from .models import (
     NewsView,
     NewsImage,
     NewsLike,
-    NewsShare
+    NewsShare,
+    Announcement
 )
 
 
@@ -18,10 +19,22 @@ class NewsCategoryForm(forms.ModelForm):
         model = NewsCategory
         fields = ['name', 'description', 'color', 'is_active']
         widgets = {
-            'name': forms.TextInput(attrs={'class': 'form-control'}),
-            'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
-            'color': forms.TextInput(attrs={'class': 'form-control', 'type': 'color'}),
-            'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'name': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Masukkan nama kategori...'
+            }),
+            'description': forms.Textarea(attrs={
+                'class': 'form-control', 
+                'rows': 3,
+                'placeholder': 'Deskripsi kategori (opsional)...'
+            }),
+            'color': forms.TextInput(attrs={
+                'class': 'form-control', 
+                'type': 'color'
+            }),
+            'is_active': forms.CheckboxInput(attrs={
+                'class': 'form-check-input'
+            }),
         }
 
 
@@ -30,7 +43,10 @@ class NewsTagForm(forms.ModelForm):
         model = NewsTag
         fields = ['name']
         widgets = {
-            'name': forms.TextInput(attrs={'class': 'form-control'}),
+            'name': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Masukkan nama tag...'
+            }),
         }
 
 
@@ -38,20 +54,20 @@ class NewsForm(forms.ModelForm):
     class Meta:
         model = News
         fields = [
-            'title', 'category', 'tags', 'content', 'excerpt', 'featured_image',
+            'title', 'category', 'tags', 'content', 'excerpt', 'featured_image', 'featured_image_alt',
             'status', 'priority', 'is_featured', 'is_breaking', 'published_date', 'scheduled_date',
             'meta_title', 'meta_description'
         ]
         widgets = {
             'title': forms.TextInput(attrs={
-                'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500',
+                'class': 'form-control',
                 'placeholder': 'Masukkan judul berita...'
             }),
             'category': forms.Select(attrs={
-                'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500'
+                'class': 'form-control'
             }),
             'tags': forms.SelectMultiple(attrs={
-                'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500',
+                'class': 'form-control',
                 'multiple': True
             }),
             'content': SummernoteWidget(attrs={
@@ -72,42 +88,46 @@ class NewsForm(forms.ModelForm):
                 }
             }),
             'excerpt': forms.Textarea(attrs={
-                'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500',
+                'class': 'form-control',
                 'rows': 3,
                 'maxlength': '300',
                 'placeholder': 'Ringkasan singkat berita (opsional)...'
             }),
             'featured_image': forms.FileInput(attrs={
-                'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500',
+                'class': 'form-control',
                 'accept': 'image/*'
             }),
+            'featured_image_alt': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Alt text untuk gambar utama (opsional)...'
+            }),
             'status': forms.Select(attrs={
-                'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500'
+                'class': 'form-control'
             }),
             'priority': forms.Select(attrs={
-                'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500'
+                'class': 'form-control'
             }),
             'is_featured': forms.CheckboxInput(attrs={
-                'class': 'rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50'
+                'class': 'form-check-input'
             }),
             'is_breaking': forms.CheckboxInput(attrs={
-                'class': 'rounded border-gray-300 text-red-600 shadow-sm focus:border-red-300 focus:ring focus:ring-red-200 focus:ring-opacity-50'
+                'class': 'form-check-input'
             }),
             'published_date': forms.DateTimeInput(attrs={
-                'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500',
+                'class': 'form-control',
                 'type': 'datetime-local'
             }),
             'scheduled_date': forms.DateTimeInput(attrs={
-                'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500',
+                'class': 'form-control',
                 'type': 'datetime-local'
             }),
             'meta_title': forms.TextInput(attrs={
-                'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500',
+                'class': 'form-control',
                 'maxlength': '60',
                 'placeholder': 'Judul SEO (opsional)...'
             }),
             'meta_description': forms.TextInput(attrs={
-                'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500',
+                'class': 'form-control',
                 'maxlength': '160',
                 'placeholder': 'Deskripsi SEO (opsional)...'
             }),
@@ -131,22 +151,22 @@ class NewsImageForm(forms.ModelForm):
         fields = ['image', 'caption', 'alt_text', 'is_featured', 'order']
         widgets = {
             'image': forms.FileInput(attrs={
-                'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500',
+                'class': 'form-control',
                 'accept': 'image/*'
             }),
             'caption': forms.TextInput(attrs={
-                'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500',
+                'class': 'form-control',
                 'placeholder': 'Caption gambar (opsional)...'
             }),
             'alt_text': forms.TextInput(attrs={
-                'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500',
+                'class': 'form-control',
                 'placeholder': 'Alt text untuk SEO...'
             }),
             'is_featured': forms.CheckboxInput(attrs={
-                'class': 'rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50'
+                'class': 'form-check-input'
             }),
             'order': forms.NumberInput(attrs={
-                'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500',
+                'class': 'form-control',
                 'min': '0'
             }),
         }
@@ -176,15 +196,15 @@ class NewsCommentForm(forms.ModelForm):
         fields = ['author_name', 'author_email', 'content']
         widgets = {
             'author_name': forms.TextInput(attrs={
-                'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500',
+                'class': 'form-control',
                 'placeholder': 'Nama Anda...'
             }),
             'author_email': forms.EmailInput(attrs={
-                'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500',
+                'class': 'form-control',
                 'placeholder': 'Email Anda...'
             }),
             'content': forms.Textarea(attrs={
-                'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500',
+                'class': 'form-control',
                 'rows': 4,
                 'placeholder': 'Tulis komentar Anda...'
             }),
@@ -203,7 +223,7 @@ class NewsCommentModerationForm(forms.ModelForm):
         fields = ['status']
         widgets = {
             'status': forms.Select(attrs={
-                'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500'
+                'class': 'form-control'
             }),
         }
 
@@ -223,7 +243,7 @@ class BulkNewsActionForm(forms.Form):
     action = forms.ChoiceField(
         choices=ACTION_CHOICES,
         widget=forms.Select(attrs={
-            'class': 'px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500'
+            'class': 'form-control'
         })
     )
     selected_news = forms.CharField(
@@ -235,7 +255,7 @@ class NewsImportForm(forms.Form):
     """Form untuk import news dari file"""
     file = forms.FileField(
         widget=forms.FileInput(attrs={
-            'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500',
+            'class': 'form-control',
             'accept': '.csv,.xlsx,.xls'
         }),
         help_text='Upload file CSV atau Excel dengan format yang sesuai'
@@ -276,6 +296,126 @@ class NewsSearchForm(forms.Form):
     tags = forms.ModelMultipleChoiceField(
         queryset=NewsTag.objects.all(),
         widget=forms.SelectMultiple(attrs={'class': 'form-control'}),
+        required=False
+    )
+    date_from = forms.DateField(
+        widget=forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+        required=False
+    )
+    date_to = forms.DateField(
+        widget=forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+        required=False
+    )
+
+
+class AnnouncementForm(forms.ModelForm):
+    class Meta:
+        model = Announcement
+        fields = [
+            'title', 'content', 'excerpt', 'announcement_type', 'status', 'priority',
+            'is_pinned', 'is_popup', 'start_date', 'end_date', 'target_audience',
+            'contact_person', 'contact_phone', 'location'
+        ]
+        widgets = {
+            'title': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Masukkan judul pengumuman...'
+            }),
+            'content': SummernoteWidget(attrs={
+                'summernote': {
+                    'width': '100%',
+                    'height': '300',
+                    'toolbar': [
+                        ['style', ['style']],
+                        ['font', ['bold', 'underline', 'clear']],
+                        ['fontname', ['fontname']],
+                        ['color', ['color']],
+                        ['para', ['ul', 'ol', 'paragraph']],
+                        ['table', ['table']],
+                        ['insert', ['link']],
+                        ['view', ['fullscreen', 'codeview', 'help']],
+                    ],
+                    'placeholder': 'Tulis isi pengumuman di sini...',
+                }
+            }),
+            'excerpt': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 2,
+                'maxlength': '300',
+                'placeholder': 'Ringkasan singkat pengumuman (opsional)...'
+            }),
+            'announcement_type': forms.Select(attrs={
+                'class': 'form-control'
+            }),
+            'status': forms.Select(attrs={
+                'class': 'form-control'
+            }),
+            'priority': forms.Select(attrs={
+                'class': 'form-control'
+            }),
+            'is_pinned': forms.CheckboxInput(attrs={
+                'class': 'form-check-input'
+            }),
+            'is_popup': forms.CheckboxInput(attrs={
+                'class': 'form-check-input'
+            }),
+            'start_date': forms.DateTimeInput(attrs={
+                'class': 'form-control',
+                'type': 'datetime-local'
+            }),
+            'end_date': forms.DateTimeInput(attrs={
+                'class': 'form-control',
+                'type': 'datetime-local'
+            }),
+            'target_audience': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Contoh: Semua Warga, Ibu-ibu PKK, Remaja...'
+            }),
+            'contact_person': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Nama narahubung...'
+            }),
+            'contact_phone': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Nomor telepon narahubung...'
+            }),
+            'location': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Lokasi acara/kegiatan...'
+            }),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Set required fields
+        self.fields['title'].required = True
+        self.fields['content'].required = True
+        self.fields['start_date'].required = True
+
+
+class AnnouncementSearchForm(forms.Form):
+    query = forms.CharField(
+        max_length=200,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Cari pengumuman...',
+            'autocomplete': 'off'
+        }),
+        required=False
+    )
+    announcement_type = forms.ChoiceField(
+        choices=[('', 'Semua Jenis')] + Announcement.TYPE_CHOICES,
+        widget=forms.Select(attrs={'class': 'form-control'}),
+        required=False
+    )
+    status = forms.ChoiceField(
+        choices=[('', 'Semua Status')] + Announcement.STATUS_CHOICES,
+        widget=forms.Select(attrs={'class': 'form-control'}),
+        required=False
+    )
+    priority = forms.ChoiceField(
+        choices=[('', 'Semua Prioritas')] + Announcement.PRIORITY_CHOICES,
+        widget=forms.Select(attrs={'class': 'form-control'}),
         required=False
     )
     date_from = forms.DateField(

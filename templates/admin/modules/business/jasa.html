@@ -2,6 +2,8 @@
 
 {% block title %}Layanan Jasa{% endblock %}
 
+{% csrf_token %}
+
 {% block page_title %}Layanan Jasa - Manajemen Jasa Desa{% endblock %}
 
 {% block content %}
@@ -271,6 +273,18 @@ let totalRecords = 0;
 const recordsPerPage = 10;
 let editingId = null;
 
+// Get CSRF token
+async function getCSRFToken() {
+    try {
+        const response = await fetch('/pulosarok/business/csrf-token/');
+        const data = await response.json();
+        return data.csrf_token;
+    } catch (error) {
+        console.error('Error getting CSRF token:', error);
+        return document.querySelector('[name=csrfmiddlewaretoken]')?.value || '';
+    }
+}
+
 // Load data on page load
 document.addEventListener('DOMContentLoaded', function() {
     loadJasaData();
@@ -297,27 +311,28 @@ async function loadJasaData(page = 1) {
             url += `&status=${statusFilter}`;
         }
         
-        const response = await fetch(url);
+        const token = await getCSRFToken();
+        const response = await fetch(url, {
+            headers: {
+                'X-CSRFToken': token,
+                'Content-Type': 'application/json'
+            }
+        });
         const data = await response.json();
         
-        if (data.success) {
-            jasaData = data.data;
-            currentPage = data.current_page;
-            totalRecords = data.total;
-            renderTable();
-            updatePagination();
+        if (response.ok && data.results) {
+            jasaData = data.results;
+            currentPage = data.current_page || page;
+            totalRecords = data.count || 0;
+            displayJasaData();
+            updatePagination(data.num_pages || 1, currentPage);
             updateStatistics();
         } else {
-            console.error('Error loading Jasa data:', data.message);
+            console.error('Error loading Jasa data:', data.message || 'Unknown error');
         }
     } catch (error) {
         console.error('Error fetching Jasa data:', error);
     }
-}
-    
-    renderTable();
-    updatePagination();
-    updateStatistics();
 }
 
 // Format currency
@@ -357,8 +372,8 @@ function updateStatistics() {
     document.getElementById('ratingRataRata').textContent = ratingRataRata.toFixed(1);
 }
 
-// Render table
-function renderTable() {
+// Display Jasa data
+function displayJasaData() {
     const tbody = document.getElementById('jasaTableBody');
     tbody.innerHTML = '';
     
@@ -380,26 +395,29 @@ function renderTable() {
             </div>` : 
             '<span class="text-gray-400">Belum ada</span>';
         
+        // Calculate row number based on pagination
+        const rowNumber = (currentPage - 1) * recordsPerPage + index + 1;
+        
         const row = `
             <tr>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${index + 1}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${item.nama}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${rowNumber}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${item.nama || '-'}</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     <div>
-                        <div class="font-medium">${item.penyedia}</div>
-                        <div class="text-gray-500">${item.telepon}</div>
+                        <div class="font-medium">${item.penyedia || '-'}</div>
+                        <div class="text-gray-500">${item.telepon || '-'}</div>
                     </div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     <span class="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">
-                        ${getCategoryName(item.kategori)}
+                        ${getCategoryName(item.kategori) || '-'}
                     </span>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${hargaRange}</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${rating}</td>
                 <td class="px-6 py-4 whitespace-nowrap">
-                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusColors[item.status]}">
-                        ${item.status.charAt(0).toUpperCase() + item.status.slice(1)}
+                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusColors[item.status] || 'bg-gray-100 text-gray-800'}">
+                        ${item.status ? item.status.charAt(0).toUpperCase() + item.status.slice(1) : 'Tidak Diketahui'}
                     </span>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
@@ -412,10 +430,38 @@ function renderTable() {
                 </td>
             </tr>
         `;
+        
+        // Mobile card view (hidden on desktop)
+        const mobileCard = `
+            <div class="md:hidden bg-white p-4 rounded-lg shadow mb-4">
+                <div class="flex justify-between items-start mb-2">
+                    <h3 class="font-semibold text-gray-900">${item.nama || '-'}</h3>
+                    <span class="px-2 py-1 text-xs font-medium rounded-full ${statusColors[item.status] || 'bg-gray-100 text-gray-800'}">
+                        ${item.status ? item.status.charAt(0).toUpperCase() + item.status.slice(1) : 'Tidak Diketahui'}
+                    </span>
+                </div>
+                <div class="space-y-2 text-sm text-gray-600">
+                    <div><span class="font-medium">Penyedia:</span> ${item.penyedia || '-'}</div>
+                    <div><span class="font-medium">Telepon:</span> ${item.telepon || '-'}</div>
+                    <div><span class="font-medium">Kategori:</span> ${getCategoryName(item.kategori) || '-'}</div>
+                    <div><span class="font-medium">Harga:</span> ${hargaRange}</div>
+                    <div><span class="font-medium">Rating:</span> ${item.rating || 'Belum ada'}</div>
+                </div>
+                <div class="flex justify-end space-x-2 mt-3">
+                    <button onclick="editJasa(${item.id})" class="text-blue-600 hover:text-blue-900">
+                        <i class="fas fa-edit"></i> Edit
+                    </button>
+                    <button onclick="deleteJasa(${item.id})" class="text-red-600 hover:text-red-900">
+                        <i class="fas fa-trash"></i> Hapus
+                    </button>
+                </div>
+            </div>
+        `;
+        
         tbody.innerHTML += row;
     });
     
-    document.getElementById('totalRecords').textContent = jasaData.length;
+    document.getElementById('totalRecords').textContent = totalRecords;
 }
 
 // Open add modal
@@ -462,12 +508,11 @@ async function deleteJasa(id) {
             const response = await fetch(`/pulosarok/business/api/jasa/${id}/`, {
                 method: 'DELETE',
                 headers: {
-                    'X-CSRFToken': getCookie('csrftoken'),
-                    'Content-Type': 'application/json'
+                    'X-CSRFToken': getCSRFToken()
                 }
             });
             
-            if (response.ok) {
+            if (response.ok && response.status === 204) {
                 alert('Layanan jasa berhasil dihapus!');
                 loadJasaData(currentPage);
             } else {
@@ -506,13 +551,15 @@ document.getElementById('jasaForm').addEventListener('submit', async function(e)
     const jasaId = document.getElementById('jasaId').value;
     
     try {
+        const token = await getCSRFToken();
         let response;
         if (jasaId) {
             // Update existing jasa
+            formData.id = jasaId;
             response = await fetch(`/pulosarok/business/api/jasa/${jasaId}/`, {
                 method: 'PUT',
                 headers: {
-                    'X-CSRFToken': getCookie('csrftoken'),
+                    'X-CSRFToken': token,
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(formData)
@@ -522,14 +569,16 @@ document.getElementById('jasaForm').addEventListener('submit', async function(e)
             response = await fetch('/pulosarok/business/api/jasa/', {
                 method: 'POST',
                 headers: {
-                    'X-CSRFToken': getCookie('csrftoken'),
+                    'X-CSRFToken': token,
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(formData)
             });
         }
         
-        if (response.ok) {
+        const data = await response.json();
+        
+        if (response.ok && (data.success || data.id)) {
             alert('Layanan jasa berhasil disimpan!');
             loadJasaData(currentPage);
             closeModal();
@@ -565,8 +614,7 @@ function printCatalog() {
 }
 
 // Update pagination
-function updatePagination() {
-    const totalPages = Math.ceil(totalRecords / recordsPerPage);
+function updatePagination(totalPages, current) {
     const paginationContainer = document.getElementById('pagination');
     
     if (totalPages <= 1) {
@@ -577,27 +625,35 @@ function updatePagination() {
     let paginationHTML = '';
     
     // Previous button
-    if (currentPage > 1) {
+    if (current > 1) {
         paginationHTML += `
-            <button onclick="changePage(${currentPage - 1})" 
-                    class="px-3 py-2 text-sm leading-tight text-gray-500 bg-white border border-gray-300 rounded-l-lg hover:bg-gray-100 hover:text-gray-700">
+            <button onclick="changePage(${current - 1})" 
+                    class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
                 Previous
             </button>
         `;
     }
     
+    // Calculate page range to show (max 5 pages)
+    let startPage = Math.max(1, current - 2);
+    let endPage = Math.min(totalPages, startPage + 4);
+    
+    if (endPage - startPage < 4) {
+        startPage = Math.max(1, endPage - 4);
+    }
+    
     // Page numbers
-    for (let i = 1; i <= totalPages; i++) {
-        if (i === currentPage) {
+    for (let i = startPage; i <= endPage; i++) {
+        if (i === current) {
             paginationHTML += `
-                <button class="px-3 py-2 text-sm leading-tight text-blue-600 bg-blue-50 border border-gray-300 hover:bg-blue-100 hover:text-blue-700">
+                <button class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-blue-50 text-sm font-medium text-blue-600">
                     ${i}
                 </button>
             `;
         } else {
             paginationHTML += `
                 <button onclick="changePage(${i})" 
-                        class="px-3 py-2 text-sm leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700">
+                        class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
                     ${i}
                 </button>
             `;
@@ -605,10 +661,10 @@ function updatePagination() {
     }
     
     // Next button
-    if (currentPage < totalPages) {
+    if (current < totalPages) {
         paginationHTML += `
-            <button onclick="changePage(${currentPage + 1})" 
-                    class="px-3 py-2 text-sm leading-tight text-gray-500 bg-white border border-gray-300 rounded-r-lg hover:bg-gray-100 hover:text-gray-700">
+            <button onclick="changePage(${current + 1})" 
+                    class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
                 Next
             </button>
         `;
@@ -617,8 +673,8 @@ function updatePagination() {
     paginationContainer.innerHTML = paginationHTML;
     
     // Update showing info
-    const start = (currentPage - 1) * recordsPerPage + 1;
-    const end = Math.min(currentPage * recordsPerPage, totalRecords);
+    const start = (current - 1) * recordsPerPage + 1;
+    const end = Math.min(current * recordsPerPage, totalRecords);
     document.getElementById('showingStart').textContent = start;
     document.getElementById('showingEnd').textContent = end;
     document.getElementById('totalRecords').textContent = totalRecords;

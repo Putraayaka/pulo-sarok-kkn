@@ -1,9 +1,13 @@
-from django.urls import path
+from django.urls import path, include
 from . import views
 
 app_name = 'business'
 
 urlpatterns = [
+    # API endpoints
+    path('', include('business.api_urls')),
+    # CSRF Token
+    path('csrf-token/', views.get_csrf_token, name='csrf_token'),
     # Business module view
     path('', views.business_module_view, name='business_admin'),
     
@@ -72,4 +76,12 @@ urlpatterns = [
     path('public/aset/count/', views.aset_count_api, name='aset_count_api'),
     path('public/jasa/count/', views.jasa_count_api, name='jasa_count_api'),
     path('public/statistics/', views.public_business_statistics, name='public_business_statistics'),
+    
+    # Detailed Statistics API endpoints
+    path('api/koperasi/statistics/', views.koperasi_statistics_api, name='koperasi_statistics_api'),
+    path('api/bumg/statistics/', views.bumg_statistics_api, name='bumg_statistics_api'),
+    path('api/ukm/statistics/', views.ukm_statistics_api, name='ukm_statistics_api'),
+    path('api/aset/statistics/', views.aset_statistics_api, name='aset_statistics_api'),
+    path('api/layanan/statistics/', views.layanan_statistics_api, name='layanan_statistics_api'),
+    path('api/kategori/statistics/', views.kategori_statistics_api, name='kategori_statistics_api'),
 ]

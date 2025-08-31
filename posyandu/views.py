@@ -14,7 +14,7 @@ from .models import (
     Immunization, NutritionData, PosyanduKader, IbuHamil, 
     PemeriksaanIbuHamil, StuntingData
 )
-from references.models import Penduduk
+from references.models import Penduduk, Dusun, Lorong
 
 
 @login_required
@@ -66,7 +66,8 @@ def posyandu_location_list(request):
         })
     
     return JsonResponse({
-        'results': data,
+        'success': True,
+        'data': data,
         'pagination': {
             'current_page': page_obj.number,
             'total_pages': paginator.num_pages,
@@ -99,7 +100,6 @@ def posyandu_location_detail(request, location_id):
     return JsonResponse({'data': data})
 
 
-@csrf_exempt
 @login_required
 @require_http_methods(["POST"])
 def posyandu_location_create(request):
@@ -142,7 +142,6 @@ def posyandu_location_create(request):
         }, status=400)
 
 
-@csrf_exempt
 @login_required
 @require_http_methods(["PUT"])
 def posyandu_location_update(request, location_id):
@@ -181,7 +180,6 @@ def posyandu_location_update(request, location_id):
         }, status=400)
 
 
-@csrf_exempt
 @login_required
 @require_http_methods(["DELETE"])
 def posyandu_location_delete(request, location_id):
@@ -253,14 +251,13 @@ def posyandu_schedule_list(request):
         })
     
     return JsonResponse({
-        'results': data,
-        'pagination': {
-            'current_page': page_obj.number,
-            'total_pages': paginator.num_pages,
-            'total_items': paginator.count,
-            'has_previous': page_obj.has_previous(),
-            'has_next': page_obj.has_next(),
-        }
+        'success': True,
+        'data': data,
+        'current_page': page_obj.number,
+        'total_pages': paginator.num_pages,
+        'total_items': paginator.count,
+        'has_previous': page_obj.has_previous(),
+        'has_next': page_obj.has_next(),
     })
 
 
@@ -290,7 +287,6 @@ def posyandu_schedule_detail(request, schedule_id):
     return JsonResponse({'data': data})
 
 
-@csrf_exempt
 @login_required
 @require_http_methods(["POST"])
 def posyandu_schedule_create(request):
@@ -334,7 +330,6 @@ def posyandu_schedule_create(request):
         }, status=400)
 
 
-@csrf_exempt
 @login_required
 @require_http_methods(["PUT"])
 def posyandu_schedule_update(request, schedule_id):
@@ -373,7 +368,6 @@ def posyandu_schedule_update(request, schedule_id):
         }, status=400)
 
 
-@csrf_exempt
 @login_required
 @require_http_methods(["DELETE"])
 def posyandu_schedule_delete(request, schedule_id):
@@ -449,14 +443,13 @@ def health_record_list(request):
         })
     
     return JsonResponse({
-        'results': data,
-        'pagination': {
-            'current_page': page_obj.number,
-            'total_pages': paginator.num_pages,
-            'total_items': paginator.count,
-            'has_previous': page_obj.has_previous(),
-            'has_next': page_obj.has_next(),
-        }
+        'success': True,
+        'data': data,
+        'current_page': page_obj.number,
+        'total_pages': paginator.num_pages,
+        'total_items': paginator.count,
+        'has_previous': page_obj.has_previous(),
+        'has_next': page_obj.has_next(),
     })
 
 
@@ -511,14 +504,13 @@ def immunization_list(request):
         })
     
     return JsonResponse({
-        'results': data,
-        'pagination': {
-            'current_page': page_obj.number,
-            'total_pages': paginator.num_pages,
-            'total_items': paginator.count,
-            'has_previous': page_obj.has_previous(),
-            'has_next': page_obj.has_next(),
-        }
+        'success': True,
+        'data': data,
+        'current_page': page_obj.number,
+        'total_pages': paginator.num_pages,
+        'total_items': paginator.count,
+        'has_previous': page_obj.has_previous(),
+        'has_next': page_obj.has_next(),
     })
 
 
@@ -574,14 +566,13 @@ def nutrition_data_list(request):
         })
     
     return JsonResponse({
-        'results': data,
-        'pagination': {
-            'current_page': page_obj.number,
-            'total_pages': paginator.num_pages,
-            'total_items': paginator.count,
-            'has_previous': page_obj.has_previous(),
-            'has_next': page_obj.has_next(),
-        }
+        'success': True,
+        'data': data,
+        'current_page': page_obj.number,
+        'total_pages': paginator.num_pages,
+        'total_items': paginator.count,
+        'has_previous': page_obj.has_previous(),
+        'has_next': page_obj.has_next(),
     })
 
 
@@ -605,12 +596,12 @@ def posyandu_stats(request):
         # Count balita (children under 5 years old)
         today = date.today()
         balita = Penduduk.objects.filter(
-            tanggal_lahir__gte=today.replace(year=today.year-5)
+            birth_date__gte=today.replace(year=today.year-5)
         ).count()
         
         # Count lansia (elderly 60+ years old)
         lansia = Penduduk.objects.filter(
-            tanggal_lahir__lte=today.replace(year=today.year-60)
+            birth_date__lte=today.replace(year=today.year-60)
         ).count()
         
         # Recent activities
@@ -704,34 +695,34 @@ def posyandu_stats(request):
 
 # ============= SPECIFIC STATISTICS API =============
 
-@login_required
+@require_http_methods(["GET"])
 def balita_stats_api(request):
     """Get balita statistics"""
     try:
         today = date.today()
         total_balita = Penduduk.objects.filter(
-            tanggal_lahir__gte=today.replace(year=today.year-5)
+            birth_date__gte=today.replace(year=today.year-5)
         ).count()
         
         # Get nutrition status counts
         normal = NutritionData.objects.filter(
-            patient__tanggal_lahir__gte=today.replace(year=today.year-5),
+            patient__birth_date__gte=today.replace(year=today.year-5),
             nutrition_status='normal'
         ).count()
         
-        underweight = NutritionData.objects.filter(
-            patient__tanggal_lahir__gte=today.replace(year=today.year-5),
-            nutrition_status='underweight'
+        kurang = NutritionData.objects.filter(
+            patient__birth_date__gte=today.replace(year=today.year-5),
+            nutrition_status='kurang'
         ).count()
         
         stunting = StuntingData.objects.filter(
-            status_stunting__in=['stunting_sedang', 'stunting_berat']
+            status_stunting__in=['pendek', 'sangat_pendek']
         ).count()
         
         return JsonResponse({
             'total': total_balita,
             'normal': normal,
-            'underweight': underweight,
+            'kurang': kurang,
             'stunting': stunting
         })
         
@@ -741,29 +732,33 @@ def balita_stats_api(request):
         }, status=500)
 
 
-@login_required
+@require_http_methods(["GET"])
 def kader_stats_api(request):
     """Get kader statistics"""
     try:
         total = PosyanduKader.objects.count()
         active = PosyanduKader.objects.filter(status='aktif').count()
         leader = PosyanduKader.objects.filter(jabatan='ketua', status='aktif').count()
-        inactive = PosyanduKader.objects.filter(status='tidak_aktif').count()
+        inactive = PosyanduKader.objects.filter(status='nonaktif').count()
         
         return JsonResponse({
-            'total': total,
-            'active': active,
-            'leader': leader,
-            'inactive': inactive
+            'success': True,
+            'data': {
+                'total': total,
+                'aktif': active,
+                'ketua': leader,
+                'nonaktif': inactive
+            }
         })
         
     except Exception as e:
         return JsonResponse({
-            'error': f'Gagal memuat statistik kader: {str(e)}'
+            'success': False,
+            'message': f'Gagal memuat statistik kader: {str(e)}'
         }, status=500)
 
 
-@login_required
+@require_http_methods(["GET"])
 def ibu_hamil_stats_api(request):
     """Get ibu hamil statistics"""
     try:
@@ -785,7 +780,7 @@ def ibu_hamil_stats_api(request):
         }, status=500)
 
 
-@login_required
+@require_http_methods(["GET"])
 def stunting_stats_api(request):
     """Get stunting statistics"""
     try:
@@ -807,36 +802,43 @@ def stunting_stats_api(request):
         }, status=500)
 
 
-@login_required
+@require_http_methods(["GET"])
 def lansia_stats_api(request):
     """Get lansia statistics"""
     try:
         today = date.today()
-        total_lansia = Penduduk.objects.filter(
-            tanggal_lahir__lte=today.replace(year=today.year-60)
-        ).count()
         
-        # Get health status from latest health records
-        healthy = HealthRecord.objects.filter(
-            patient__tanggal_lahir__lte=today.replace(year=today.year-60),
-            patient_type='lansia',
-            diagnosis__icontains='sehat'
-        ).values('patient').distinct().count()
+        # Get lansia from penduduk based on age (60+ years)
+        lansia = Penduduk.objects.filter(
+            birth_date__lte=today.replace(year=today.year-60)
+        )
         
-        attention = HealthRecord.objects.filter(
-            patient__tanggal_lahir__lte=today.replace(year=today.year-60),
-            patient_type='lansia',
-            diagnosis__icontains='perhatian'
-        ).values('patient').distinct().count()
+        total_lansia = lansia.count()
+        healthy = 0
+        attention = 0
+        sick = 0
         
-        sick = HealthRecord.objects.filter(
-            patient__tanggal_lahir__lte=today.replace(year=today.year-60),
-            patient_type='lansia'
-        ).exclude(
-            diagnosis__icontains='sehat'
-        ).exclude(
-            diagnosis__icontains='perhatian'
-        ).values('patient').distinct().count()
+        # Count health status based on latest health records
+        for l in lansia:
+            latest_record = HealthRecord.objects.filter(
+                patient=l, 
+                patient_type='lansia'
+            ).order_by('-visit_date').first()
+            
+            if latest_record:
+                if latest_record.diagnosis and latest_record.diagnosis.strip():
+                    if 'sehat' in latest_record.diagnosis.lower():
+                        healthy += 1
+                    elif 'perhatian' in latest_record.diagnosis.lower():
+                        attention += 1
+                    else:
+                        sick += 1
+                else:
+                    # No diagnosis means healthy
+                    healthy += 1
+            else:
+                # No health record means healthy
+                healthy += 1
         
         return JsonResponse({
             'total': total_lansia,
@@ -947,21 +949,205 @@ def get_ibu_hamil_dropdown(request):
     return JsonResponse({'results': data})
 
 
+@require_http_methods(["GET"])
+def get_children_for_posyandu(request):
+    """Get children (balita) for dropdown selection - age 1-3 years"""
+    search = request.GET.get('search', '')
+    
+    # Filter children aged 1-3 years from Penduduk
+    from datetime import timedelta
+    today = date.today()
+    three_years_ago = today - timedelta(days=3*365)
+    one_year_ago = today - timedelta(days=1*365)
+    
+    children = Penduduk.objects.filter(
+        birth_date__gte=three_years_ago,
+        birth_date__lte=one_year_ago,
+        birth_date__isnull=False
+    )
+    
+    if search:
+        children = children.filter(
+            Q(name__icontains=search) |
+            Q(nik__icontains=search)
+        )
+    
+    children = children.order_by('name')[:20]
+    
+    data = []
+    for child in children:
+        # Calculate age from birth date
+        age_months = 0
+        if child.birth_date:
+            birth_date = child.birth_date
+            age_months = (today.year - birth_date.year) * 12 + today.month - birth_date.month
+        
+        data.append({
+            'id': child.id,
+            'name': child.name,
+            'nik': child.nik,
+            'age_months': age_months,
+            'birth_date': child.birth_date.strftime('%Y-%m-%d') if child.birth_date else None
+        })
+    
+    return JsonResponse({'results': data})
+
+
 @login_required
 def posyandu_dashboard(request):
     """Main posyandu dashboard"""
+    from datetime import timedelta
+    
+    # Basic statistics
+    total_balita = Penduduk.objects.filter(
+        birth_date__gte=date.today().replace(year=date.today().year-5)
+    ).count()
+    
+    total_ibu_hamil = IbuHamil.objects.filter(status_aktif=True).count()
+    total_kader = PosyanduKader.objects.filter(status='aktif').count()
+    total_stunting = StuntingData.objects.count()
+    
+    # Calculate growth (mock data for now)
+    balita_growth = 5
+    ibu_hamil_growth = 3
+    
+    # Calculate stunting percentage
+    stunting_percentage = round((total_stunting / total_balita * 100) if total_balita > 0 else 0, 1)
+    
+    stats = {
+        'total_balita': total_balita,
+        'total_ibu_hamil': total_ibu_hamil,
+        'total_kader': total_kader,
+        'total_stunting': total_stunting,
+        'balita_growth': balita_growth,
+        'ibu_hamil_growth': ibu_hamil_growth,
+        'stunting_percentage': stunting_percentage,
+    }
+    
+    # Health status overview (mock percentages)
+    health_status = {
+        'normal_percentage': 75,
+        'warning_percentage': 20,
+        'critical_percentage': 5,
+    }
+    
+    # Nutrition data (mock data)
+    nutrition = {
+        'gizi_normal': int(total_balita * 0.7),
+        'gizi_kurang': int(total_balita * 0.2),
+        'gizi_buruk': int(total_balita * 0.05),
+        'stunting': total_stunting,
+        'gizi_normal_percentage': 70,
+        'gizi_kurang_percentage': 20,
+        'gizi_buruk_percentage': 5,
+        'stunting_percentage': stunting_percentage,
+    }
+    
+    # Posyandu locations
+    posyandu_locations = PosyanduLocation.objects.filter(is_active=True)[:5]
+    
+    # Monthly activity (mock data)
+    monthly_activity = {
+        'balita_checkups': 45,
+        'ibu_hamil_checkups': 23,
+        'immunizations': 38,
+        'vitamin_a': 42,
+    }
+    
+    # Recent activity (last 7 days - mock data)
+    recent_activity = {
+        'balita_records': 8,
+        'ibu_hamil_records': 5,
+        'immunizations': 12,
+        'growth_monitoring': 15,
+    }
+    
+    # Upcoming schedules
+    upcoming_schedules = PosyanduSchedule.objects.filter(
+        schedule_date__gte=date.today()
+    ).select_related('location').order_by('schedule_date')[:5]
+    
     context = {
         'page_title': 'Dashboard Posyandu',
-        'page_subtitle': 'Overview data posyandu dan kesehatan'
+        'page_subtitle': 'Overview data posyandu dan kesehatan',
+        'stats': stats,
+        'health_status': health_status,
+        'nutrition': nutrition,
+        'posyandu_locations': posyandu_locations,
+        'monthly_activity': monthly_activity,
+        'recent_activity': recent_activity,
+        'upcoming_schedules': upcoming_schedules,
     }
     return render(request, 'admin/modules/posyandu/index.html', context)
 
 @login_required
 def kader_admin(request):
     """Kader admin page"""
+    # Get filter parameters
+    search = request.GET.get('search', '')
+    posyandu_id = request.GET.get('posyandu_id', '')
+    role = request.GET.get('role', '')
+    status = request.GET.get('status', '')
+    page = request.GET.get('page', 1)
+    per_page = 10
+    
+    # Get kader data
+    kader_list = PosyanduKader.objects.all()
+    
+    # Apply filters
+    if search:
+        kader_list = kader_list.filter(
+            Q(penduduk__name__icontains=search) |
+            Q(penduduk__nik__icontains=search)
+        )
+    
+    if posyandu_id:
+        kader_list = kader_list.filter(posyandu_id=posyandu_id)
+    
+    if role:
+        kader_list = kader_list.filter(jabatan=role)
+    
+    if status:
+        # Map frontend status to backend status
+        status_mapping = {
+            'active': 'aktif',
+            'inactive': 'nonaktif',
+            'training': 'cuti'
+        }
+        backend_status = status_mapping.get(status, status)
+        kader_list = kader_list.filter(status=backend_status)
+    
+    kader_list = kader_list.select_related('penduduk', 'posyandu').order_by('-created_at')
+    
+    # Pagination
+    paginator = Paginator(kader_list, per_page)
+    page_obj = paginator.get_page(page)
+    
+    # Get statistics
+    total_kader = PosyanduKader.objects.count()
+    active_kader = PosyanduKader.objects.filter(status='aktif').count()
+    leader_kader = PosyanduKader.objects.filter(jabatan='ketua', status='aktif').count()
+    inactive_kader = PosyanduKader.objects.filter(status='nonaktif').count()
+    
+    stats = {
+        'total_kader': total_kader,
+        'active_kader': active_kader,
+        'leader_kader': leader_kader,
+        'inactive_kader': inactive_kader
+    }
+    
+    # Get posyandu list for filter dropdown
+    posyandu_list = PosyanduLocation.objects.filter(is_active=True).order_by('name')
+    
     context = {
         'page_title': 'Manajemen Kader Posyandu',
-        'page_subtitle': 'Kelola data kader posyandu'
+        'page_subtitle': 'Kelola data kader posyandu',
+        'kader_list': page_obj,
+        'stats': stats,
+        'posyandu_list': posyandu_list,
+        'is_paginated': page_obj.has_other_pages(),
+        'page_obj': page_obj,
+        'paginator': paginator
     }
     return render(request, 'admin/modules/posyandu/kader.html', context)
 
@@ -1049,18 +1235,16 @@ def pemeriksaan_ibu_hamil_list_api(request):
         })
     
     return JsonResponse({
-        'results': data,
-        'pagination': {
-            'current_page': page_obj.number,
-            'total_pages': paginator.num_pages,
-            'total_items': paginator.count,
-            'has_previous': page_obj.has_previous(),
-            'has_next': page_obj.has_next(),
-        }
+        'success': True,
+        'data': data,
+        'current_page': page_obj.number,
+        'total_pages': paginator.num_pages,
+        'total_items': paginator.count,
+        'has_previous': page_obj.has_previous(),
+        'has_next': page_obj.has_next(),
     })
 
 
-@csrf_exempt
 @login_required
 @require_http_methods(["POST"])
 def pemeriksaan_ibu_hamil_create_api(request):
@@ -1101,7 +1285,6 @@ def pemeriksaan_ibu_hamil_create_api(request):
         }, status=400)
 
 
-@csrf_exempt
 @login_required
 @require_http_methods(["PUT"])
 def pemeriksaan_ibu_hamil_update_api(request, pemeriksaan_id):
@@ -1140,7 +1323,6 @@ def pemeriksaan_ibu_hamil_update_api(request, pemeriksaan_id):
         }, status=400)
 
 
-@csrf_exempt
 @login_required
 @require_http_methods(["DELETE"])
 def pemeriksaan_ibu_hamil_delete_api(request, pemeriksaan_id):
@@ -1164,7 +1346,7 @@ def pemeriksaan_ibu_hamil_delete_api(request, pemeriksaan_id):
 
 # ============= KADER API VIEWS =============
 
-@login_required
+@require_http_methods(["GET"])
 def kader_list_api(request):
     """List kader posyandu with pagination and search"""
     search = request.GET.get('search', '')
@@ -1209,14 +1391,13 @@ def kader_list_api(request):
         })
     
     return JsonResponse({
-        'results': data,
-        'pagination': {
-            'current_page': page_obj.number,
-            'total_pages': paginator.num_pages,
-            'total_items': paginator.count,
-            'has_previous': page_obj.has_previous(),
-            'has_next': page_obj.has_next(),
-        }
+        'success': True,
+        'data': data,
+        'current_page': page_obj.number,
+        'total_pages': paginator.num_pages,
+        'total_items': paginator.count,
+        'has_previous': page_obj.has_previous(),
+        'has_next': page_obj.has_next(),
     })
 
 
@@ -1244,7 +1425,6 @@ def kader_detail_api(request, kader_id):
     return JsonResponse({'data': data})
 
 
-@csrf_exempt
 @login_required
 @require_http_methods(["POST"])
 def kader_create_api(request):
@@ -1252,8 +1432,30 @@ def kader_create_api(request):
     try:
         data = json.loads(request.body)
         
+        # Validate required fields
+        required_fields = ['penduduk_id', 'posyandu_id', 'jabatan', 'tanggal_bergabung']
+        for field in required_fields:
+            if not data.get(field):
+                return JsonResponse({
+                    'success': False,
+                    'message': f'Field {field} wajib diisi'
+                }, status=400)
+        
         penduduk = get_object_or_404(Penduduk, id=data['penduduk_id'])
         posyandu = get_object_or_404(PosyanduLocation, id=data['posyandu_id'])
+        
+        # Check for existing kader with same penduduk, posyandu, and jabatan
+        existing_kader = PosyanduKader.objects.filter(
+            penduduk=penduduk,
+            posyandu=posyandu,
+            jabatan=data['jabatan']
+        ).first()
+        
+        if existing_kader:
+            return JsonResponse({
+                'success': False,
+                'message': f'Kader {penduduk.name} sudah terdaftar sebagai {data["jabatan"]} di {posyandu.name}'
+            }, status=400)
         
         tanggal_bergabung = datetime.strptime(data['tanggal_bergabung'], '%Y-%m-%d').date()
         tanggal_selesai = None
@@ -1284,7 +1486,6 @@ def kader_create_api(request):
         }, status=400)
 
 
-@csrf_exempt
 @login_required
 @require_http_methods(["PUT"])
 def kader_update_api(request, kader_id):
@@ -1323,7 +1524,6 @@ def kader_update_api(request, kader_id):
         }, status=400)
 
 
-@csrf_exempt
 @login_required
 @require_http_methods(["DELETE"])
 def kader_delete_api(request, kader_id):
@@ -1347,7 +1547,7 @@ def kader_delete_api(request, kader_id):
 
 # ============= IBU HAMIL API VIEWS =============
 
-@login_required
+@require_http_methods(["GET"])
 def ibu_hamil_list_api(request):
     """List ibu hamil with pagination and search"""
     search = request.GET.get('search', '')
@@ -1380,27 +1580,36 @@ def ibu_hamil_list_api(request):
     for ibu in page_obj:
         data.append({
             'id': ibu.id,
-            'nama': ibu.penduduk.name,
-            'nik': ibu.penduduk.nik,
-            'posyandu': ibu.posyandu.name,
+            'penduduk': {
+                'id': ibu.penduduk.id,
+                'name': ibu.penduduk.name,
+                'nik': ibu.penduduk.nik,
+                'birth_date': ibu.penduduk.birth_date.strftime('%Y-%m-%d') if ibu.penduduk.birth_date else None,
+            },
+            'posyandu': {
+                'id': ibu.posyandu.id,
+                'name': ibu.posyandu.name,
+            },
+            'penduduk_id': ibu.penduduk.id,
+            'posyandu_id': ibu.posyandu.id,
             'usia_kehamilan': ibu.usia_kehamilan,
             'tanggal_hpht': ibu.tanggal_hpht.strftime('%Y-%m-%d'),
             'tanggal_perkiraan_lahir': ibu.tanggal_perkiraan_lahir.strftime('%Y-%m-%d'),
             'riwayat_kehamilan': ibu.get_riwayat_kehamilan_display(),
-            'risiko_kehamilan': ibu.get_risiko_kehamilan_display(),
+            'risiko_kehamilan': ibu.risiko_kehamilan,
             'nomor_buku_kia': ibu.nomor_buku_kia,
+            'keterangan': ibu.keterangan,
             'created_at': ibu.created_at.strftime('%Y-%m-%d %H:%M')
         })
     
     return JsonResponse({
-        'results': data,
-        'pagination': {
-            'current_page': page_obj.number,
-            'total_pages': paginator.num_pages,
-            'total_items': paginator.count,
-            'has_previous': page_obj.has_previous(),
-            'has_next': page_obj.has_next(),
-        }
+        'success': True,
+        'data': data,
+        'current_page': page_obj.number,
+        'total_pages': paginator.num_pages,
+        'total_items': paginator.count,
+        'has_previous': page_obj.has_previous(),
+        'has_next': page_obj.has_next(),
     })
 
 
@@ -1433,7 +1642,6 @@ def ibu_hamil_detail_api(request, ibu_id):
     return JsonResponse({'data': data})
 
 
-@csrf_exempt
 @login_required
 @require_http_methods(["POST"])
 def ibu_hamil_create_api(request):
@@ -1474,7 +1682,6 @@ def ibu_hamil_create_api(request):
         }, status=400)
 
 
-@csrf_exempt
 @login_required
 @require_http_methods(["PUT"])
 def ibu_hamil_update_api(request, ibu_id):
@@ -1514,7 +1721,6 @@ def ibu_hamil_update_api(request, ibu_id):
         }, status=400)
 
 
-@csrf_exempt
 @login_required
 @require_http_methods(["DELETE"])
 def ibu_hamil_delete_api(request, ibu_id):
@@ -1538,7 +1744,7 @@ def ibu_hamil_delete_api(request, ibu_id):
 
 # ============= BALITA API VIEWS =============
 
-@login_required
+@require_http_methods(["GET"])
 def balita_list_api(request):
     """List balita data using nutrition data"""
     search = request.GET.get('search', '')
@@ -1547,43 +1753,39 @@ def balita_list_api(request):
     page = request.GET.get('page', 1)
     per_page = int(request.GET.get('per_page', 10))
     
-    # Get balita from penduduk based on age
-    today = date.today()
-    balita = Penduduk.objects.filter(
-        tanggal_lahir__gte=today.replace(year=today.year-5)
-    )
+    # Get nutrition data (balita records) instead of penduduk
+    nutrition_data = NutritionData.objects.select_related('patient', 'posyandu').all()
     
+    # Apply filters
     if search:
-        balita = balita.filter(
-            Q(name__icontains=search) |
-            Q(nik__icontains=search)
+        nutrition_data = nutrition_data.filter(
+            Q(patient__name__icontains=search) |
+            Q(patient__nik__icontains=search)
         )
     
-    balita = balita.order_by('name')
+    if posyandu_id:
+        nutrition_data = nutrition_data.filter(posyandu_id=posyandu_id)
+        
+    if nutrition_status:
+        nutrition_data = nutrition_data.filter(nutrition_status=nutrition_status)
     
-    paginator = Paginator(balita, per_page)
+    nutrition_data = nutrition_data.order_by('-measurement_date', 'patient__name')
+    
+    paginator = Paginator(nutrition_data, per_page)
     page_obj = paginator.get_page(page)
     
     data = []
-    for b in page_obj:
-        age_months = 0
-        if b.tanggal_lahir:
-            age_months = (today.year - b.tanggal_lahir.year) * 12 + (today.month - b.tanggal_lahir.month)
-        
-        # Get latest nutrition data
-        latest_nutrition = NutritionData.objects.filter(patient=b).first()
-        
+    for nutrition in page_obj:
         data.append({
-            'id': b.id,
-            'nama': b.name,
-            'nik': b.nik,
-            'tanggal_lahir': b.tanggal_lahir.strftime('%Y-%m-%d') if b.tanggal_lahir else None,
-            'age_months': age_months,
-            'jenis_kelamin': b.jenis_kelamin,
-            'latest_weight': float(latest_nutrition.weight) if latest_nutrition else None,
-            'latest_height': float(latest_nutrition.height) if latest_nutrition else None,
-            'nutrition_status': latest_nutrition.get_nutrition_status_display() if latest_nutrition else 'Belum diukur',
-            'last_measurement': latest_nutrition.measurement_date.strftime('%Y-%m-%d') if latest_nutrition else None
+            'id': nutrition.id,
+            'patient_name': nutrition.patient.name,
+            'patient_nik': nutrition.patient.nik,
+            'age_months': nutrition.age_months,
+            'posyandu_name': nutrition.posyandu.name,
+            'nutrition_status': nutrition.nutrition_status,
+            'measurement_date': nutrition.measurement_date.strftime('%Y-%m-%d'),
+            'weight': float(nutrition.weight) if nutrition.weight else 0,
+            'height': float(nutrition.height) if nutrition.height else 0,
         })
     
     return JsonResponse({
@@ -1598,7 +1800,7 @@ def balita_list_api(request):
     })
 
 
-@login_required
+@require_http_methods(["GET"])
 def balita_detail_api(request, balita_id):
     """Get balita detail"""
     nutrition = get_object_or_404(NutritionData, id=balita_id)
@@ -1610,7 +1812,7 @@ def balita_detail_api(request, balita_id):
         'nik': nutrition.patient.nik,
         'posyandu_id': nutrition.posyandu.id,
         'posyandu_name': nutrition.posyandu.name,
-        'visit_date': nutrition.visit_date.strftime('%Y-%m-%d'),
+        'measurement_date': nutrition.measurement_date.strftime('%Y-%m-%d'),
         'age_months': nutrition.age_months,
         'weight': float(nutrition.weight) if nutrition.weight else None,
         'height': float(nutrition.height) if nutrition.height else None,
@@ -1626,32 +1828,30 @@ def balita_detail_api(request, balita_id):
     return JsonResponse({'data': data})
 
 
-@csrf_exempt
 @login_required
 @require_http_methods(["POST"])
 def balita_create_api(request):
     """Create new balita nutrition data"""
     try:
-        data = json.loads(request.body)
+        # Get data from FormData
+        patient = get_object_or_404(Penduduk, id=request.POST.get('patient_id'))
+        posyandu = get_object_or_404(PosyanduLocation, id=request.POST.get('posyandu_id'))
         
-        patient = get_object_or_404(Penduduk, id=data['patient_id'])
-        posyandu = get_object_or_404(PosyanduLocation, id=data['posyandu_id'])
-        
-        measurement_date = datetime.strptime(data['measurement_date'], '%Y-%m-%d').date()
+        measurement_date = datetime.strptime(request.POST.get('measurement_date'), '%Y-%m-%d').date()
         
         nutrition = NutritionData.objects.create(
             patient=patient,
             posyandu=posyandu,
             measurement_date=measurement_date,
-            age_months=data['age_months'],
-            weight=data['weight'],
-            height=data['height'],
-            head_circumference=data.get('head_circumference'),
-            arm_circumference=data.get('arm_circumference'),
-            nutrition_status=data['nutrition_status'],
-            vitamin_a_given=data.get('vitamin_a_given', False),
-            iron_supplement_given=data.get('iron_supplement_given', False),
-            notes=data.get('notes', ''),
+            age_months=int(request.POST.get('age_months')),
+            weight=float(request.POST.get('weight')),
+            height=float(request.POST.get('height')),
+            head_circumference=float(request.POST.get('head_circumference')) if request.POST.get('head_circumference') else None,
+            arm_circumference=float(request.POST.get('arm_circumference')) if request.POST.get('arm_circumference') else None,
+            nutrition_status=request.POST.get('nutrition_status'),
+            vitamin_a_given=request.POST.get('vitamin_a_given') == 'true',
+            iron_supplement_given=request.POST.get('iron_supplement_given') == 'true',
+            notes=request.POST.get('notes', ''),
             recorded_by=request.user
         )
         
@@ -1668,32 +1868,30 @@ def balita_create_api(request):
         }, status=400)
 
 
-@csrf_exempt
 @login_required
-@require_http_methods(["PUT"])
+@require_http_methods(["POST"])
 def balita_update_api(request, balita_id):
     """Update balita nutrition data"""
     try:
         nutrition = get_object_or_404(NutritionData, id=balita_id)
-        data = json.loads(request.body)
         
-        patient = get_object_or_404(Penduduk, id=data['patient_id'])
-        posyandu = get_object_or_404(PosyanduLocation, id=data['posyandu_id'])
+        patient = get_object_or_404(Penduduk, id=request.POST.get('patient_id'))
+        posyandu = get_object_or_404(PosyanduLocation, id=request.POST.get('posyandu_id'))
         
-        measurement_date = datetime.strptime(data['measurement_date'], '%Y-%m-%d').date()
+        measurement_date = datetime.strptime(request.POST.get('measurement_date'), '%Y-%m-%d').date()
         
         nutrition.patient = patient
         nutrition.posyandu = posyandu
         nutrition.measurement_date = measurement_date
-        nutrition.age_months = data['age_months']
-        nutrition.weight = data['weight']
-        nutrition.height = data['height']
-        nutrition.head_circumference = data.get('head_circumference')
-        nutrition.arm_circumference = data.get('arm_circumference')
-        nutrition.nutrition_status = data['nutrition_status']
-        nutrition.vitamin_a_given = data.get('vitamin_a_given', False)
-        nutrition.iron_supplement_given = data.get('iron_supplement_given', False)
-        nutrition.notes = data.get('notes', '')
+        nutrition.age_months = int(request.POST.get('age_months'))
+        nutrition.weight = float(request.POST.get('weight'))
+        nutrition.height = float(request.POST.get('height'))
+        nutrition.head_circumference = float(request.POST.get('head_circumference')) if request.POST.get('head_circumference') else None
+        nutrition.arm_circumference = float(request.POST.get('arm_circumference')) if request.POST.get('arm_circumference') else None
+        nutrition.nutrition_status = request.POST.get('nutrition_status')
+        nutrition.vitamin_a_given = request.POST.get('vitamin_a_given') == 'true'
+        nutrition.iron_supplement_given = request.POST.get('iron_supplement_given') == 'true'
+        nutrition.notes = request.POST.get('notes', '')
         nutrition.save()
         
         return JsonResponse({
@@ -1708,9 +1906,8 @@ def balita_update_api(request, balita_id):
         }, status=400)
 
 
-@csrf_exempt
 @login_required
-@require_http_methods(["DELETE"])
+@require_http_methods(["POST", "DELETE"])
 def balita_delete_api(request, balita_id):
     """Delete balita nutrition data"""
     try:
@@ -1732,7 +1929,7 @@ def balita_delete_api(request, balita_id):
 
 # ============= LANSIA API VIEWS =============
 
-@login_required
+@require_http_methods(["GET"])
 def lansia_list_api(request):
     """List lansia data using health records"""
     search = request.GET.get('search', '')
@@ -1743,7 +1940,7 @@ def lansia_list_api(request):
     # Get lansia from penduduk based on age (60+ years)
     today = date.today()
     lansia = Penduduk.objects.filter(
-        tanggal_lahir__lte=today.replace(year=today.year-60)
+        birth_date__lte=today.replace(year=today.year-60)
     )
     
     if search:
@@ -1760,25 +1957,37 @@ def lansia_list_api(request):
     data = []
     for l in page_obj:
         age = 0
-        if l.tanggal_lahir:
-            age = today.year - l.tanggal_lahir.year
-            if today.month < l.tanggal_lahir.month or (today.month == l.tanggal_lahir.month and today.day < l.tanggal_lahir.day):
+        if l.birth_date:
+            age = today.year - l.birth_date.year
+            if today.month < l.birth_date.month or (today.month == l.birth_date.month and today.day < l.birth_date.day):
                 age -= 1
         
         # Get latest health record
         latest_record = HealthRecord.objects.filter(patient=l, patient_type='lansia').first()
         
+        # Determine health status based on latest record
+        health_status = 'sehat'
+        if latest_record:
+            if latest_record.diagnosis and latest_record.diagnosis.strip():
+                health_status = 'sakit'
+            elif latest_record.complaints and latest_record.complaints.strip():
+                health_status = 'perlu_perhatian'
+        
         data.append({
             'id': l.id,
-            'nama': l.name,
+            'name': l.name,
             'nik': l.nik,
-            'tanggal_lahir': l.tanggal_lahir.strftime('%Y-%m-%d') if l.tanggal_lahir else None,
+            'birth_date': l.birth_date.strftime('%Y-%m-%d') if l.birth_date else None,
             'age': age,
-            'jenis_kelamin': l.jenis_kelamin,
-            'latest_weight': float(latest_record.weight) if latest_record and latest_record.weight else None,
-            'latest_height': float(latest_record.height) if latest_record and latest_record.height else None,
-            'blood_pressure': latest_record.blood_pressure if latest_record else None,
-            'last_visit': latest_record.visit_date.strftime('%Y-%m-%d') if latest_record else None
+            'gender': l.gender,
+            'posyandu_name': latest_record.posyandu.name if latest_record and latest_record.posyandu else '-',
+            'health_status': health_status,
+            'weight': float(latest_record.weight) if latest_record and latest_record.weight else None,
+            'height': float(latest_record.height) if latest_record and latest_record.height else None,
+            'blood_pressure_systolic': latest_record.blood_pressure.split('/')[0] if latest_record and latest_record.blood_pressure and '/' in latest_record.blood_pressure else None,
+            'blood_pressure_diastolic': latest_record.blood_pressure.split('/')[1] if latest_record and latest_record.blood_pressure and '/' in latest_record.blood_pressure else None,
+            'blood_sugar': float(latest_record.blood_sugar) if latest_record and latest_record.blood_sugar else None,
+            'last_checkup': latest_record.visit_date.strftime('%Y-%m-%d') if latest_record else None
         })
     
     return JsonResponse({
@@ -1796,32 +2005,40 @@ def lansia_list_api(request):
 @login_required
 def lansia_detail_api(request, lansia_id):
     """Get lansia detail"""
-    health_record = get_object_or_404(HealthRecord, id=lansia_id)
-    
-    data = {
-        'id': health_record.id,
-        'patient_id': health_record.patient.id,
-        'nama': health_record.patient.name,
-        'nik': health_record.patient.nik,
-        'posyandu_id': health_record.posyandu.id,
-        'posyandu_name': health_record.posyandu.name,
-        'visit_date': health_record.visit_date.strftime('%Y-%m-%d'),
-        'weight': float(health_record.weight) if health_record.weight else None,
-        'height': float(health_record.height) if health_record.height else None,
-        'blood_pressure': health_record.blood_pressure,
-        'blood_sugar': float(health_record.blood_sugar) if health_record.blood_sugar else None,
-        'cholesterol': float(health_record.cholesterol) if health_record.cholesterol else None,
-        'complaints': health_record.complaints,
-        'diagnosis': health_record.diagnosis,
-        'treatment': health_record.treatment,
-        'notes': health_record.notes,
-        'created_at': health_record.created_at.strftime('%Y-%m-%d %H:%M')
-    }
-    
-    return JsonResponse({'data': data})
+    try:
+        health_record = get_object_or_404(HealthRecord, id=lansia_id)
+        
+        data = {
+            'id': health_record.id,
+            'patient_id': health_record.patient.id,
+            'nama': health_record.patient.name,
+            'nik': health_record.patient.nik,
+            'posyandu_id': health_record.posyandu.id,
+            'posyandu_name': health_record.posyandu.name,
+            'visit_date': health_record.visit_date.strftime('%Y-%m-%d'),
+            'weight': float(health_record.weight) if health_record.weight else None,
+            'height': float(health_record.height) if health_record.height else None,
+            'blood_pressure': health_record.blood_pressure,
+            'blood_sugar': float(health_record.blood_sugar) if health_record.blood_sugar else None,
+            'cholesterol': float(health_record.cholesterol) if health_record.cholesterol else None,
+            'complaints': health_record.complaints,
+            'diagnosis': health_record.diagnosis,
+            'treatment': health_record.treatment,
+            'notes': health_record.notes,
+            'created_at': health_record.created_at.strftime('%Y-%m-%d %H:%M')
+        }
+        
+        return JsonResponse({
+            'success': True,
+            'data': data
+        })
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f'Gagal mengambil data lansia: {str(e)}'
+        }, status=400)
 
 
-@csrf_exempt
 @login_required
 @require_http_methods(["POST"])
 def lansia_create_api(request):
@@ -1864,7 +2081,6 @@ def lansia_create_api(request):
         }, status=400)
 
 
-@csrf_exempt
 @login_required
 @require_http_methods(["PUT"])
 def lansia_update_api(request, lansia_id):
@@ -1904,7 +2120,6 @@ def lansia_update_api(request, lansia_id):
         }, status=400)
 
 
-@csrf_exempt
 @login_required
 @require_http_methods(["DELETE"])
 def lansia_delete_api(request, lansia_id):
@@ -1928,7 +2143,7 @@ def lansia_delete_api(request, lansia_id):
 
 # ============= STUNTING API VIEWS =============
 
-@login_required
+@require_http_methods(["GET"])
 def stunting_list_api(request):
     """List stunting data with pagination and search"""
     search = request.GET.get('search', '')
@@ -1960,18 +2175,18 @@ def stunting_list_api(request):
     for stunting in page_obj:
         data.append({
             'id': stunting.id,
-            'nama_balita': stunting.balita.name,
-            'nik_balita': stunting.balita.nik,
-            'posyandu': stunting.posyandu.name,
-            'tanggal_ukur': stunting.tanggal_ukur.strftime('%Y-%m-%d'),
-            'usia_bulan': stunting.usia_bulan,
-            'tinggi_badan': float(stunting.tinggi_badan),
-            'berat_badan': float(stunting.berat_badan),
-            'z_score_tb_u': float(stunting.z_score_tb_u),
-            'status_stunting': stunting.get_status_stunting_display(),
-            'asi_eksklusif': stunting.asi_eksklusif,
-            'riwayat_bblr': stunting.riwayat_bblr,
-            'intervensi_diberikan': stunting.get_intervensi_diberikan_display() if stunting.intervensi_diberikan else None,
+            'child_name': stunting.balita.name,
+            'child_nik': stunting.balita.nik,
+            'posyandu_name': stunting.posyandu.name,
+            'measurement_date': stunting.tanggal_ukur.strftime('%Y-%m-%d'),
+            'age_months': stunting.usia_bulan,
+            'height': float(stunting.tinggi_badan),
+            'weight': float(stunting.berat_badan),
+            'z_score_height_age': float(stunting.z_score_tb_u),
+            'stunting_severity': stunting.status_stunting,
+            'exclusive_breastfeeding': stunting.asi_eksklusif,
+            'low_birth_weight_history': stunting.riwayat_bblr,
+            'intervention_status': stunting.intervensi_diberikan,
             'follow_up_date': stunting.follow_up_date.strftime('%Y-%m-%d') if stunting.follow_up_date else None,
             'recorded_by': stunting.recorded_by.username if stunting.recorded_by else '-',
             'created_at': stunting.created_at.strftime('%Y-%m-%d %H:%M')
@@ -2022,7 +2237,6 @@ def stunting_detail_api(request, stunting_id):
     return JsonResponse({'data': data})
 
 
-@csrf_exempt
 @login_required
 @require_http_methods(["POST"])
 def stunting_create_api(request):
@@ -2072,7 +2286,6 @@ def stunting_create_api(request):
         }, status=400)
 
 
-@csrf_exempt
 @login_required
 @require_http_methods(["PUT"])
 def stunting_update_api(request, stunting_id):
@@ -2120,7 +2333,6 @@ def stunting_update_api(request, stunting_id):
         }, status=400)
 
 
-@csrf_exempt
 @login_required
 @require_http_methods(["DELETE"])
 def stunting_delete_api(request, stunting_id):
@@ -2140,3 +2352,314 @@ def stunting_delete_api(request, stunting_id):
             'success': False,
             'message': f'Gagal menghapus data stunting: {str(e)}'
         }, status=400)
+
+
+@login_required
+def penduduk_admin(request):
+    """Data penduduk admin page"""
+    context = {
+        'page_title': 'Data Penduduk',
+        'page_subtitle': 'Kelola data penduduk untuk posyandu'
+    }
+    return render(request, 'admin/modules/posyandu/penduduk.html', context)
+
+
+@login_required
+def penduduk_list_api(request):
+    """API untuk mengambil data penduduk dengan pencarian"""
+    try:
+        # Get filter parameters
+        search = request.GET.get('search', '')
+        dusun_id = request.GET.get('dusun_id', '')
+        gender = request.GET.get('gender', '')
+        page = int(request.GET.get('page', 1))
+        per_page = int(request.GET.get('per_page', 10))
+        
+        # Get penduduk data
+        penduduk_list = Penduduk.objects.select_related('dusun', 'lorong').all()
+        
+        # Apply filters
+        if search:
+            penduduk_list = penduduk_list.filter(
+                Q(name__icontains=search) |
+                Q(nik__icontains=search)
+            )
+        
+        if dusun_id:
+            penduduk_list = penduduk_list.filter(dusun_id=dusun_id)
+            
+        if gender:
+            penduduk_list = penduduk_list.filter(gender=gender)
+        
+        # Order by name
+        penduduk_list = penduduk_list.order_by('name')
+        
+        # Pagination
+        paginator = Paginator(penduduk_list, per_page)
+        page_obj = paginator.get_page(page)
+        
+        # Prepare data
+        data = []
+        for penduduk in page_obj:
+            data.append({
+                'id': penduduk.id,
+                'nik': penduduk.nik,
+                'name': penduduk.name,
+                'birth_place': penduduk.birth_place,
+                'birth_date': penduduk.birth_date.strftime('%Y-%m-%d') if penduduk.birth_date else '',
+                'gender': penduduk.get_gender_display(),
+                'religion': penduduk.get_religion_display(),
+                'education': penduduk.get_education_display(),
+                'occupation': penduduk.occupation,
+                'marital_status': penduduk.get_marital_status_display(),
+                'dusun': penduduk.dusun.name if penduduk.dusun else '',
+                'lorong': penduduk.lorong.name if penduduk.lorong else '',
+                'address': penduduk.address,
+                'phone': penduduk.phone_number or penduduk.mobile_number,
+                'email': penduduk.email,
+                'is_active': penduduk.is_active,
+            })
+        
+        return JsonResponse({
+            'success': True,
+            'data': data,
+            'pagination': {
+                'current_page': page_obj.number,
+                'total_pages': paginator.num_pages,
+                'total_items': paginator.count,
+                'has_previous': page_obj.has_previous(),
+                'has_next': page_obj.has_next(),
+                'per_page': per_page
+            }
+        })
+        
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@login_required
+def penduduk_detail_api(request, penduduk_id):
+    """API untuk mengambil detail penduduk"""
+    try:
+        penduduk = get_object_or_404(Penduduk, id=penduduk_id)
+        
+        data = {
+            'id': penduduk.id,
+            'nik': penduduk.nik,
+            'name': penduduk.name,
+            'birth_place': penduduk.birth_place,
+            'birth_date': penduduk.birth_date.strftime('%Y-%m-%d') if penduduk.birth_date else '',
+            'gender': penduduk.get_gender_display(),
+            'religion': penduduk.get_religion_display(),
+            'education': penduduk.get_education_display(),
+            'occupation': penduduk.occupation,
+            'marital_status': penduduk.get_marital_status_display(),
+            'blood_type': penduduk.get_blood_type_display(),
+            'height': penduduk.height,
+            'weight': penduduk.weight,
+            'dusun': penduduk.dusun.name if penduduk.dusun else '',
+            'lorong': penduduk.lorong.name if penduduk.lorong else '',
+            'address': penduduk.address,
+            'phone': penduduk.phone_number or penduduk.mobile_number,
+            'email': penduduk.email,
+            'emergency_contact_name': penduduk.emergency_contact,
+            'emergency_contact_phone': penduduk.emergency_phone,
+            'is_active': penduduk.is_active,
+            'created_at': penduduk.created_at.strftime('%Y-%m-%d %H:%M:%S') if hasattr(penduduk, 'created_at') else '',
+        }
+        
+        return JsonResponse({
+            'success': True,
+            'data': data
+        })
+        
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@login_required
+def get_dusun_dropdown(request):
+    """API untuk dropdown dusun"""
+    try:
+        dusun_list = Dusun.objects.all().order_by('name')
+        data = [{'id': dusun.id, 'name': dusun.name} for dusun in dusun_list]
+        
+        return JsonResponse({
+            'success': True,
+            'data': data
+        })
+        
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@login_required
+def penduduk_create_api(request):
+    """API untuk membuat data penduduk baru"""
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'Method not allowed'}, status=405)
+    
+    try:
+        data = json.loads(request.body)
+        
+        # Validasi data minimal
+        required_fields = ['name', 'nik', 'gender']
+        for field in required_fields:
+            if field not in data or not data[field]:
+                return JsonResponse({
+                    'success': False, 
+                    'error': f'Field {field} is required'
+                }, status=400)
+        
+        # Cek NIK unik
+        if Penduduk.objects.filter(nik=data['nik']).exists():
+            return JsonResponse({
+                'success': False, 
+                'error': 'NIK sudah terdaftar'
+            }, status=400)
+        
+        # Buat penduduk baru
+        penduduk = Penduduk(
+            nik=data['nik'],
+            name=data['name'],
+            gender=data['gender'],
+            birth_place=data.get('birth_place', ''),
+            birth_date=data.get('birth_date') and datetime.strptime(data['birth_date'], '%Y-%m-%d').date(),
+            religion=data.get('religion', ''),
+            education=data.get('education', ''),
+            occupation=data.get('occupation', ''),
+            marital_status=data.get('marital_status', ''),
+            blood_type=data.get('blood_type', ''),
+            height=data.get('height'),
+            weight=data.get('weight'),
+            address=data.get('address', ''),
+            phone_number=data.get('phone', ''),
+            email=data.get('email', ''),
+            emergency_contact=data.get('emergency_contact_name', ''),
+            emergency_phone=data.get('emergency_contact_phone', ''),
+            is_active=True
+        )
+        
+        # Set dusun jika ada
+        if data.get('dusun_id'):
+            try:
+                penduduk.dusun = Dusun.objects.get(id=data['dusun_id'])
+            except Dusun.DoesNotExist:
+                pass
+        
+        # Set lorong jika ada
+        if data.get('lorong_id'):
+            try:
+                penduduk.lorong = Lorong.objects.get(id=data['lorong_id'])
+            except Lorong.DoesNotExist:
+                pass
+        
+        penduduk.save()
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Data penduduk berhasil ditambahkan',
+            'id': penduduk.id
+        })
+        
+    except json.JSONDecodeError:
+        return JsonResponse({'success': False, 'error': 'Invalid JSON'}, status=400)
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@login_required
+def penduduk_update_api(request, penduduk_id):
+    """API untuk memperbarui data penduduk"""
+    if request.method != 'PUT':
+        return JsonResponse({'success': False, 'error': 'Method not allowed'}, status=405)
+    
+    try:
+        penduduk = get_object_or_404(Penduduk, id=penduduk_id)
+        data = json.loads(request.body)
+        
+        # Validasi data minimal
+        required_fields = ['name', 'nik', 'gender']
+        for field in required_fields:
+            if field not in data or not data[field]:
+                return JsonResponse({
+                    'success': False, 
+                    'error': f'Field {field} is required'
+                }, status=400)
+        
+        # Cek NIK unik jika berubah
+        if data['nik'] != penduduk.nik and Penduduk.objects.filter(nik=data['nik']).exists():
+            return JsonResponse({
+                'success': False, 
+                'error': 'NIK sudah terdaftar'
+            }, status=400)
+        
+        # Update data penduduk
+        penduduk.nik = data['nik']
+        penduduk.name = data['name']
+        penduduk.gender = data['gender']
+        penduduk.birth_place = data.get('birth_place', penduduk.birth_place)
+        
+        if data.get('birth_date'):
+            penduduk.birth_date = datetime.strptime(data['birth_date'], '%Y-%m-%d').date()
+        
+        penduduk.religion = data.get('religion', penduduk.religion)
+        penduduk.education = data.get('education', penduduk.education)
+        penduduk.occupation = data.get('occupation', penduduk.occupation)
+        penduduk.marital_status = data.get('marital_status', penduduk.marital_status)
+        penduduk.blood_type = data.get('blood_type', penduduk.blood_type)
+        penduduk.height = data.get('height', penduduk.height)
+        penduduk.weight = data.get('weight', penduduk.weight)
+        penduduk.address = data.get('address', penduduk.address)
+        penduduk.phone_number = data.get('phone', penduduk.phone_number)
+        penduduk.email = data.get('email', penduduk.email)
+        penduduk.emergency_contact = data.get('emergency_contact_name', penduduk.emergency_contact)
+        penduduk.emergency_phone = data.get('emergency_contact_phone', penduduk.emergency_phone)
+        
+        # Update dusun jika ada
+        if data.get('dusun_id'):
+            try:
+                penduduk.dusun = Dusun.objects.get(id=data['dusun_id'])
+            except Dusun.DoesNotExist:
+                pass
+        
+        # Update lorong jika ada
+        if data.get('lorong_id'):
+            try:
+                penduduk.lorong = Lorong.objects.get(id=data['lorong_id'])
+            except Lorong.DoesNotExist:
+                pass
+        
+        penduduk.save()
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Data penduduk berhasil diperbarui'
+        })
+        
+    except json.JSONDecodeError:
+        return JsonResponse({'success': False, 'error': 'Invalid JSON'}, status=400)
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@login_required
+def penduduk_delete_api(request, penduduk_id):
+    """API untuk menghapus data penduduk"""
+    if request.method != 'DELETE':
+        return JsonResponse({'success': False, 'error': 'Method not allowed'}, status=405)
+    
+    try:
+        penduduk = get_object_or_404(Penduduk, id=penduduk_id)
+        
+        # Soft delete (set is_active = False)
+        penduduk.is_active = False
+        penduduk.save()
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Data penduduk berhasil dihapus'
+        })
+        
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)

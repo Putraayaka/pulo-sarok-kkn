@@ -57,6 +57,61 @@ class PendudukForm(forms.ModelForm):
             'rw_number': forms.TextInput(attrs={'maxlength': '3'}),
             'postal_code': forms.TextInput(attrs={'maxlength': '5'}),
         }
+    
+    def clean_nik(self):
+        nik = self.cleaned_data.get('nik')
+        if nik:
+            # Check for duplicate NIK
+            queryset = Penduduk.objects.filter(nik=nik)
+            if self.instance.pk:
+                queryset = queryset.exclude(pk=self.instance.pk)
+            if queryset.exists():
+                raise forms.ValidationError('NIK sudah terdaftar dalam sistem.')
+        return nik
+    
+    def clean_kk_number(self):
+        kk_number = self.cleaned_data.get('kk_number')
+        # Just validate the kk_number format here, don't create Family yet
+        # Family creation will be handled in save() method when all data is available
+        return kk_number
+    
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        
+        # Auto-grouping: if KK number is provided, handle family creation/linking
+        if instance.kk_number:
+            try:
+                # Find existing family with same KK number
+                family = Family.objects.get(kk_number=instance.kk_number)
+                if family.head and not instance.family_head:
+                    # If family has a head and this person doesn't have family_head set
+                    instance.family_head = family.head
+                elif not family.head and not instance.family_head:
+                    # If family doesn't have a head, make this person the head
+                    family.head = instance
+                    if commit:
+                        family.save()
+            except Family.DoesNotExist:
+                # Create new family if it doesn't exist
+                if commit:
+                    instance.save()  # Save instance first to get ID
+                    family = Family.objects.create(
+                        kk_number=instance.kk_number,
+                        head=instance,
+                        dusun=instance.dusun,
+                        lorong=instance.lorong,
+                        address=instance.address,
+                        rt_number=instance.rt_number,
+                        rw_number=instance.rw_number,
+                        house_number=instance.house_number,
+                        postal_code=instance.postal_code,
+                    )
+                    return instance
+        
+        if commit:
+            instance.save()
+        return instance
+
         labels = {
             'nik': 'NIK',
             'name': 'Nama Lengkap',

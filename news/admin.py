@@ -44,7 +44,7 @@ class NewsAdmin(admin.ModelAdmin):
     list_display = ['title', 'category', 'author', 'status_badge', 'priority_badge', 'is_featured', 'is_breaking', 'published_date', 'stats_display']
     list_filter = ['status', 'priority', 'category', 'is_featured', 'is_breaking', 'published_date', 'created_at']
     search_fields = ['title', 'content', 'author__username', 'author__first_name', 'author__last_name']
-    readonly_fields = ['slug', 'views_count', 'likes_count', 'comments_count', 'shares_count', 'reading_time', 'created_at', 'updated_at']
+    readonly_fields = ['slug', 'get_views_count', 'get_likes_count', 'comments_count', 'get_shares_count', 'reading_time', 'created_at', 'updated_at']
     raw_id_fields = ['author']
     filter_horizontal = ['tags']
     date_hierarchy = 'published_date'
@@ -67,7 +67,7 @@ class NewsAdmin(admin.ModelAdmin):
             'classes': ('collapse',)
         }),
         ('Statistik', {
-            'fields': ('views_count', 'likes_count', 'comments_count', 'shares_count', 'reading_time'),
+            'fields': ('get_views_count', 'get_likes_count', 'comments_count', 'get_shares_count', 'reading_time'),
             'classes': ('collapse',)
         }),
         ('Timestamp', {

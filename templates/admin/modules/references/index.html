@@ -299,19 +299,23 @@
                 </div>
                 
                 <!-- Pagination -->
-                <div id="penduduk-pagination" class="flex items-center justify-between mt-6">
-                    <div class="flex items-center text-sm text-gray-700">
-                        <span id="penduduk-info">Menampilkan 0 dari 0 data</span>
-                    </div>
-                    <div class="flex space-x-2">
-                        <button id="penduduk-prev" class="px-3 py-2 text-sm bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50" disabled>
-                            <i class="fas fa-chevron-left"></i>
-                        </button>
-                        <button id="penduduk-next" class="px-3 py-2 text-sm bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50" disabled>
-                            <i class="fas fa-chevron-right"></i>
-                        </button>
-                    </div>
+        <div id="penduduk-pagination" class="pagination-container mt-6">
+            <div class="pagination-info">
+                <span id="penduduk-info">Menampilkan 0 dari 0 data</span>
+                <span id="penduduk-total-info" class="text-primary-600 font-medium">Total Penduduk: 0 (Tahun 2025)</span>
+            </div>
+            <div class="pagination-controls">
+                <div class="pagination-nav">
+                    <button id="penduduk-prev" class="pagination-btn" disabled>
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <div id="penduduk-page-numbers" class="pagination"></div>
+                    <button id="penduduk-next" class="pagination-btn" disabled>
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
                 </div>
+            </div>
+        </div>
             </div>
 
             <!-- Dusun Tab -->
@@ -346,19 +350,23 @@
                 </div>
                 
                 <!-- Pagination for Dusun -->
-                <div id="dusun-pagination" class="flex items-center justify-between mt-6">
-                    <div class="flex items-center text-sm text-gray-700">
-                        <span id="dusun-info">Menampilkan 0 dari 0 data</span>
-                    </div>
-                    <div class="flex space-x-2">
-                        <button id="dusun-prev" class="px-3 py-2 text-sm bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50" disabled>
-                            <i class="fas fa-chevron-left"></i>
-                        </button>
-                        <button id="dusun-next" class="px-3 py-2 text-sm bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50" disabled>
-                            <i class="fas fa-chevron-right"></i>
-                        </button>
-                    </div>
+        <div id="dusun-pagination" class="pagination-container mt-6">
+            <div class="pagination-info">
+                <span id="dusun-info">Menampilkan 0 dari 0 data</span>
+                <span id="dusun-total-info" class="text-primary-600 font-medium">Total Dusun: 0 (Tahun 2025)</span>
+            </div>
+            <div class="pagination-controls">
+                <div class="pagination-nav">
+                    <button id="dusun-prev" class="pagination-btn" disabled>
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <div id="dusun-page-numbers" class="pagination"></div>
+                    <button id="dusun-next" class="pagination-btn" disabled>
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
                 </div>
+            </div>
+        </div>
             </div>
 
             <!-- Lorong Tab -->
@@ -394,19 +402,23 @@
                 </div>
                 
                 <!-- Pagination for Lorong -->
-                <div id="lorong-pagination" class="flex items-center justify-between mt-6">
-                    <div class="flex items-center text-sm text-gray-700">
-                        <span id="lorong-info">Menampilkan 0 dari 0 data</span>
-                    </div>
-                    <div class="flex space-x-2">
-                        <button id="lorong-prev" class="px-3 py-2 text-sm bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50" disabled>
-                            <i class="fas fa-chevron-left"></i>
-                        </button>
-                        <button id="lorong-next" class="px-3 py-2 text-sm bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50" disabled>
-                            <i class="fas fa-chevron-right"></i>
-                        </button>
-                    </div>
+        <div id="lorong-pagination" class="pagination-container mt-6">
+            <div class="pagination-info">
+                <span id="lorong-info">Menampilkan 0 dari 0 data</span>
+                <span id="lorong-total-info" class="text-primary-600 font-medium">Total Lorong: 0 (Tahun 2025)</span>
+            </div>
+            <div class="pagination-controls">
+                <div class="pagination-nav">
+                    <button id="lorong-prev" class="pagination-btn" disabled>
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <div id="lorong-page-numbers" class="pagination"></div>
+                    <button id="lorong-next" class="pagination-btn" disabled>
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
                 </div>
+            </div>
+        </div>
             </div>
 
             <!-- Disabilitas Tab -->
@@ -485,20 +497,23 @@
                         </div>
                         
                         <!-- Pagination for Disabilitas Data -->
-                        <div id="disabilitas-data-pagination" class="flex items-center justify-between mt-6">
-                            <div class="flex items-center text-sm text-gray-700">
-                                <span id="disabilitas-data-info">Menampilkan 0 dari 0 data</span>
-                            </div>
-                            <div class="flex space-x-2">
-                                <button id="disabilitas-data-prev" class="px-3 py-2 text-sm bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50" disabled>
-                                    <i class="fas fa-chevron-left"></i>
-                                </button>
-                                <button id="disabilitas-data-next" class="px-3 py-2 text-sm bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50" disabled>
-                                    <i class="fas fa-chevron-right"></i>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
+        <div id="disabilitas-data-pagination" class="pagination-container mt-6">
+            <div class="pagination-info">
+                <span id="disabilitas-data-info">Menampilkan 0 dari 0 data</span>
+                <span id="disabilitas-data-total-info" class="text-primary-600 font-medium">Total Data Disabilitas: 0 (Tahun 2025)</span>
+            </div>
+            <div class="pagination-controls">
+                <div class="pagination-nav">
+                    <button id="disabilitas-data-prev" class="pagination-btn" disabled>
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <div id="disabilitas-data-page-numbers" class="pagination"></div>
+                    <button id="disabilitas-data-next" class="pagination-btn" disabled>
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
                 </div>
             </div>
         </div>
@@ -1451,13 +1466,29 @@ function setupPaginationHandlers() {
 // Update pagination controls
 function updatePagination(type, pagination) {
     const infoElement = document.getElementById(`${type}-info`);
+    const totalInfoElement = document.getElementById(`${type}-total-info`);
     const prevButton = document.getElementById(`${type}-prev`);
     const nextButton = document.getElementById(`${type}-next`);
+    const pageNumbers = document.getElementById(`${type}-page-numbers`);
+    
+    const itemsPerPage = 10;
+    const totalItems = pagination?.total_items || 0;
+    const totalPages = Math.ceil(totalItems / itemsPerPage);
     
     if (infoElement) {
-        const start = ((pagination.current_page - 1) * 10) + 1;
-        const end = Math.min(pagination.current_page * 10, pagination.total_items);
+        const start = ((pagination.current_page - 1) * itemsPerPage) + 1;
+        const end = Math.min(pagination.current_page * itemsPerPage, pagination.total_items);
         infoElement.textContent = `Menampilkan ${start}-${end} dari ${pagination.total_items} data`;
+    }
+    
+    if (totalInfoElement) {
+        const typeLabels = {
+            'penduduk': 'Penduduk',
+            'dusun': 'Dusun',
+            'lorong': 'Lorong',
+            'disabilitas-data': 'Data Disabilitas'
+        };
+        totalInfoElement.textContent = `Total ${typeLabels[type]}: ${totalItems} (Tahun 2025)`;
     }
     
     if (prevButton) {
@@ -1466,6 +1497,35 @@ function updatePagination(type, pagination) {
     
     if (nextButton) {
         nextButton.disabled = !pagination.has_next;
+    }
+    
+    // Generate page numbers
+    if (pageNumbers && totalPages > 1) {
+        pageNumbers.innerHTML = '';
+        
+        const maxVisiblePages = 5;
+        const currentPage = pagination.current_page || 1;
+        let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+        let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+        
+        if (endPage - startPage + 1 < maxVisiblePages) {
+            startPage = Math.max(1, endPage - maxVisiblePages + 1);
+        }
+        
+        for (let i = startPage; i <= endPage; i++) {
+            const pageBtn = document.createElement('button');
+            pageBtn.textContent = i;
+            pageBtn.className = `pagination-btn ${
+                i === currentPage ? 'active' : ''
+            }`;
+            pageBtn.onclick = () => {
+                if (type === 'penduduk') loadPendudukData(i);
+                else if (type === 'dusun') loadDusunData(i);
+                else if (type === 'lorong') loadLorongData(i);
+                else if (type === 'disabilitas-data') loadDisabilitasData(i);
+            };
+            pageNumbers.appendChild(pageBtn);
+        }
     }
 }
 

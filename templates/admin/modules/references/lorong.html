@@ -130,21 +130,21 @@
     </div>
 
     <!-- Pagination -->
-    <div id="pagination" class="flex flex-col sm:flex-row items-center justify-between space-y-4 sm:space-y-0">
-        <div class="flex flex-col sm:flex-row items-center text-sm text-gray-700 space-y-2 sm:space-y-0 sm:space-x-4">
+    <div id="pagination" class="pagination-container pagination-compact">
+        <div class="pagination-info">
             <span id="pagination-info">Menampilkan 0 dari 0 data</span>
             <span id="total-info" class="text-primary-600 font-medium">Total Lorong: 0 (Tahun 2025)</span>
         </div>
-        <div class="flex items-center space-x-2">
-            <button id="prev-btn" onclick="previousPage()" 
-                    class="px-3 py-2 text-sm bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50" disabled>
-                <i class="fas fa-chevron-left"></i>
-            </button>
-            <div id="page-numbers" class="flex space-x-1"></div>
-            <button id="next-btn" onclick="nextPage()" 
-                    class="px-3 py-2 text-sm bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50" disabled>
-                <i class="fas fa-chevron-right"></i>
-            </button>
+        <div class="pagination-controls">
+            <div class="pagination-nav">
+                <button id="prev-btn" onclick="previousPage()" class="pagination-btn nav-btn" disabled>
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <div id="page-numbers" class="flex items-center gap-1"></div>
+                <button id="next-btn" onclick="nextPage()" class="pagination-btn nav-btn" disabled>
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
         </div>
     </div>
 </div>
@@ -344,8 +344,13 @@ function setupEventListeners() {
 }
 
 function loadDusunList() {
-    fetch(`{% url "references:dusun_list" %}`)
-        .then(response => response.json())
+    fetch(`/api/references/api/dusun/`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
         .then(data => {
             dusunList = data.results;
             
@@ -370,13 +375,18 @@ function loadData() {
     showLoading();
     const search = document.getElementById('search').value;
     const dusunId = document.getElementById('dusun-filter').value;
-    let url = `{% url "references:lorong_list" %}?page=${currentPage}&page_size=${itemsPerPage}&search=${encodeURIComponent(search)}`;
+    let url = `/api/references/api/lorong/?page=${currentPage}&page_size=${itemsPerPage}&search=${encodeURIComponent(search)}`;
     if (dusunId) {
         url += `&dusun_id=${dusunId}`;
     }
     
     fetch(url)
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
         .then(data => {
             hideLoading();
             totalItems = data.pagination ? data.pagination.total_items : (data.count || 0);
@@ -535,8 +545,13 @@ function editItem(id) {
     currentEditId = id;
     document.getElementById('modal-title').textContent = 'Edit Lorong';
     
-    fetch(`{% url "references:lorong_detail" 0 %}`.replace('0', id))
-        .then(response => response.json())
+    fetch(`/api/references/api/lorong/${id}/`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
         .then(data => {
             populateForm(data);
             document.getElementById('crud-modal').classList.remove('hidden');
@@ -563,25 +578,26 @@ function populateForm(data) {
 }
 
 function saveData() {
-    const formData = new FormData(document.getElementById('crud-form'));
+    const form = document.getElementById('crud-form');
+    const formData = new FormData(form);
     const data = {};
     
     for (let [key, value] of formData.entries()) {
         data[key] = value;
     }
     
-    // Handle checkboxes
-    document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
-        if (!data.hasOwnProperty(checkbox.name)) {
-            data[checkbox.name] = false;
-        } else {
-            data[checkbox.name] = true;
+    // Handle checkboxes specifically within the form
+    form.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+        if (checkbox.name) {
+            data[checkbox.name] = checkbox.checked;
         }
     });
     
+    console.log('Sending data:', data); // Debug log
+    
     const url = currentEditId 
-        ? `{% url "references:lorong_detail" 0 %}`.replace('0', currentEditId)
-        : `{% url "references:lorong_create" %}`;
+        ? `/api/references/api/lorong/${currentEditId}/`
+        : `/api/references/api/lorong/create/`;
     
     const method = currentEditId ? 'PUT' : 'POST';
     
@@ -593,7 +609,12 @@ function saveData() {
         },
         body: JSON.stringify(data)
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+    })
     .then(data => {
         if (data.success) {
             closeModal();
@@ -617,13 +638,21 @@ function deleteItem(id) {
 function confirmDelete() {
     if (!currentDeleteId) return;
     
-    fetch(`{% url "references:lorong_detail" 0 %}`.replace('0', currentDeleteId), {
+    fetch(`/api/references/api/lorong/${currentDeleteId}/`, {
         method: 'DELETE',
         headers: {
             'X-CSRFToken': getCookie('csrftoken')
         }
     })
-    .then(response => response.json())
+    .then(response => {
+        return response.json().then(data => {
+            if (!response.ok) {
+                // Handle 400 error with server message
+                throw new Error(data.message || `HTTP error! status: ${response.status}`);
+            }
+            return data;
+        });
+    })
     .then(data => {
         closeDeleteModal();
         if (data.success) {
@@ -634,8 +663,9 @@ function confirmDelete() {
         }
     })
     .catch(error => {
+        closeDeleteModal();
         console.error('Error deleting item:', error);
-        showToast('Terjadi kesalahan sistem', 'error');
+        showToast(error.message || 'Terjadi kesalahan sistem', 'error');
     });
 }
 
@@ -644,11 +674,18 @@ function bulkDelete() {
     
     if (confirm(`Apakah Anda yakin ingin menghapus ${selectedItems.size} item?`)) {
         const promises = Array.from(selectedItems).map(id => 
-            fetch(`{% url "references:lorong_detail" 0 %}`.replace('0', id), {
+            fetch(`/api/references/api/lorong/${id}/`, {
                 method: 'DELETE',
                 headers: {
                     'X-CSRFToken': getCookie('csrftoken')
                 }
+            }).then(response => {
+                return response.json().then(data => {
+                    if (!response.ok) {
+                        throw new Error(data.message || `HTTP error! status: ${response.status}`);
+                    }
+                    return data;
+                });
             })
         );
         
@@ -660,14 +697,16 @@ function bulkDelete() {
             })
             .catch(error => {
                 console.error('Error in bulk delete:', error);
-                showToast('Terjadi kesalahan saat menghapus data', 'error');
+                clearSelection();
+                loadData();
+                showToast(error.message || 'Beberapa data tidak dapat dihapus', 'error');
             });
     }
 }
 
 // Export/Import Functions
 function exportData() {
-    window.location.href = `{% url "references:export_data" "lorong" %}`;
+    window.location.href = `/api/references/api/export/lorong/`;
     showToast('Export dimulai, file akan diunduh segera', 'success');
 }
 
@@ -678,14 +717,19 @@ function importData() {
 function handleImport() {
     const formData = new FormData(document.getElementById('import-form'));
     
-    fetch(`{% url "references:import_data" "lorong" %}`, {
+    fetch(`/api/references/api/import/lorong/`, {
         method: 'POST',
         headers: {
             'X-CSRFToken': getCookie('csrftoken')
         },
         body: formData
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+    })
     .then(data => {
         closeImportModal();
         if (data.success) {
@@ -702,7 +746,7 @@ function handleImport() {
 }
 
 function downloadTemplate() {
-    window.location.href = `{% url "references:export_data" "lorong" %}?template=true`;
+    window.location.href = `/api/references/api/export/lorong/?template=true`;
 }
 
 // Utility Functions

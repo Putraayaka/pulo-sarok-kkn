@@ -613,19 +613,19 @@
     
     function deleteFolder(folderId) {
         if (confirm('Apakah Anda yakin ingin menghapus folder ini? Semua dokumen di dalamnya akan ikut terhapus.')) {
-            fetch(`/admin/beneficiaries/upload-dokumen/folder/${folderId}/delete/`, {
-                method: 'DELETE',
-                headers: {
-                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-                }
-            })
-            .then(response => {
-                if (response.ok) {
-                    location.reload();
-                } else {
-                    alert('Terjadi kesalahan saat menghapus folder');
-                }
-            });
+            // Create a form for DELETE request using Django standard approach
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = `/admin/beneficiaries/upload-dokumen/folder/${folderId}/delete/`;
+            
+            const csrfToken = document.createElement('input');
+            csrfToken.type = 'hidden';
+            csrfToken.name = 'csrfmiddlewaretoken';
+            csrfToken.value = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            
+            form.appendChild(csrfToken);
+            document.body.appendChild(form);
+            form.submit();
         }
     }
     
@@ -639,22 +639,8 @@
     }
     
     function editDocument(docId) {
-        fetch(`/admin/beneficiaries/upload-dokumen/document/${docId}/edit/`)
-            .then(response => response.json())
-            .then(data => {
-                const form = document.getElementById('editDocForm');
-                form.action = `/admin/beneficiaries/upload-dokumen/document/${docId}/update/`;
-                
-                form.querySelector('[name="original_name"]').value = data.original_name;
-                form.querySelector('[name="kategori"]').value = data.kategori;
-                form.querySelector('[name="description"]').value = data.description || '';
-                
-                openModal('editDocModal');
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Terjadi kesalahan saat mengambil data dokumen');
-            });
+        // Redirect to edit page using Django standard approach
+        window.location.href = `/admin/beneficiaries/upload-dokumen/document/${docId}/edit/`;
     }
     
     function moveDocument(docId) {
@@ -664,19 +650,19 @@
     
     function deleteDocument(docId) {
         if (confirm('Apakah Anda yakin ingin menghapus dokumen ini?')) {
-            fetch(`/admin/beneficiaries/upload-dokumen/document/${docId}/delete/`, {
-                method: 'DELETE',
-                headers: {
-                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-                }
-            })
-            .then(response => {
-                if (response.ok) {
-                    location.reload();
-                } else {
-                    alert('Terjadi kesalahan saat menghapus dokumen');
-                }
-            });
+            // Create a form for DELETE request using Django standard approach
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = `/admin/beneficiaries/upload-dokumen/document/${docId}/delete/`;
+            
+            const csrfToken = document.createElement('input');
+            csrfToken.type = 'hidden';
+            csrfToken.name = 'csrfmiddlewaretoken';
+            csrfToken.value = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            
+            form.appendChild(csrfToken);
+            document.body.appendChild(form);
+            form.submit();
         }
     }
     
@@ -686,56 +672,23 @@
         window.open(`/admin/beneficiaries/upload-dokumen/export/?${params.toString()}`, '_blank');
     }
     
-    // Form submissions
+    // Form submissions using Django standard approach
     document.getElementById('folderForm').addEventListener('submit', function(e) {
-        e.preventDefault();
+        // Add parent folder as hidden input
+        const parentInput = document.createElement('input');
+        parentInput.type = 'hidden';
+        parentInput.name = 'parent_folder';
+        parentInput.value = currentFolder || '';
+        this.appendChild(parentInput);
         
-        const formData = new FormData(this);
-        formData.append('parent_folder', currentFolder || '');
-        
-        fetch('/admin/beneficiaries/upload-dokumen/folder/create/', {
-            method: 'POST',
-            body: formData,
-            headers: {
-                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-            }
-        })
-        .then(response => {
-            if (response.ok) {
-                location.reload();
-            } else {
-                alert('Terjadi kesalahan saat membuat folder');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Terjadi kesalahan saat membuat folder');
-        });
+        // Let the form submit normally to Django view
+        this.action = '/admin/beneficiaries/upload-dokumen/folder/create/';
     });
     
     document.getElementById('editDocForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        const formData = new FormData(this);
-        
-        fetch(this.action, {
-            method: 'POST',
-            body: formData,
-            headers: {
-                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-            }
-        })
-        .then(response => {
-            if (response.ok) {
-                location.reload();
-            } else {
-                alert('Terjadi kesalahan saat menyimpan perubahan');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Terjadi kesalahan saat menyimpan perubahan');
-        });
+        // Let the form submit normally to Django view
+        // Action URL should be set when editing a document
+        return true;
     });
 </script>
 {% endblock %}

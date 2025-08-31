@@ -2,80 +2,86 @@ from django.contrib import admin
 from django.utils.html import format_html
 from django.urls import reverse
 from django.utils.safestring import mark_safe
-from .models import VillageVision, VillageHistory, VillageMap, VillageGeography, GoogleMapsEmblem
+from .models import VillageHistory, VillageHistoryPhoto, VillageHistoryPhoto
 
 
-@admin.register(VillageVision)
-class VillageVisionAdmin(admin.ModelAdmin):
-    list_display = ['title', 'effective_date', 'is_active', 'created_at']
-    list_filter = ['is_active', 'effective_date', 'created_at']
-    search_fields = ['title', 'vision_text', 'mission_text']
-    date_hierarchy = 'effective_date'
-    ordering = ['-effective_date']
+class VillageHistoryPhotoInline(admin.TabularInline):
+    """Inline admin for VillageHistoryPhoto"""
+    model = VillageHistoryPhoto
+    extra = 1
+    fields = ['image', 'caption', 'description', 'photographer', 'photo_date', 'location', 'is_featured', 'is_active', 'display_order']
+    readonly_fields = ['image_preview']
     
-    fieldsets = (
-        ('Informasi Dasar', {
-            'fields': ('title', 'effective_date', 'is_active')
-        }),
-        ('Visi & Misi', {
-            'fields': ('vision_text', 'mission_text')
-        }),
-        ('Deskripsi Tambahan', {
-            'fields': ('description',),
-            'classes': ('collapse',)
-        })
-    )
-    
-    actions = ['activate_vision', 'deactivate_vision']
-    
-    def activate_vision(self, request, queryset):
-        queryset.update(is_active=True)
-        self.message_user(request, f"{queryset.count()} visi misi berhasil diaktifkan.")
-    activate_vision.short_description = "Aktifkan visi misi terpilih"
-    
-    def deactivate_vision(self, request, queryset):
-        queryset.update(is_active=False)
-        self.message_user(request, f"{queryset.count()} visi misi berhasil dinonaktifkan.")
-    deactivate_vision.short_description = "Nonaktifkan visi misi terpilih"
+    def image_preview(self, obj):
+        if obj.image:
+            return format_html(
+                '<img src="{}" style="width: 80px; height: 60px; object-fit: cover; border-radius: 4px;"/>',
+                obj.image.url
+            )
+        return "Belum ada gambar"
+    image_preview.short_description = "Preview"
 
 
 @admin.register(VillageHistory)
 class VillageHistoryAdmin(admin.ModelAdmin):
-    list_display = ['title', 'period_display', 'is_featured', 'is_active', 'image_preview']
-    list_filter = ['is_featured', 'is_active', 'created_at']
-    search_fields = ['title', 'content', 'period_start', 'period_end']
-    ordering = ['period_start']
+    list_display = ['title', 'history_type', 'period_display', 'photo_count_display', 'view_count', 'is_featured', 'is_active', 'featured_image_preview']
+    list_filter = ['history_type', 'is_featured', 'is_active', 'year_start', 'created_at']
+    search_fields = ['title', 'summary', 'content', 'author', 'source']
+    prepopulated_fields = {'slug': ('title',)}
+    date_hierarchy = 'created_at'
+    ordering = ['-is_featured', 'year_start', 'period_start']
+    inlines = [VillageHistoryPhotoInline]
     
     fieldsets = (
         ('Informasi Dasar', {
-            'fields': ('title', 'content')
+            'fields': ('title', 'slug', 'history_type', 'summary')
+        }),
+        ('Konten', {
+            'fields': ('content',)
         }),
         ('Periode Sejarah', {
-            'fields': ('period_start', 'period_end')
+            'fields': ('period_start', 'period_end', 'year_start', 'year_end'),
+            'description': 'Isi periode dalam format teks atau tahun numerik'
         }),
-        ('Media & Status', {
-            'fields': ('historical_image', 'is_featured', 'is_active')
+        ('Gambar Utama', {
+            'fields': ('featured_image', 'featured_image_caption'),
+            'classes': ('collapse',)
+        }),
+        ('Informasi Tambahan', {
+            'fields': ('author', 'source'),
+            'classes': ('collapse',)
+        }),
+        ('Status & Metadata', {
+            'fields': ('is_featured', 'is_active', 'view_count')
         })
     )
     
+    readonly_fields = ['view_count']
+    
     def period_display(self, obj):
-        if obj.period_start and obj.period_end:
-            return f"{obj.period_start} - {obj.period_end}"
-        elif obj.period_start:
-            return f"Sejak {obj.period_start}"
-        return "Periode tidak ditentukan"
+        return obj.period_display
     period_display.short_description = "Periode"
     
-    def image_preview(self, obj):
-        if obj.historical_image:
+    def photo_count_display(self, obj):
+        count = obj.photo_count
+        if count > 0:
             return format_html(
-                '<img src="{}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px;"/>',
-                obj.historical_image.url
+                '<span style="color: #28a745; font-weight: bold;">{} foto</span>',
+                count
+            )
+        return format_html('<span style="color: #6c757d;">Belum ada foto</span>')
+    photo_count_display.short_description = "Jumlah Foto"
+    
+    def featured_image_preview(self, obj):
+        if obj.featured_image:
+            return format_html(
+                '<img src="{}" style="width: 60px; height: 45px; object-fit: cover; border-radius: 4px;"/>',
+                obj.featured_image.url
             )
         return "Tidak ada gambar"
-    image_preview.short_description = "Preview Gambar"
+    featured_image_preview.short_description = "Preview Gambar"
     
-    actions = ['mark_as_featured', 'unmark_as_featured']
+    actions = ['mark_as_featured', 'unmark_as_featured', 'activate_history', 'deactivate_history']
     
     def mark_as_featured(self, request, queryset):
         queryset.update(is_featured=True)
@@ -86,150 +92,81 @@ class VillageHistoryAdmin(admin.ModelAdmin):
         queryset.update(is_featured=False)
         self.message_user(request, f"{queryset.count()} sejarah berhasil dihapus dari unggulan.")
     unmark_as_featured.short_description = "Hapus dari sejarah unggulan"
+    
+    def activate_history(self, request, queryset):
+        queryset.update(is_active=True)
+        self.message_user(request, f"{queryset.count()} sejarah berhasil diaktifkan.")
+    activate_history.short_description = "Aktifkan sejarah terpilih"
+    
+    def deactivate_history(self, request, queryset):
+        queryset.update(is_active=False)
+        self.message_user(request, f"{queryset.count()} sejarah berhasil dinonaktifkan.")
+    deactivate_history.short_description = "Nonaktifkan sejarah terpilih"
 
 
-@admin.register(VillageMap)
-class VillageMapAdmin(admin.ModelAdmin):
-    list_display = ['title', 'map_type', 'coordinates_display', 'zoom_level', 'is_active', 'map_preview']
-    list_filter = ['map_type', 'is_active', 'created_at']
-    search_fields = ['title', 'description']
-    ordering = ['map_type', 'title']
+@admin.register(VillageHistoryPhoto)
+class VillageHistoryPhotoAdmin(admin.ModelAdmin):
+    list_display = ['history_title', 'caption', 'photographer', 'photo_date', 'location', 'is_featured', 'is_active', 'image_preview']
+    list_filter = ['is_featured', 'is_active', 'photo_date', 'history__history_type']
+    search_fields = ['caption', 'description', 'photographer', 'location', 'history__title']
+    date_hierarchy = 'photo_date'
+    ordering = ['history', 'display_order', '-is_featured']
     
     fieldsets = (
-        ('Informasi Peta', {
-            'fields': ('title', 'map_type', 'description')
+        ('Foto', {
+            'fields': ('history', 'image')
         }),
-        ('File Peta', {
-            'fields': ('map_image', 'map_file')
+        ('Informasi Foto', {
+            'fields': ('caption', 'description')
         }),
-        ('Koordinat & Zoom', {
-            'fields': ('coordinates_center_lat', 'coordinates_center_lng', 'zoom_level')
+        ('Metadata Foto', {
+            'fields': ('photographer', 'photo_date', 'location'),
+            'classes': ('collapse',)
         }),
-        ('Status', {
-            'fields': ('is_active',)
+        ('Pengaturan Tampilan', {
+            'fields': ('is_featured', 'is_active', 'display_order')
         })
     )
     
-    def coordinates_display(self, obj):
-        if obj.coordinates_center_lat and obj.coordinates_center_lng:
-            return f"{obj.coordinates_center_lat}, {obj.coordinates_center_lng}"
-        return "Koordinat tidak diset"
-    coordinates_display.short_description = "Koordinat"
+    def history_title(self, obj):
+        return obj.history.title
+    history_title.short_description = "Sejarah"
     
-    def map_preview(self, obj):
-        if obj.map_image:
+    def image_preview(self, obj):
+        if obj.image:
             return format_html(
-                '<img src="{}" style="width: 60px; height: 40px; object-fit: cover; border-radius: 4px;"/>',
-                obj.map_image.url
+                '<img src="{}" style="width: 80px; height: 60px; object-fit: cover; border-radius: 4px;"/>',
+                obj.image.url
             )
         return "Tidak ada gambar"
-    map_preview.short_description = "Preview Peta"
+    image_preview.short_description = "Preview"
     
-    actions = ['activate_maps', 'deactivate_maps']
+    actions = ['mark_as_featured_photo', 'unmark_as_featured_photo', 'activate_photos', 'deactivate_photos']
     
-    def activate_maps(self, request, queryset):
+    def mark_as_featured_photo(self, request, queryset):
+        queryset.update(is_featured=True)
+        self.message_user(request, f"{queryset.count()} foto berhasil ditandai sebagai unggulan.")
+    mark_as_featured_photo.short_description = "Tandai sebagai foto unggulan"
+    
+    def unmark_as_featured_photo(self, request, queryset):
+        queryset.update(is_featured=False)
+        self.message_user(request, f"{queryset.count()} foto berhasil dihapus dari unggulan.")
+    unmark_as_featured_photo.short_description = "Hapus dari foto unggulan"
+    
+    def activate_photos(self, request, queryset):
         queryset.update(is_active=True)
-        self.message_user(request, f"{queryset.count()} peta berhasil diaktifkan.")
-    activate_maps.short_description = "Aktifkan peta terpilih"
+        self.message_user(request, f"{queryset.count()} foto berhasil diaktifkan.")
+    activate_photos.short_description = "Aktifkan foto terpilih"
     
-    def deactivate_maps(self, request, queryset):
+    def deactivate_photos(self, request, queryset):
         queryset.update(is_active=False)
-        self.message_user(request, f"{queryset.count()} peta berhasil dinonaktifkan.")
-    deactivate_maps.short_description = "Nonaktifkan peta terpilih"
+        self.message_user(request, f"{queryset.count()} foto berhasil dinonaktifkan.")
+    deactivate_photos.short_description = "Nonaktifkan foto terpilih"
 
 
-@admin.register(VillageGeography)
-class VillageGeographyAdmin(admin.ModelAdmin):
-    list_display = ['geography_summary', 'total_area', 'altitude_range', 'temperature_range', 'is_active']
-    list_filter = ['is_active', 'created_at']
-    search_fields = ['climate_type', 'boundaries_north', 'boundaries_south', 'boundaries_east', 'boundaries_west']
-    
-    fieldsets = (
-        ('Luas Wilayah', {
-            'fields': ('total_area', 'agricultural_area', 'residential_area', 'forest_area', 'water_area')
-        }),
-        ('Topografi', {
-            'fields': ('altitude_min', 'altitude_max')
-        }),
-        ('Iklim', {
-            'fields': ('climate_type', 'rainfall_average', 'temperature_min', 'temperature_max')
-        }),
-        ('Batas Wilayah', {
-            'fields': ('boundaries_north', 'boundaries_south', 'boundaries_east', 'boundaries_west')
-        }),
-        ('Status', {
-            'fields': ('is_active',)
-        })
-    )
-    
-    def geography_summary(self, obj):
-        return f"Geografi Desa - {obj.total_area} Ha"
-    geography_summary.short_description = "Ringkasan"
-    
-    def altitude_range(self, obj):
-        if obj.altitude_min and obj.altitude_max:
-            return f"{obj.altitude_min} - {obj.altitude_max} mdpl"
-        elif obj.altitude_min:
-            return f"Min: {obj.altitude_min} mdpl"
-        elif obj.altitude_max:
-            return f"Max: {obj.altitude_max} mdpl"
-        return "Tidak diset"
-    altitude_range.short_description = "Ketinggian"
-    
-    def temperature_range(self, obj):
-        if obj.temperature_min and obj.temperature_max:
-            return f"{obj.temperature_min}°C - {obj.temperature_max}°C"
-        return "Tidak diset"
-    temperature_range.short_description = "Suhu"
-
-
-@admin.register(GoogleMapsEmblem)
-class GoogleMapsEmblemAdmin(admin.ModelAdmin):
-    list_display = ['title', 'coordinates_display', 'emblem_size', 'is_visible', 'is_active', 'maps_link']
-    list_filter = ['emblem_size', 'is_visible', 'is_active', 'created_at']
-    search_fields = ['title', 'description']
-    ordering = ['-created_at']
-    
-    fieldsets = (
-        ('Informasi Emblem', {
-            'fields': ('title', 'description')
-        }),
-        ('Koordinat Google Maps', {
-            'fields': ('latitude', 'longitude', 'zoom_level')
-        }),
-        ('Pengaturan Emblem', {
-            'fields': ('emblem_size',)
-        }),
-        ('Status & Visibilitas', {
-            'fields': ('is_active', 'is_visible')
-        })
-    )
-    
-    def coordinates_display(self, obj):
-        return obj.coordinates_display
-    coordinates_display.short_description = "Koordinat"
-    
-    def maps_link(self, obj):
-        return format_html(
-            '<a href="{}" target="_blank" style="color: #007cba; text-decoration: none;">🗺️ Buka di Google Maps</a>',
-            obj.google_maps_url
-        )
-    maps_link.short_description = "Link Google Maps"
-    
-    actions = ['show_emblem', 'hide_emblem']
-    
-    def show_emblem(self, request, queryset):
-        queryset.update(is_visible=True)
-        self.message_user(request, f"{queryset.count()} emblem berhasil ditampilkan.")
-    show_emblem.short_description = "Tampilkan emblem di peta"
-    
-    def hide_emblem(self, request, queryset):
-        queryset.update(is_visible=False)
-        self.message_user(request, f"{queryset.count()} emblem berhasil disembunyikan.")
-    hide_emblem.short_description = "Sembunyikan emblem dari peta"
-
+# VillageGeography and GoogleMapsEmblem admin classes removed - models not available
 
 # Kustomisasi Admin Site
-admin.site.site_header = "Admin Profil Desa Pulosarok"
-admin.site.site_title = "Profil Desa Admin"
-admin.site.index_title = "Kelola Data Profil Desa"
+admin.site.site_header = "Admin Sejarah Desa Pulosarok"
+admin.site.site_title = "Sejarah Desa Admin"
+admin.site.index_title = "Kelola Data Sejarah Desa"

@@ -21,12 +21,13 @@ from datetime import datetime, timedelta
 
 from .models import (
     NewsCategory, NewsTag, News, NewsComment, NewsView, 
-    NewsImage, NewsLike, NewsShare
+    NewsImage, NewsLike, NewsShare, Announcement
 )
 from .forms import (
     NewsCategoryForm, NewsTagForm, NewsForm, NewsCommentForm, 
     NewsSearchForm, NewsImageForm, NewsImageFormSet, 
-    NewsCommentModerationForm, BulkNewsActionForm, NewsImportForm
+    NewsCommentModerationForm, BulkNewsActionForm, NewsImportForm,
+    AnnouncementForm, AnnouncementSearchForm
 )
 
 
@@ -167,7 +168,7 @@ def news_create(request):
         'action': 'create',
     }
     
-    return render(request, 'admin/modules/news/form.html', context)
+    return render(request, 'admin/modules/news/create.html', context)
 
 
 @login_required
@@ -235,7 +236,7 @@ def news_edit(request, pk):
         'action': 'edit',
     }
     
-    return render(request, 'admin/modules/news/form.html', context)
+    return render(request, 'admin/modules/news/edit.html', context)
 
 
 @login_required
@@ -704,24 +705,96 @@ def news_category_list_api(request):
 
 
 @login_required
-@require_http_methods(["GET"])
+@csrf_exempt
+@require_http_methods(["POST"])
+def news_bulk_action_api(request):
+    """API for bulk news actions"""
+    try:
+        data = json.loads(request.body)
+        action = data.get('action')
+        news_ids = data.get('news_ids', [])
+        
+        if not news_ids:
+            return JsonResponse({'error': 'No news selected'}, status=400)
+        
+        news_queryset = News.objects.filter(id__in=news_ids)
+        
+        if action == 'publish':
+            news_queryset.update(status='published')
+            return JsonResponse({
+                'success': True,
+                'message': f'{news_queryset.count()} berita berhasil dipublikasikan'
+            })
+        
+        elif action == 'draft':
+            news_queryset.update(status='draft')
+            return JsonResponse({
+                'success': True,
+                'message': f'{news_queryset.count()} berita berhasil dijadikan draft'
+            })
+        
+        elif action == 'archive':
+            news_queryset.update(status='archived')
+            return JsonResponse({
+                'success': True,
+                'message': f'{news_queryset.count()} berita berhasil diarsipkan'
+            })
+        
+        elif action == 'delete':
+            deleted_count = news_queryset.count()
+            news_queryset.delete()
+            return JsonResponse({
+                'success': True,
+                'message': f'{deleted_count} berita berhasil dihapus'
+            })
+        
+        else:
+            return JsonResponse({'error': 'Invalid action'}, status=400)
+        
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+@login_required
+@csrf_exempt
+@require_http_methods(["GET", "PATCH"])
 def news_category_detail_api(request, pk):
-    """API to get news category detail"""
+    """API to get news category detail or update order"""
     try:
         category = get_object_or_404(NewsCategory, pk=pk)
         
-        data = {
-            'id': category.id,
-            'name': category.name,
-            'description': category.description,
-            'slug': category.slug,
-            'color': category.color,
-            'is_active': category.is_active,
-            'created_at': category.created_at.strftime('%d/%m/%Y %H:%M'),
-            'updated_at': category.updated_at.strftime('%d/%m/%Y %H:%M')
-        }
-        
-        return JsonResponse(data)
+        if request.method == 'GET':
+            data = {
+                'id': category.id,
+                'name': category.name,
+                'description': category.description,
+                'slug': category.slug,
+                'color': category.color,
+                'is_active': category.is_active,
+                'order': getattr(category, 'order', 0),
+                'created_at': category.created_at.strftime('%d/%m/%Y %H:%M'),
+                'updated_at': category.updated_at.strftime('%d/%m/%Y %H:%M')
+            }
+            return JsonResponse(data)
+            
+        elif request.method == 'PATCH':
+            data = json.loads(request.body)
+            
+            # Update order if provided
+            if 'order' in data:
+                if hasattr(category, 'order'):
+                    category.order = data['order']
+                    category.save()
+                    return JsonResponse({
+                        'success': True,
+                        'message': 'Urutan kategori berhasil diperbarui'
+                    })
+                else:
+                    return JsonResponse({
+                        'error': 'Model NewsCategory tidak memiliki field order'
+                    }, status=400)
+            
+            return JsonResponse({'error': 'Data tidak valid'}, status=400)
         
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
@@ -804,6 +877,35 @@ def news_category_delete_api(request, pk):
         return JsonResponse({'error': str(e)}, status=500)
 
 
+@login_required
+@require_http_methods(["GET"])
+def news_category_statistics_api(request):
+    """API to get news category statistics"""
+    try:
+        total_categories = NewsCategory.objects.count()
+        active_categories = NewsCategory.objects.filter(is_active=True).count()
+        categories_with_news = NewsCategory.objects.annotate(
+            news_count=Count('news')
+        ).filter(news_count__gt=0).count()
+        
+        # Category distribution with news count
+        category_distribution = NewsCategory.objects.annotate(
+            news_count=Count('news')
+        ).values('id', 'name', 'color', 'news_count', 'is_active')
+        
+        data = {
+            'total_categories': total_categories,
+            'active_categories': active_categories,
+            'categories_with_news': categories_with_news,
+            'category_distribution': list(category_distribution)
+        }
+        
+        return JsonResponse(data)
+        
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+
 # News Tag API Views
 @login_required
 @require_http_methods(["GET"])
@@ -829,6 +931,35 @@ def news_tag_list_api(request):
                     'created_at': item.created_at.strftime('%d/%m/%Y %H:%M')
                 }
                 for item in queryset
+            ]
+        }
+        
+        return JsonResponse(data)
+        
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+@login_required
+@require_http_methods(["GET"])
+def news_tag_search_api(request):
+    """API to search news tags"""
+    try:
+        query = request.GET.get('q', '')
+        
+        if not query:
+            return JsonResponse({'results': []})
+        
+        tags = NewsTag.objects.filter(name__icontains=query)[:10]
+        
+        data = {
+            'results': [
+                {
+                    'id': tag.id,
+                    'name': tag.name,
+                    'slug': tag.slug
+                }
+                for tag in tags
             ]
         }
         
@@ -928,6 +1059,8 @@ def news_list_api(request):
                     'views_count': item.views_count,
                     'likes_count': item.likes_count,
                     'created_at': item.created_at.strftime('%d/%m/%Y %H:%M'),
+                    'excerpt': item.excerpt,
+                    'featured_image': item.featured_image.url if item.featured_image else None,
                     'tags': [tag.name for tag in item.tags.all()]
                 }
                 for item in page_obj
@@ -952,7 +1085,7 @@ def news_list_api(request):
 def news_detail_api(request, pk):
     """API to get news detail"""
     try:
-        news = get_object_or_404(News.objects.select_related('category', 'author').prefetch_related('tags'), pk=pk)
+        news = get_object_or_404(News.objects.select_related('category', 'author').prefetch_related('tags', 'images'), pk=pk)
         
         data = {
             'id': news.id,
@@ -967,15 +1100,27 @@ def news_detail_api(request, pk):
             'priority': news.priority,
             'is_featured': news.is_featured,
             'is_breaking': news.is_breaking,
-            'published_date': news.published_date.strftime('%Y-%m-%dT%H:%M') if news.published_date else None,
+            'published_date': news.published_date.isoformat() if news.published_date else None,
+            'publish_date': news.published_date.isoformat() if news.published_date else None,
             'author': news.author.get_full_name() or news.author.username,
             'views_count': news.views_count,
             'likes_count': news.likes_count,
             'meta_title': news.meta_title,
             'meta_description': news.meta_description,
+            'youtube_url': news.youtube_url,
+            'video_file': news.video_file.url if news.video_file else None,
             'tags': [{'id': tag.id, 'name': tag.name} for tag in news.tags.all()],
-            'created_at': news.created_at.strftime('%d/%m/%Y %H:%M'),
-            'updated_at': news.updated_at.strftime('%d/%m/%Y %H:%M')
+            'images': [{
+                'id': img.id,
+                'image': img.image.url if img.image else None,
+                'thumbnail': img.thumbnail.url if img.thumbnail else None,
+                'caption': img.caption,
+                'alt_text': img.alt_text,
+                'is_featured': img.is_featured,
+                'order': img.order
+            } for img in news.images.all().order_by('order', 'created_at')],
+            'created_at': news.created_at.isoformat(),
+            'updated_at': news.updated_at.isoformat()
         }
         
         return JsonResponse(data)
@@ -989,65 +1134,264 @@ def news_detail_api(request, pk):
 @require_http_methods(["POST"])
 def news_create_api(request):
     """API to create new news"""
+    import base64
+    import traceback
+    from django.core.files.base import ContentFile
+    
     try:
-        data = json.loads(request.body)
+        # Handle both JSON and form data
+        if request.content_type and 'application/json' in request.content_type:
+            data = json.loads(request.body)
+        else:
+            # Handle form data from modal
+            data = {
+                'title': request.POST.get('title', ''),
+                'category': request.POST.get('category', ''),
+                'content': request.POST.get('content', ''),
+                'excerpt': request.POST.get('excerpt', ''),
+                'status': request.POST.get('status', 'draft'),
+                'priority': request.POST.get('priority', 'normal'),
+                'is_featured': request.POST.get('is_featured') == 'on',
+                'is_breaking': request.POST.get('is_breaking') == 'on',
+            }
+            
+        print(f"Parsed data keys: {list(data.keys())}")
+        print(f"Title: {data.get('title')}")
+        print(f"Category: {data.get('category')}")
         
+        # Parse category from frontend format
+        category_id = data.get('category') or data.get('category_id')
+        if not category_id:
+            print("Error: No category provided")
+            return JsonResponse({'error': 'Kategori harus dipilih'}, status=400)
+        
+        # Parse tags from frontend format
+        if 'tag_names' in data:
+            tag_names = data['tag_names']
+        else:
+            tags_str = data.get('tags', '')
+            tag_names = [tag.strip() for tag in tags_str.split(',') if tag.strip()] if tags_str else []
+        print(f"Processed tag names: {tag_names}")
+        
+        # Create news with unique slug
+        from django.utils.text import slugify
+        title = data.get('title', '')
+        if not title:
+            return JsonResponse({'error': 'Judul harus diisi'}, status=400)
+        
+        # Generate unique slug
+        base_slug = slugify(title)
+        slug = base_slug
+        counter = 1
+        while News.objects.filter(slug=slug).exists():
+            slug = f"{base_slug}-{counter}"
+            counter += 1
+        print(f"Generated unique slug: {slug}")
+            
         news = News.objects.create(
-            title=data['title'],
-            category_id=data['category_id'],
-            content=data['content'],
+            title=title,
+            slug=slug,
+            category_id=category_id,
+            content=data.get('content', ''),
             excerpt=data.get('excerpt', ''),
             status=data.get('status', 'draft'),
             priority=data.get('priority', 'normal'),
             is_featured=data.get('is_featured', False),
             is_breaking=data.get('is_breaking', False),
-            published_date=data.get('published_date') if data.get('published_date') else None,
+            published_date=None,  # Will be set after creation with proper timezone handling
             author=request.user,
-            meta_title=data.get('meta_title', ''),
-            meta_description=data.get('meta_description', '')
+            meta_title=data.get('meta_title', title),
+            meta_description=data.get('meta_description', ''),
+            youtube_url=data.get('youtube_url', ''),
         )
         
-        # Add tags
-        if 'tag_ids' in data:
-            news.tags.set(data['tag_ids'])
+        # Handle published_date properly with timezone awareness
+        if data.get('publish_date'):
+            from django.utils.dateparse import parse_datetime
+            from django.utils import timezone
+            parsed_date = parse_datetime(data['publish_date'])
+            if parsed_date:
+                # Make timezone aware if it's naive
+                if timezone.is_naive(parsed_date):
+                    news.published_date = timezone.make_aware(parsed_date)
+                else:
+                    news.published_date = parsed_date
+                news.save(update_fields=['published_date'])
+        
+        # Handle tags - create new tags if they don't exist
+        if tag_names:
+            tag_objects = []
+            for tag_name in tag_names:
+                if tag_name.strip():
+                    # First try to get existing tag by name
+                    try:
+                        tag = NewsTag.objects.get(name=tag_name.strip())
+                        tag_objects.append(tag)
+                        print(f"Found existing tag: {tag_name}")
+                    except NewsTag.DoesNotExist:
+                        # Create new tag with unique slug
+                        from django.utils.text import slugify
+                        base_slug = slugify(tag_name.strip())
+                        slug = base_slug
+                        counter = 1
+                        
+                        # Ensure slug is unique
+                        while NewsTag.objects.filter(slug=slug).exists():
+                            slug = f"{base_slug}-{counter}"
+                            counter += 1
+                        
+                        tag = NewsTag.objects.create(
+                            name=tag_name.strip(),
+                            slug=slug
+                        )
+                        tag_objects.append(tag)
+            news.tags.set(tag_objects)
+            print(f"Added {len(tag_objects)} tags to news")
+        
+        # Handle multiple images
+        if 'images' in data and data['images']:
+            featured_image_id = data.get('featured_image_id')
+            
+            for index, image_data in enumerate(data['images']):
+                # Process base64 image data
+                if 'data_url' in image_data:
+                    try:
+                        # Parse data URL
+                        format, imgstr = image_data['data_url'].split(';base64,')
+                        ext = format.split('/')[-1]
+                        
+                        # Generate filename
+                        filename = f"news_{news.id}_{image_data['id']}.{ext}"
+                        
+                        # Decode and save image
+                        image_file = ContentFile(
+                            base64.b64decode(imgstr),
+                            name=filename
+                        )
+                        
+                        # Create NewsImage instance
+                        news_image = NewsImage.objects.create(
+                            news=news,
+                            image=image_file,
+                            alt_text=image_data.get('alt_text', ''),
+                            caption=image_data.get('name', ''),
+                            is_featured=(image_data['id'] == featured_image_id),
+                            order=index
+                        )
+                        
+                    except Exception as img_error:
+                        print(f"Error processing image {image_data.get('name', '')}: {img_error}")
+                        continue
         
         return JsonResponse({
             'success': True,
             'message': 'Berita berhasil ditambahkan',
-            'data': {
-                'id': news.id,
-                'title': news.title
-            }
+            'id': news.id,
+            'title': news.title
         })
         
     except Exception as e:
+        print(f"Error in news_create_api: {e}")
+        print(f"Full traceback: {traceback.format_exc()}")
         return JsonResponse({'error': str(e)}, status=500)
 
 
 @login_required
 @csrf_exempt
-@require_http_methods(["PUT"])
+@require_http_methods(["PUT", "POST"])
 def news_update_api(request, pk):
     """API to update news"""
     try:
         news = get_object_or_404(News, pk=pk)
-        data = json.loads(request.body)
+        
+        # Handle both JSON and form data
+        if request.content_type and 'application/json' in request.content_type:
+            data = json.loads(request.body)
+        else:
+            # Handle form data from modal
+            data = {
+                'title': request.POST.get('title', ''),
+                'category': request.POST.get('category', ''),
+                'content': request.POST.get('content', ''),
+                'excerpt': request.POST.get('excerpt', ''),
+                'status': request.POST.get('status', 'draft'),
+                'priority': request.POST.get('priority', 'normal'),
+                'is_featured': request.POST.get('is_featured') == 'on',
+                'is_breaking': request.POST.get('is_breaking') == 'on',
+            }
+        
+        print(f"DEBUG: Received data: {data}")
+        
+        # Validate required fields
+        if not data.get('title'):
+            return JsonResponse({'error': 'Title is required'}, status=400)
+        category_id = data.get('category') or data.get('category_id')
+        if not category_id:
+            return JsonResponse({'error': 'Category is required'}, status=400)
+        if not data.get('content'):
+            return JsonResponse({'error': 'Content is required'}, status=400)
         
         news.title = data['title']
-        news.category_id = data['category_id']
+        news.category_id = category_id
         news.content = data['content']
         news.excerpt = data.get('excerpt', '')
         news.status = data.get('status', 'draft')
         news.priority = data.get('priority', 'normal')
         news.is_featured = data.get('is_featured', False)
         news.is_breaking = data.get('is_breaking', False)
-        news.published_date = data.get('published_date') if data.get('published_date') else None
+        
+        # Handle featured image upload
+        if 'featured_image' in request.FILES:
+            news.featured_image = request.FILES['featured_image']
+        
+        # Handle published_date properly with timezone awareness
+        if data.get('published_date'):
+            from django.utils.dateparse import parse_datetime
+            from django.utils import timezone
+            parsed_date = parse_datetime(data['published_date'])
+            if parsed_date:
+                # Make timezone aware if it's naive
+                if timezone.is_naive(parsed_date):
+                    news.published_date = timezone.make_aware(parsed_date)
+                else:
+                    news.published_date = parsed_date
+            else:
+                news.published_date = None
+        
         news.meta_title = data.get('meta_title', '')
         news.meta_description = data.get('meta_description', '')
+        news.youtube_url = data.get('youtube_url', '')
         news.save()
         
-        # Update tags
-        if 'tag_ids' in data:
+        # Handle tags - create new tags if they don't exist
+        if 'tag_names' in data:
+            tag_names = data['tag_names']
+            tag_objects = []
+            for tag_name in tag_names:
+                if tag_name.strip():
+                    # First try to get existing tag by name
+                    try:
+                        tag = NewsTag.objects.get(name=tag_name.strip())
+                        tag_objects.append(tag)
+                    except NewsTag.DoesNotExist:
+                        # Create new tag with unique slug
+                        from django.utils.text import slugify
+                        base_slug = slugify(tag_name.strip())
+                        slug = base_slug
+                        counter = 1
+                        
+                        # Ensure slug is unique
+                        while NewsTag.objects.filter(slug=slug).exists():
+                            slug = f"{base_slug}-{counter}"
+                            counter += 1
+                        
+                        tag = NewsTag.objects.create(
+                            name=tag_name.strip(),
+                            slug=slug
+                        )
+                        tag_objects.append(tag)
+            news.tags.set(tag_objects)
+        elif 'tag_ids' in data:
             news.tags.set(data['tag_ids'])
         
         return JsonResponse({
@@ -1056,6 +1400,9 @@ def news_update_api(request, pk):
         })
         
     except Exception as e:
+        print(f"DEBUG: Error in news_update_api: {str(e)}")
+        import traceback
+        traceback.print_exc()
         return JsonResponse({'error': str(e)}, status=500)
 
 
@@ -1071,6 +1418,45 @@ def news_delete_api(request, pk):
         return JsonResponse({
             'success': True,
             'message': 'Berita berhasil dihapus'
+        })
+        
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+@login_required
+@csrf_exempt
+@require_http_methods(["POST"])
+def news_duplicate_api(request, pk):
+    """API to duplicate news"""
+    try:
+        original_news = get_object_or_404(News, pk=pk)
+        
+        # Create a copy of the news
+        duplicated_news = News.objects.create(
+            title=f"{original_news.title} (Copy)",
+            slug=slugify(f"{original_news.title} (Copy)"),
+            category=original_news.category,
+            content=original_news.content,
+            excerpt=original_news.excerpt,
+            status='draft',
+            priority=original_news.priority,
+            is_featured=False,
+            is_breaking=False,
+            published_date=None,
+            author=request.user,
+            meta_title=original_news.meta_title,
+            meta_description=original_news.meta_description,
+            youtube_url=original_news.youtube_url,
+        )
+        
+        # Copy tags
+        duplicated_news.tags.set(original_news.tags.all())
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Berita berhasil diduplikasi',
+            'id': duplicated_news.id
         })
         
     except Exception as e:
@@ -1298,6 +1684,16 @@ def news_category_view(request):
 
 
 @login_required
+def news_category_create_view(request):
+    """View for news category create template"""
+    context = {
+        'page_title': 'Tambah Kategori Berita',
+        'page_subtitle': 'Buat kategori berita baru',
+    }
+    return render(request, 'admin/modules/news/category.html', context)
+
+
+@login_required
 def news_media_view(request):
     """View for news media template"""
     context = {
@@ -1305,3 +1701,909 @@ def news_media_view(request):
         'page_subtitle': 'Kelola media berita',
     }
     return render(request, 'admin/modules/news/media.html', context)
+
+
+# Media API Views
+@login_required
+@require_http_methods(["GET"])
+def news_media_list_api(request):
+    """API to get list of news media"""
+    try:
+        search = request.GET.get('search', '')
+        news_id = request.GET.get('news_id', '')
+        page = int(request.GET.get('page', 1))
+        per_page = int(request.GET.get('per_page', 20))
+        
+        queryset = NewsImage.objects.select_related('news')
+        
+        if search:
+            queryset = queryset.filter(
+                Q(caption__icontains=search) |
+                Q(alt_text__icontains=search) |
+                Q(news__title__icontains=search)
+            )
+        
+        if news_id:
+            queryset = queryset.filter(news_id=news_id)
+        
+        paginator = Paginator(queryset, per_page)
+        page_obj = paginator.get_page(page)
+        
+        data = {
+            'results': [
+                {
+                    'id': item.id,
+                    'news_id': item.news.id,
+                    'news_title': item.news.title,
+                    'image_url': item.image.url if item.image else None,
+                    'thumbnail_url': item.thumbnail.url if item.thumbnail else None,
+                    'caption': item.caption,
+                    'alt_text': item.alt_text,
+                    'is_featured': item.is_featured,
+                    'order': item.order,
+                    'file_size': item.image.size if item.image else 0,
+                    'created_at': item.created_at.strftime('%d/%m/%Y %H:%M')
+                }
+                for item in page_obj
+            ],
+            'pagination': {
+                'current_page': page,
+                'total_pages': paginator.num_pages,
+                'total_items': paginator.count,
+                'has_previous': page_obj.has_previous(),
+                'has_next': page_obj.has_next(),
+            }
+        }
+        
+        return JsonResponse(data)
+        
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+@login_required
+@csrf_exempt
+@require_http_methods(["POST"])
+def news_media_upload_api(request):
+    """API to upload news media"""
+    try:
+        if 'file' not in request.FILES:
+            return JsonResponse({'error': 'No file provided'}, status=400)
+        
+        file = request.FILES['file']
+        news_id = request.POST.get('news_id')
+        caption = request.POST.get('caption', '')
+        alt_text = request.POST.get('alt_text', '')
+        is_featured = request.POST.get('is_featured', 'false').lower() == 'true'
+        
+        # Check if this is a video upload request
+        if 'video_file' in request.FILES:
+            return news_video_upload_api(request)
+        
+        # Validate file type for images
+        allowed_types = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp']
+        if file.content_type not in allowed_types:
+            return JsonResponse({'error': 'Invalid file type. Only images are allowed.'}, status=400)
+        
+        # Validate file size (10MB max)
+        if file.size > 10 * 1024 * 1024:
+            return JsonResponse({'error': 'File too large. Maximum size is 10MB.'}, status=400)
+        
+        # Create NewsImage instance
+        news_image = NewsImage(
+            image=file,
+            caption=caption,
+            alt_text=alt_text,
+            is_featured=is_featured
+        )
+        
+        if news_id:
+            news = get_object_or_404(News, pk=news_id)
+            news_image.news = news
+        
+        news_image.save()
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Media berhasil diupload',
+            'media': {
+                'id': news_image.id,
+                'image_url': news_image.image.url,
+                'thumbnail_url': news_image.thumbnail.url if news_image.thumbnail else None,
+                'caption': news_image.caption,
+                'alt_text': news_image.alt_text,
+                'is_featured': news_image.is_featured,
+                'file_size': news_image.image.size,
+                'created_at': news_image.created_at.strftime('%d/%m/%Y %H:%M')
+            }
+        })
+        
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+@login_required
+@csrf_exempt
+@require_http_methods(["POST"])
+def news_gallery_upload_api(request):
+    """API to upload multiple gallery images for news"""
+    try:
+        import json
+        import base64
+        from django.core.files.base import ContentFile
+        
+        data = json.loads(request.body)
+        news_id = data.get('news_id')
+        gallery_images = data.get('gallery_images', [])
+        
+        if not news_id:
+            return JsonResponse({'error': 'News ID is required'}, status=400)
+        
+        if not gallery_images:
+            return JsonResponse({'error': 'No images provided'}, status=400)
+        
+        news = get_object_or_404(News, pk=news_id)
+        uploaded_images = []
+        
+        for index, image_data in enumerate(gallery_images):
+            try:
+                # Process base64 image data
+                if 'dataUrl' in image_data:
+                    # Parse data URL
+                    format, imgstr = image_data['dataUrl'].split(';base64,')
+                    ext = format.split('/')[-1]
+                    
+                    # Generate filename
+                    filename = f"news_{news_id}_{image_data['id']}.{ext}"
+                    
+                    # Decode and save image
+                    image_file = ContentFile(
+                        base64.b64decode(imgstr),
+                        name=filename
+                    )
+                    
+                    # Create NewsImage instance
+                    news_image = NewsImage.objects.create(
+                        news=news,
+                        image=image_file,
+                        alt_text=image_data.get('altText', ''),
+                        caption=image_data.get('name', ''),
+                        is_featured=False,  # Will be set separately if needed
+                        order=index
+                    )
+                    
+                    uploaded_images.append({
+                        'id': news_image.id,
+                        'image_url': news_image.image.url,
+                        'thumbnail_url': news_image.thumbnail.url if news_image.thumbnail else None,
+                        'caption': news_image.caption,
+                        'alt_text': news_image.alt_text,
+                        'order': news_image.order
+                    })
+                    
+            except Exception as img_error:
+                print(f"Error processing image {image_data.get('name', '')}: {img_error}")
+                continue
+        
+        return JsonResponse({
+            'success': True,
+            'message': f'{len(uploaded_images)} gambar berhasil diupload',
+            'images': uploaded_images
+        })
+        
+    except Exception as e:
+        print(f"Error in news_gallery_upload_api: {e}")
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+@login_required
+@csrf_exempt
+@require_http_methods(["POST"])
+def news_video_upload_api(request):
+    """API to upload news video"""
+    try:
+        if 'video_file' not in request.FILES:
+            return JsonResponse({'error': 'No video file provided'}, status=400)
+        
+        video_file = request.FILES['video_file']
+        news_id = request.POST.get('news_id')
+        
+        # Validate file type
+        allowed_video_types = ['video/mp4', 'video/webm', 'video/ogg', 'video/avi', 'video/mov', 'video/quicktime']
+        if video_file.content_type not in allowed_video_types:
+            return JsonResponse({'error': 'Invalid file type. Only video files are allowed.'}, status=400)
+        
+        # Validate file size (50MB max)
+        if video_file.size > 50 * 1024 * 1024:
+            return JsonResponse({'error': 'File too large. Maximum size is 50MB.'}, status=400)
+        
+        # Update news with video file
+        if news_id:
+            news = get_object_or_404(News, pk=news_id)
+            news.video_file = video_file
+            news.save()
+            
+            return JsonResponse({
+                'success': True,
+                'message': 'Video berhasil diupload',
+                'video': {
+                    'url': news.video_file.url,
+                    'name': video_file.name,
+                    'size': video_file.size,
+                    'type': video_file.content_type
+                }
+            })
+        else:
+            return JsonResponse({'error': 'News ID is required'}, status=400)
+        
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+@login_required
+@require_http_methods(["GET"])
+def news_media_detail_api(request, pk):
+    """API to get media detail"""
+    try:
+        media = get_object_or_404(NewsImage, pk=pk)
+        
+        data = {
+            'id': media.id,
+            'news_id': media.news.id if media.news else None,
+            'news_title': media.news.title if media.news else None,
+            'image_url': media.image.url if media.image else None,
+            'thumbnail_url': media.thumbnail.url if media.thumbnail else None,
+            'caption': media.caption,
+            'alt_text': media.alt_text,
+            'is_featured': media.is_featured,
+            'order': media.order,
+            'file_size': media.image.size if media.image else 0,
+            'created_at': media.created_at.strftime('%d/%m/%Y %H:%M')
+        }
+        
+        return JsonResponse(data)
+        
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+@login_required
+@csrf_exempt
+@require_http_methods(["PUT"])
+def news_media_update_api(request, pk):
+    """API to update media"""
+    try:
+        media = get_object_or_404(NewsImage, pk=pk)
+        data = json.loads(request.body)
+        
+        media.caption = data.get('caption', media.caption)
+        media.alt_text = data.get('alt_text', media.alt_text)
+        media.is_featured = data.get('is_featured', media.is_featured)
+        media.order = data.get('order', media.order)
+        
+        if 'news_id' in data and data['news_id']:
+            news = get_object_or_404(News, pk=data['news_id'])
+            media.news = news
+        
+        media.save()
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Media berhasil diperbarui'
+        })
+        
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+@login_required
+@csrf_exempt
+@require_http_methods(["DELETE"])
+def news_media_delete_api(request, pk):
+    """API to delete media"""
+    try:
+        media = get_object_or_404(NewsImage, pk=pk)
+        
+        # Delete the actual file
+        if media.image:
+            default_storage.delete(media.image.name)
+        if media.thumbnail:
+            default_storage.delete(media.thumbnail.name)
+        
+        media.delete()
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Media berhasil dihapus'
+        })
+        
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+@login_required
+@csrf_exempt
+@require_http_methods(["POST"])
+def news_media_bulk_action_api(request):
+    """API for bulk media actions"""
+    try:
+        data = json.loads(request.body)
+        action = data.get('action')
+        media_ids = data.get('media_ids', [])
+        
+        if not media_ids:
+            return JsonResponse({'error': 'No media selected'}, status=400)
+        
+        media_queryset = NewsImage.objects.filter(id__in=media_ids)
+        
+        if action == 'delete':
+            # Delete files and records
+            for media in media_queryset:
+                if media.image:
+                    default_storage.delete(media.image.name)
+                if media.thumbnail:
+                    default_storage.delete(media.thumbnail.name)
+            
+            deleted_count = media_queryset.count()
+            media_queryset.delete()
+            
+            return JsonResponse({
+                'success': True,
+                'message': f'{deleted_count} media berhasil dihapus'
+            })
+        
+        elif action == 'set_featured':
+            media_queryset.update(is_featured=True)
+            return JsonResponse({
+                'success': True,
+                'message': f'{media_queryset.count()} media berhasil dijadikan unggulan'
+            })
+        
+        elif action == 'unset_featured':
+            media_queryset.update(is_featured=False)
+            return JsonResponse({
+                'success': True,
+                'message': f'{media_queryset.count()} media berhasil dihapus dari unggulan'
+            })
+        
+        else:
+            return JsonResponse({'error': 'Invalid action'}, status=400)
+        
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+@login_required
+@require_http_methods(["GET"])
+def news_media_statistics_api(request):
+    """API to get media statistics"""
+    try:
+        total_media = NewsImage.objects.count()
+        featured_media = NewsImage.objects.filter(is_featured=True).count()
+        
+        # Calculate total file size
+        total_size = 0
+        for media in NewsImage.objects.all():
+            if media.image:
+                total_size += media.image.size
+        
+        # Recent uploads (last 7 days)
+        from django.utils import timezone
+        from datetime import timedelta
+        recent_uploads = NewsImage.objects.filter(
+            created_at__gte=timezone.now() - timedelta(days=7)
+        ).count()
+        
+        data = {
+            'total_media': total_media,
+            'featured_media': featured_media,
+            'total_size': total_size,
+            'recent_uploads': recent_uploads
+        }
+        
+        return JsonResponse(data)
+        
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+# Admin-specific Views (Non-API)
+@login_required
+def news_duplicate_view(request, pk):
+    """Duplicate existing news"""
+    news = get_object_or_404(News, pk=pk)
+    
+    if request.method == 'POST':
+        # Create a copy of the news
+        news.pk = None
+        news.title = f"{news.title} (Copy)"
+        news.slug = slugify(f"{news.title} (Copy)")
+        news.status = 'draft'
+        news.is_featured = False
+        news.is_breaking = False
+        news.published_date = None
+        news.scheduled_date = None
+        news.views_count = 0
+        news.likes_count = 0
+        news.comments_count = 0
+        news.shares_count = 0
+        news.save()
+        
+        # Copy tags
+        news.tags.set(news.tags.all())
+        
+        messages.success(request, f'Berita "{news.title}" berhasil diduplikasi.')
+        return redirect('news:admin_edit', pk=news.pk)
+    
+    context = {
+        'news': news,
+        'page_title': 'Duplikasi Berita',
+        'page_subtitle': f'Duplikasi: {news.title}',
+    }
+    return render(request, 'admin/modules/news/duplicate.html', context)
+
+
+@login_required
+def news_delete_view(request, pk):
+    """Delete news view"""
+    news = get_object_or_404(News, pk=pk)
+    
+    if request.method == 'POST':
+        title = news.title
+        news.delete()
+        messages.success(request, f'Berita "{title}" berhasil dihapus.')
+        return redirect('news:admin_index')
+    
+    context = {
+        'news': news,
+        'page_title': 'Hapus Berita',
+        'page_subtitle': f'Hapus: {news.title}',
+    }
+    return render(request, 'admin/modules/news/delete.html', context)
+
+
+@login_required
+@require_POST
+def news_publish_view(request, pk):
+    """Publish news"""
+    news = get_object_or_404(News, pk=pk)
+    news.status = 'published'
+    news.published_date = timezone.now()
+    news.save()
+    
+    messages.success(request, f'Berita "{news.title}" berhasil dipublikasikan.')
+    return redirect('news:admin_view', pk=news.pk)
+
+
+@login_required
+@require_POST
+def news_unpublish_view(request, pk):
+    """Unpublish news"""
+    news = get_object_or_404(News, pk=pk)
+    news.status = 'draft'
+    news.published_date = None
+    news.save()
+    
+    messages.success(request, f'Berita "{news.title}" berhasil ditarik dari publikasi.')
+    return redirect('news:admin_view', pk=news.pk)
+
+
+@login_required
+def news_bulk_action_view(request):
+    """Handle bulk actions on news"""
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        selected_ids = request.POST.getlist('selected_news')
+        
+        if not selected_ids:
+            messages.error(request, 'Tidak ada berita yang dipilih.')
+            return redirect('news:admin_index')
+        
+        try:
+            news_queryset = News.objects.filter(id__in=selected_ids)
+            
+            if action == 'publish':
+                news_queryset.update(status='published', published_date=timezone.now())
+                messages.success(request, f'{news_queryset.count()} berita berhasil dipublikasikan.')
+            
+            elif action == 'draft':
+                news_queryset.update(status='draft')
+                messages.success(request, f'{news_queryset.count()} berita berhasil dijadikan draft.')
+            
+            elif action == 'archive':
+                news_queryset.update(status='archived')
+                messages.success(request, f'{news_queryset.count()} berita berhasil diarsipkan.')
+            
+            elif action == 'delete':
+                count = news_queryset.count()
+                news_queryset.delete()
+                messages.success(request, f'{count} berita berhasil dihapus.')
+            
+            else:
+                messages.error(request, 'Aksi tidak valid.')
+        
+        except Exception as e:
+            messages.error(request, f'Terjadi kesalahan: {str(e)}')
+    
+    return redirect('news:admin_index')
+
+
+# Media Management Views (Non-API)
+@login_required
+def news_media_upload_view(request):
+    """Upload media files"""
+    if request.method == 'POST':
+        files = request.FILES.getlist('files')
+        
+        if not files:
+            messages.error(request, 'Tidak ada file yang dipilih.')
+            return redirect('news:admin_media')
+        
+        uploaded_count = 0
+        for file in files:
+            try:
+                # Create NewsImage instance
+                news_image = NewsImage(
+                    image=file,
+                    caption=file.name,
+                    alt_text=file.name
+                )
+                news_image.save()
+                uploaded_count += 1
+            except Exception as e:
+                messages.error(request, f'Gagal mengupload {file.name}: {str(e)}')
+        
+        if uploaded_count > 0:
+            messages.success(request, f'{uploaded_count} file berhasil diupload.')
+        
+        return redirect('news:admin_media')
+    
+    context = {
+        'page_title': 'Upload Media',
+        'page_subtitle': 'Upload file media baru',
+    }
+    return render(request, 'admin/modules/news/media_upload.html', context)
+
+
+@login_required
+def news_media_detail_view(request, pk):
+    """View media detail"""
+    media = get_object_or_404(NewsImage, pk=pk)
+    
+    context = {
+        'media': media,
+        'page_title': 'Detail Media',
+        'page_subtitle': media.caption or 'Media Detail',
+    }
+    return render(request, 'admin/modules/news/media_detail.html', context)
+
+
+@login_required
+def news_media_update_view(request, pk):
+    """Update media"""
+    media = get_object_or_404(NewsImage, pk=pk)
+    
+    if request.method == 'POST':
+        media.caption = request.POST.get('title', '')
+        media.alt_text = request.POST.get('alt_text', '')
+        media.save()
+        
+        messages.success(request, 'Media berhasil diupdate.')
+        return redirect('news:admin_media')
+    
+    context = {
+        'media': media,
+        'page_title': 'Edit Media',
+        'page_subtitle': f'Edit: {media.caption or "Media"}',
+    }
+    return render(request, 'admin/modules/news/media_edit.html', context)
+
+
+@login_required
+@require_POST
+def news_media_delete_view(request, pk):
+    """Delete media"""
+    media = get_object_or_404(NewsImage, pk=pk)
+    
+    # Delete the actual file
+    if media.image:
+        default_storage.delete(media.image.name)
+    if media.thumbnail:
+        default_storage.delete(media.thumbnail.name)
+    
+    media.delete()
+    messages.success(request, 'Media berhasil dihapus.')
+    
+    return redirect('news:admin_media')
+
+
+@login_required
+@require_POST
+def news_media_bulk_delete_view(request):
+    """Bulk delete media"""
+    media_ids = request.POST.getlist('media_ids')
+    
+    if not media_ids:
+        messages.error(request, 'Tidak ada media yang dipilih.')
+        return redirect('news:admin_media')
+    
+    try:
+        media_queryset = NewsImage.objects.filter(id__in=media_ids)
+        
+        # Delete files
+        for media in media_queryset:
+            if media.image:
+                default_storage.delete(media.image.name)
+            if media.thumbnail:
+                default_storage.delete(media.thumbnail.name)
+        
+        deleted_count = media_queryset.count()
+        media_queryset.delete()
+        
+        messages.success(request, f'{deleted_count} media berhasil dihapus.')
+    
+    except Exception as e:
+        messages.error(request, f'Terjadi kesalahan: {str(e)}')
+    
+    return redirect('news:admin_media')
+
+
+@login_required
+@require_POST
+def news_media_bulk_download_view(request):
+    """Bulk download media"""
+    media_ids = request.POST.getlist('media_ids')
+    
+    if not media_ids:
+        messages.error(request, 'Tidak ada media yang dipilih.')
+        return redirect('news:admin_media')
+    
+    # This would typically create a zip file for download
+    # For now, just redirect back
+    messages.info(request, 'Fitur bulk download akan segera tersedia.')
+    return redirect('news:admin_media')
+
+
+# Category Management Views (Non-API)
+@login_required
+def news_category_detail_view(request, pk):
+    """View category detail"""
+    category = get_object_or_404(NewsCategory, pk=pk)
+    
+    # Get recent news in this category
+    recent_news = category.news.all()[:5]
+    
+    context = {
+        'category': category,
+        'recent_news': recent_news,
+        'page_title': 'Detail Kategori',
+        'page_subtitle': category.name,
+    }
+    return render(request, 'admin/modules/news/category_detail.html', context)
+
+
+@login_required
+def news_category_update_view(request, pk):
+    """Update category"""
+    category = get_object_or_404(NewsCategory, pk=pk)
+    
+    if request.method == 'POST':
+        form = NewsCategoryForm(request.POST, instance=category)
+        if form.is_valid():
+            form.save()
+            messages.success(request, f'Kategori "{category.name}" berhasil diupdate.')
+            return redirect('news:admin_categories')
+    else:
+        form = NewsCategoryForm(instance=category)
+    
+    context = {
+        'form': form,
+        'category': category,
+        'page_title': 'Edit Kategori',
+        'page_subtitle': f'Edit: {category.name}',
+    }
+    return render(request, 'admin/modules/news/category_edit.html', context)
+
+
+@login_required
+@require_POST
+def news_category_delete_view(request, pk):
+    """Delete category"""
+    category = get_object_or_404(NewsCategory, pk=pk)
+    
+    # Check if category has news
+    if category.news.exists():
+        messages.error(request, 'Kategori tidak dapat dihapus karena masih memiliki berita.')
+        return redirect('news:admin_categories')
+    
+    name = category.name
+    category.delete()
+    messages.success(request, f'Kategori "{name}" berhasil dihapus.')
+    
+    return redirect('news:admin_categories')
+
+
+# ============ ANNOUNCEMENT VIEWS ============
+
+@login_required
+def announcement_list(request):
+    """List all announcements"""
+    search_form = AnnouncementSearchForm(request.GET or None)
+    announcements = Announcement.objects.all().order_by('-created_at')
+    
+    # Apply search filters
+    if search_form.is_valid():
+        search_query = search_form.cleaned_data.get('search')
+        announcement_type = search_form.cleaned_data.get('type')
+        status = search_form.cleaned_data.get('status')
+        priority = search_form.cleaned_data.get('priority')
+        
+        if search_query:
+            announcements = announcements.filter(
+                Q(title__icontains=search_query) |
+                Q(content__icontains=search_query)
+            )
+        
+        if announcement_type:
+            announcements = announcements.filter(type=announcement_type)
+            
+        if status:
+            announcements = announcements.filter(status=status)
+            
+        if priority:
+            announcements = announcements.filter(priority=priority)
+    
+    # Pagination
+    paginator = Paginator(announcements, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    context = {
+        'announcements': page_obj,
+        'search_form': search_form,
+        'total_announcements': announcements.count(),
+    }
+    
+    return render(request, 'admin/modules/news/announcements.html', context)
+
+
+@login_required
+def announcement_create(request):
+    """Create new announcement"""
+    if request.method == 'POST':
+        form = AnnouncementForm(request.POST)
+        if form.is_valid():
+            announcement = form.save(commit=False)
+            announcement.author = request.user
+            announcement.save()
+            messages.success(request, 'Pengumuman berhasil dibuat.')
+            return JsonResponse({
+                'success': True,
+                'message': 'Pengumuman berhasil dibuat.',
+                'redirect_url': reverse('news:announcement_list')
+            })
+        else:
+            return JsonResponse({
+                'success': False,
+                'errors': form.errors
+            })
+    else:
+        form = AnnouncementForm()
+    
+    context = {
+        'form': form,
+        'title': 'Tambah Pengumuman'
+    }
+    
+    return render(request, 'admin/modules/news/announcement_form.html', context)
+
+
+@login_required
+def announcement_edit(request, pk):
+    """Edit announcement"""
+    announcement = get_object_or_404(Announcement, pk=pk)
+    
+    if request.method == 'POST':
+        form = AnnouncementForm(request.POST, instance=announcement)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Pengumuman berhasil diperbarui.')
+            return JsonResponse({
+                'success': True,
+                'message': 'Pengumuman berhasil diperbarui.',
+                'redirect_url': reverse('news:announcement_list')
+            })
+        else:
+            return JsonResponse({
+                'success': False,
+                'errors': form.errors
+            })
+    else:
+        form = AnnouncementForm(instance=announcement)
+    
+    context = {
+        'form': form,
+        'announcement': announcement,
+        'title': 'Edit Pengumuman'
+    }
+    
+    return render(request, 'admin/modules/news/announcement_form.html', context)
+
+
+@login_required
+@require_POST
+def announcement_delete(request, pk):
+    """Delete announcement"""
+    announcement = get_object_or_404(Announcement, pk=pk)
+    title = announcement.title
+    announcement.delete()
+    messages.success(request, f'Pengumuman "{title}" berhasil dihapus.')
+    
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return JsonResponse({
+            'success': True,
+            'message': f'Pengumuman "{title}" berhasil dihapus.'
+        })
+    
+    return redirect('news:announcement_list')
+
+
+@login_required
+def announcement_detail(request, pk):
+    """View announcement detail"""
+    announcement = get_object_or_404(Announcement, pk=pk)
+    
+    context = {
+        'announcement': announcement
+    }
+    
+    return render(request, 'admin/modules/news/announcement_detail.html', context)
+
+
+# Public announcement views
+def public_announcement_list(request):
+    """Public announcement list"""
+    announcements = Announcement.objects.filter(
+        status='published',
+        start_date__lte=timezone.now()
+    ).filter(
+        Q(end_date__isnull=True) | Q(end_date__gte=timezone.now())
+    ).order_by('-priority', '-created_at')
+    
+    # Filter by type if specified
+    announcement_type = request.GET.get('type')
+    if announcement_type:
+        announcements = announcements.filter(type=announcement_type)
+    
+    # Pagination
+    paginator = Paginator(announcements, 12)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    context = {
+        'announcements': page_obj,
+        'announcement_types': Announcement.TYPE_CHOICES,
+        'current_type': announcement_type
+    }
+    
+    return render(request, 'public/announcements.html', context)
+
+
+def public_announcement_detail(request, slug):
+    """Public announcement detail"""
+    announcement = get_object_or_404(
+        Announcement,
+        slug=slug,
+        status='published',
+        start_date__lte=timezone.now()
+    )
+    
+    # Check if announcement is still active
+    if announcement.end_date and announcement.end_date < timezone.now():
+        messages.warning(request, 'Pengumuman ini sudah tidak aktif.')
+    
+    context = {
+        'announcement': announcement
+    }
+    
+    return render(request, 'public/announcement_detail.html', context)

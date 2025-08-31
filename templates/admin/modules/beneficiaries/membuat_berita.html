@@ -420,17 +420,17 @@
                     ['link', 'image', 'video'],
                     ['clean']
                 ]
-            }
+            },
+            placeholder: 'Tulis konten berita di sini...'
         });
         
         // Auto-generate slug from title
         document.querySelector('[name="title"]').addEventListener('input', function() {
             const title = this.value;
             const slug = title.toLowerCase()
-                .replace(/[^a-z0-9\s-]/g, '')
-                .replace(/\s+/g, '-')
-                .replace(/-+/g, '-')
-                .trim('-');
+                .replace(/[^\w\s-]/g, '') // Remove special characters
+                .replace(/[\s_-]+/g, '-') // Replace spaces and underscores with hyphens
+                .replace(/^-+|-+$/g, ''); // Remove leading/trailing hyphens
             document.querySelector('[name="slug"]').value = slug;
         });
         
@@ -498,22 +498,32 @@
     
     function openModal(modalId) {
         document.getElementById(modalId).classList.remove('hidden');
+        document.body.classList.add('overflow-hidden');
     }
     
     function closeModal(modalId) {
         document.getElementById(modalId).classList.add('hidden');
+        document.body.classList.remove('overflow-hidden');
+        
         if (modalId === 'newsModal') {
             document.getElementById('newsForm').reset();
             document.getElementById('modalTitle').textContent = 'Buat Berita Baru';
             document.getElementById('imagePreview').classList.add('hidden');
             currentTags = [];
             updateTagDisplay();
+            updateTagsHidden();
             if (quill) quill.setContents([]);
+            
+            // Remove news_id if exists
+            const idInput = document.querySelector('input[name="news_id"]');
+            if (idInput) {
+                idInput.remove();
+            }
         }
     }
     
     function viewNews(id) {
-        window.open(`/admin/beneficiaries/berita/${id}/view/`, '_blank');
+        window.open(`/news/${id}/`, '_blank');
     }
     
     function editNews(id) {
@@ -522,7 +532,6 @@
             .then(data => {
                 document.getElementById('modalTitle').textContent = 'Edit Berita';
                 const form = document.getElementById('newsForm');
-                form.action = `/admin/beneficiaries/berita/${id}/update/`;
                 
                 // Fill form fields
                 Object.keys(data).forEach(key => {
@@ -554,6 +563,16 @@
                     document.getElementById('imagePreview').classList.remove('hidden');
                 }
                 
+                // Add hidden input for news ID
+                let idInput = document.querySelector('input[name="news_id"]');
+                if (!idInput) {
+                    idInput = document.createElement('input');
+                    idInput.type = 'hidden';
+                    idInput.name = 'news_id';
+                    form.appendChild(idInput);
+                }
+                idInput.value = id;
+                
                 openModal('newsModal');
             })
             .catch(error => {
@@ -564,90 +583,106 @@
     
     function publishNews(id) {
         if (confirm('Apakah Anda yakin ingin mempublikasikan berita ini?')) {
-            fetch(`/admin/beneficiaries/berita/${id}/publish/`, {
-                method: 'POST',
-                headers: {
-                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
-                    'Content-Type': 'application/json'
-                }
-            })
-            .then(response => {
-                if (response.ok) {
-                    location.reload();
-                } else {
-                    alert('Terjadi kesalahan saat mempublikasikan berita');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Terjadi kesalahan saat mempublikasikan berita');
-            });
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = window.location.pathname;
+            
+            const csrfToken = document.createElement('input');
+            csrfToken.type = 'hidden';
+            csrfToken.name = 'csrfmiddlewaretoken';
+            csrfToken.value = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            
+            const actionInput = document.createElement('input');
+            actionInput.type = 'hidden';
+            actionInput.name = 'action';
+            actionInput.value = 'publish';
+            
+            const idInput = document.createElement('input');
+            idInput.type = 'hidden';
+            idInput.name = 'news_id';
+            idInput.value = id;
+            
+            form.appendChild(csrfToken);
+            form.appendChild(actionInput);
+            form.appendChild(idInput);
+            
+            document.body.appendChild(form);
+            form.submit();
         }
     }
     
     function deleteNews(id) {
         if (confirm('Apakah Anda yakin ingin menghapus berita ini?')) {
-            fetch(`/admin/beneficiaries/berita/${id}/delete/`, {
-                method: 'DELETE',
-                headers: {
-                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-                }
-            })
-            .then(response => {
-                if (response.ok) {
-                    location.reload();
-                } else {
-                    alert('Terjadi kesalahan saat menghapus berita');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Terjadi kesalahan saat menghapus berita');
-            });
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = window.location.pathname;
+            
+            const csrfToken = document.createElement('input');
+            csrfToken.type = 'hidden';
+            csrfToken.name = 'csrfmiddlewaretoken';
+            csrfToken.value = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            
+            const actionInput = document.createElement('input');
+            actionInput.type = 'hidden';
+            actionInput.name = 'action';
+            actionInput.value = 'delete';
+            
+            const idInput = document.createElement('input');
+            idInput.type = 'hidden';
+            idInput.name = 'news_id';
+            idInput.value = id;
+            
+            form.appendChild(csrfToken);
+            form.appendChild(actionInput);
+            form.appendChild(idInput);
+            
+            document.body.appendChild(form);
+            form.submit();
         }
     }
     
     function saveDraft() {
         document.querySelector('[name="status"]').value = 'draft';
-        document.getElementById('newsForm').dispatchEvent(new Event('submit'));
+        document.getElementById('content').value = quill.root.innerHTML;
+        document.getElementById('newsForm').submit();
     }
     
     function exportNews() {
         const params = new URLSearchParams(window.location.search);
         params.set('export', 'excel');
-        window.open(`/admin/beneficiaries/berita/export/?${params.toString()}`, '_blank');
+        window.open(`${window.location.pathname}?${params.toString()}`, '_blank');
     }
     
-    // Form submission
+    // Form submission - allow normal Django form submission
     document.getElementById('newsForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        
         // Set content from Quill editor
         document.getElementById('content').value = quill.root.innerHTML;
         
-        const formData = new FormData(this);
-        const url = this.action || '/admin/beneficiaries/berita/create/';
+        // Validate required fields
+        const title = document.querySelector('input[name="title"]').value.trim();
+        const kategori = document.querySelector('select[name="kategori"]').value;
+        const content = quill.root.innerHTML.trim();
         
-        fetch(url, {
-            method: 'POST',
-            body: formData,
-            headers: {
-                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-            }
-        })
-        .then(response => {
-            if (response.ok) {
-                location.reload();
-            } else {
-                return response.json().then(data => {
-                    throw new Error(data.message || 'Terjadi kesalahan');
-                });
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert(error.message || 'Terjadi kesalahan saat menyimpan berita');
-        });
+        if (!title) {
+            e.preventDefault();
+            alert('Judul berita harus diisi');
+            return;
+        }
+        
+        if (!kategori) {
+            e.preventDefault();
+            alert('Kategori harus dipilih');
+            return;
+        }
+        
+        if (!content || content === '<p><br></p>') {
+            e.preventDefault();
+            alert('Konten berita harus diisi');
+            return;
+        }
+        
+        // Allow normal form submission to Django view
+        return true;
     });
 </script>
 {% endblock %}

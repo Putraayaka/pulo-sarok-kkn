@@ -12,13 +12,13 @@ import json
 
 # Import models from all apps
 from references.models import Penduduk, Dusun, Lorong
-from organization.models import Organization
+from organization.models import PerangkatDesa, LembagaAdat, PenggerakPKK, Kepemudaan, KarangTaruna
 from business.models import Business
 # from news.models import News  # Temporarily commented out due to form error
 from letters.models import Letter
 from beneficiaries.models import Beneficiary
 from posyandu.models import PosyanduLocation
-from village_profile.models import VillageVision
+from village_profile.models import VillageHistory, VillageHistoryPhoto
 from documents.models import Document
 from core.models import CustomUser
 
@@ -70,12 +70,18 @@ def dashboard_stats_api(request):
         # Get statistics
         total_penduduk = Penduduk.objects.count()
         total_dusun = Dusun.objects.count()
-        total_organisasi = Organization.objects.count()
+        # Count all organization types
+        total_perangkat = PerangkatDesa.objects.count()
+        total_lembaga_adat = LembagaAdat.objects.count()
+        total_pkk = PenggerakPKK.objects.count()
+        total_kepemudaan = Kepemudaan.objects.count()
+        total_karang_taruna = KarangTaruna.objects.count()
+        total_organisasi = total_perangkat + total_lembaga_adat + total_pkk + total_kepemudaan + total_karang_taruna
         total_umkm = Business.objects.count()
         
         # Gender statistics
-        male_count = Penduduk.objects.filter(gender='L').count()
-        female_count = Penduduk.objects.filter(gender='P').count()
+        male_count = Penduduk.objects.filter(jenis_kelamin='L').count()
+        female_count = Penduduk.objects.filter(jenis_kelamin='P').count()
         
         # Calculate percentages
         total_gender = male_count + female_count
@@ -85,14 +91,14 @@ def dashboard_stats_api(request):
         # Age groups (approximate based on birth date)
         today = timezone.now().date()
         age_0_17 = Penduduk.objects.filter(
-            birth_date__gte=today - timedelta(days=17*365)
+            tanggal_lahir__gte=today - timedelta(days=17*365)
         ).count()
         age_18_60 = Penduduk.objects.filter(
-            birth_date__lt=today - timedelta(days=17*365),
-            birth_date__gte=today - timedelta(days=60*365)
+            tanggal_lahir__lt=today - timedelta(days=17*365),
+            tanggal_lahir__gte=today - timedelta(days=60*365)
         ).count()
         age_60_plus = Penduduk.objects.filter(
-            birth_date__lt=today - timedelta(days=60*365)
+            tanggal_lahir__lt=today - timedelta(days=60*365)
         ).count()
         
         data = {
@@ -146,17 +152,29 @@ def recent_activities_api(request):
                 'color': 'bg-purple-100'
             })
         
-        # Recent organizations
-        recent_orgs = Organization.objects.filter(
+        # Recent organizations - check all organization types
+        recent_perangkat = PerangkatDesa.objects.filter(
             created_at__gte=timezone.now() - timedelta(days=7)
-        ).order_by('-created_at')[:2]
+        ).order_by('-created_at')[:1]
         
-        for org in recent_orgs:
+        for perangkat in recent_perangkat:
             activities.append({
-                'description': f'Organisasi "{org.name}" ditambahkan',
-                'time_ago': get_time_ago(org.created_at),
+                'description': f'Perangkat Desa "{perangkat.nama}" ditambahkan',
+                'time_ago': get_time_ago(perangkat.created_at),
                 'icon': 'fas fa-users text-blue-600',
                 'color': 'bg-blue-100'
+            })
+        
+        recent_lembaga = LembagaAdat.objects.filter(
+            created_at__gte=timezone.now() - timedelta(days=7)
+        ).order_by('-created_at')[:1]
+        
+        for lembaga in recent_lembaga:
+            activities.append({
+                'description': f'Lembaga Adat "{lembaga.nama_lembaga}" ditambahkan',
+                'time_ago': get_time_ago(lembaga.created_at),
+                'icon': 'fas fa-users text-green-600',
+                'color': 'bg-green-100'
             })
         
         # Sort by time and limit to 5
@@ -288,14 +306,14 @@ def search_global(request):
             'id': p.id
         })
     
-    # Search in Organizations
-    org_results = Organization.objects.filter(name__icontains=query)[:5]
-    for org in org_results:
+    # Search in Organizations (PerangkatDesa, LembagaAdat, etc.)
+    perangkat_results = PerangkatDesa.objects.filter(nama__icontains=query)[:5]
+    for org in perangkat_results:
         results.append({
-            'title': org.name,
-            'subtitle': org.description or 'Organisasi',
+            'title': org.nama,
+            'subtitle': org.jabatan or 'Perangkat Desa',
             'module': 'organization',
-            'type': 'organization',
+            'type': 'perangkat_desa',
             'id': org.id
         })
     
@@ -327,7 +345,11 @@ def system_info_api(request):
         # Database size (approximate)
         total_records = (
             Penduduk.objects.count() +
-            Organization.objects.count() +
+            PerangkatDesa.objects.count() +
+            LembagaAdat.objects.count() +
+            PenggerakPKK.objects.count() +
+            Kepemudaan.objects.count() +
+            KarangTaruna.objects.count() +
             Business.objects.count() +
             # News.objects.count() +  # Temporarily commented out
             Letter.objects.count()

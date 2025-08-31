@@ -2,6 +2,8 @@
 
 {% block title %}Input Data UKM{% endblock %}
 
+{% csrf_token %}
+
 {% block page_title %}Input Data UKM - Usaha Kecil Menengah{% endblock %}
 
 {% block content %}
@@ -343,11 +345,24 @@ document.addEventListener('DOMContentLoaded', function() {
     loadUkmData();
 });
 
+// Get CSRF token
+async function getCSRFToken() {
+    try {
+        const response = await fetch('/pulosarok/business/csrf-token/');
+        const data = await response.json();
+        return data.csrf_token;
+    } catch (error) {
+        console.error('Error getting CSRF token:', error);
+        return null;
+    }
+}
+
 // Load UKM data from API
 async function loadUkmData(page = 1) {
     try {
         const searchTerm = document.getElementById('searchInput').value;
         const statusFilter = document.getElementById('statusFilter').value;
+        const kategoriFilter = document.getElementById('kategoriFilter').value;
         
         let url = `/pulosarok/business/api/ukm/?page=${page}&page_size=${recordsPerPage}`;
         
@@ -359,18 +374,27 @@ async function loadUkmData(page = 1) {
             url += `&status=${statusFilter}`;
         }
         
-        const response = await fetch(url);
+        if (kategoriFilter) {
+            url += `&jenis_usaha=${kategoriFilter}`;
+        }
+        
+        const csrfToken = await getCSRFToken();
+        const response = await fetch(url, {
+            headers: {
+                'X-CSRFToken': csrfToken
+            }
+        });
         const data = await response.json();
         
-        if (data.success) {
-            ukmData = data.data;
-            currentPage = data.current_page;
-            totalRecords = data.total;
-            renderTable();
-            updatePagination();
+        if (response.ok && data.results) {
+            ukmData = data.results;
+            currentPage = page;
+            totalRecords = data.count;
+            displayUkmData();
+            updatePagination(data.num_pages, data.current_page);
             updateStatistics();
         } else {
-            console.error('Error loading UKM data:', data.message);
+            console.error('Error loading UKM data:', data.message || 'Unknown error');
         }
     } catch (error) {
         console.error('Error fetching UKM data:', error);
@@ -418,8 +442,8 @@ function updateStatistics() {
     document.getElementById('totalOmzet').textContent = formatCurrency(totalOmzet);
 }
 
-// Render table and mobile cards
-function renderTable() {
+// Display UKM data in table and mobile cards
+function displayUkmData() {
     const tbody = document.getElementById('ukmTableBody');
     const mobileContainer = document.getElementById('ukmCardContainer');
     
@@ -438,17 +462,17 @@ function renderTable() {
         // Desktop table row
         const row = `
             <tr>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${index + 1}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${item.nama_usaha}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${item.pemilik}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${((currentPage - 1) * recordsPerPage) + index + 1}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${item.nama_usaha || 'N/A'}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${item.pemilik || 'N/A'}</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     <span class="px-2 py-1 text-xs font-medium rounded-full bg-purple-100 text-purple-800">
-                        ${getCategoryName(item.jenis_usaha)}
+                        ${getCategoryName(item.jenis_usaha || 'N/A')}
                     </span>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
-                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusColors[item.status]}">
-                        ${item.status.charAt(0).toUpperCase() + item.status.slice(1)}
+                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusColors[item.status] || 'bg-gray-100 text-gray-800'}">
+                        ${item.status ? item.status.charAt(0).toUpperCase() + item.status.slice(1) : 'N/A'}
                     </span>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
@@ -468,21 +492,21 @@ function renderTable() {
         
         // Mobile card
         const card = `
-            <div class="bg-white rounded-lg shadow-md p-4 border border-gray-200">
+            <div class="bg-white rounded-lg shadow-md p-4 border border-gray-200 mb-4">
                 <div class="flex justify-between items-start mb-3">
                     <div class="flex-1">
-                        <h3 class="font-semibold text-gray-900 text-lg">${item.nama_usaha}</h3>
-                        <p class="text-gray-600 text-sm">${item.pemilik}</p>
+                        <h3 class="font-semibold text-gray-900 text-lg">${item.nama_usaha || 'N/A'}</h3>
+                        <p class="text-gray-600 text-sm">${item.pemilik || 'N/A'}</p>
                     </div>
-                    <span class="px-2 py-1 text-xs font-medium rounded-full ${statusColors[item.status]}">
-                        ${item.status.charAt(0).toUpperCase() + item.status.slice(1)}
+                    <span class="px-2 py-1 text-xs font-medium rounded-full ${statusColors[item.status] || 'bg-gray-100 text-gray-800'}">
+                        ${item.status ? item.status.charAt(0).toUpperCase() + item.status.slice(1) : 'N/A'}
                     </span>
                 </div>
                 
                 <div class="space-y-2 mb-4">
                     <div class="flex justify-between">
                         <span class="text-gray-500 text-sm">Kategori:</span>
-                        <span class="text-gray-900 text-sm font-medium">${getCategoryName(item.jenis_usaha)}</span>
+                        <span class="text-gray-900 text-sm font-medium">${getCategoryName(item.jenis_usaha || 'N/A')}</span>
                     </div>
                     <div class="flex justify-between">
                         <span class="text-gray-500 text-sm">Omzet/Bulan:</span>
@@ -492,10 +516,14 @@ function renderTable() {
                         <span class="text-gray-500 text-sm">Pekerja:</span>
                         <span class="text-gray-900 text-sm font-medium">${item.jumlah_karyawan || 0} orang</span>
                     </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-500 text-sm">Modal Awal:</span>
+                        <span class="text-gray-900 text-sm font-medium">${formatCurrency(item.modal_awal || 0)}</span>
+                    </div>
                 </div>
                 
                 <div class="flex justify-end space-x-2">
-                    <button onclick="viewDetail(${item.id})" class="px-3 py-1 bg-green-100 text-green-700 rounded-md text-sm hover:bg-green-200">
+                    <button onclick="viewDetail(${item.id})" class="px-3 py-1 bg-green-100 text-green-700 rounded-md text-sm hover:bg-green-200" title="Detail">
                         <i class="fas fa-eye mr-1"></i>Detail
                     </button>
                     <button onclick="editUkm(${item.id})" class="px-3 py-1 bg-blue-100 text-blue-700 rounded-md text-sm hover:bg-blue-200">
@@ -552,24 +580,22 @@ function editUkm(id) {
 async function deleteUkm(id) {
     if (confirm('Apakah Anda yakin ingin menghapus data UKM ini?')) {
         try {
-            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            const csrfToken = await getCSRFToken();
             
-            const response = await fetch(`/pulosarok/business/api/ukm/`, {
+            const response = await fetch(`/pulosarok/business/api/ukm/${id}/`, {
                 method: 'DELETE',
                 headers: {
-                    'Content-Type': 'application/json',
                     'X-CSRFToken': csrfToken
-                },
-                body: JSON.stringify({ id: id })
+                }
             });
             
             const data = await response.json();
             
-            if (data.success) {
+            if (response.ok && (data.success || response.status === 204)) {
                 alert('Data UKM berhasil dihapus!');
                 loadUkmData(currentPage);
             } else {
-                alert('Error: ' + data.message);
+                alert('Error: ' + (data.message || 'Terjadi kesalahan'));
             }
         } catch (error) {
             console.error('Error deleting UKM:', error);
@@ -713,7 +739,7 @@ document.getElementById('ukmForm').addEventListener('submit', async function(e) 
     e.preventDefault();
     
     try {
-        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        const csrfToken = await getCSRFToken();
         
         const formData = {
              id: document.getElementById('ukmId').value,
@@ -752,12 +778,12 @@ document.getElementById('ukmForm').addEventListener('submit', async function(e) 
         
         const data = await response.json();
         
-        if (data.success) {
+        if (response.ok && (data.success || data.id)) {
             closeModal();
             loadUkmData(currentPage);
             alert(formData.id ? 'Data UKM berhasil diperbarui!' : 'Data UKM berhasil ditambahkan!');
         } else {
-            alert('Error: ' + data.message);
+            alert('Error: ' + (data.message || 'Terjadi kesalahan'));
         }
     } catch (error) {
         console.error('Error saving UKM:', error);
@@ -782,8 +808,7 @@ function generateReport() {
 }
 
 // Update pagination
-function updatePagination() {
-    const totalPages = Math.ceil(totalRecords / recordsPerPage);
+function updatePagination(totalPages, current) {
     const paginationContainer = document.getElementById('pagination');
     
     if (!paginationContainer) return;
@@ -791,29 +816,32 @@ function updatePagination() {
     let paginationHTML = '';
     
     // Previous button
-    if (currentPage > 1) {
-        paginationHTML += `<button class="btn btn-outline-primary" onclick="loadUkmData(${currentPage - 1})">Previous</button>`;
+    if (current > 1) {
+        paginationHTML += `<button class="px-3 py-2 bg-white border border-gray-300 text-gray-500 hover:bg-gray-50 rounded-l-md" onclick="loadUkmData(${current - 1})">Previous</button>`;
     }
     
-    // Page numbers
-    for (let i = 1; i <= totalPages; i++) {
-        if (i === currentPage) {
-            paginationHTML += `<button class="btn btn-primary">${i}</button>`;
+    // Page numbers (show max 5 pages)
+    const startPage = Math.max(1, current - 2);
+    const endPage = Math.min(totalPages, startPage + 4);
+    
+    for (let i = startPage; i <= endPage; i++) {
+        if (i === current) {
+            paginationHTML += `<button class="px-3 py-2 bg-purple-600 text-white border border-purple-600">${i}</button>`;
         } else {
-            paginationHTML += `<button class="btn btn-outline-primary" onclick="loadUkmData(${i})">${i}</button>`;
+            paginationHTML += `<button class="px-3 py-2 bg-white border border-gray-300 text-gray-500 hover:bg-gray-50" onclick="loadUkmData(${i})">${i}</button>`;
         }
     }
     
     // Next button
-    if (currentPage < totalPages) {
-        paginationHTML += `<button class="btn btn-outline-primary" onclick="loadUkmData(${currentPage + 1})">Next</button>`;
+    if (current < totalPages) {
+        paginationHTML += `<button class="px-3 py-2 bg-white border border-gray-300 text-gray-500 hover:bg-gray-50 rounded-r-md" onclick="loadUkmData(${current + 1})">Next</button>`;
     }
     
     paginationContainer.innerHTML = paginationHTML;
     
     // Update showing records info
-    const startRecord = (currentPage - 1) * recordsPerPage + 1;
-    const endRecord = Math.min(currentPage * recordsPerPage, totalRecords);
+    const startRecord = (current - 1) * recordsPerPage + 1;
+    const endRecord = Math.min(current * recordsPerPage, totalRecords);
     
     document.getElementById('showingStart').textContent = startRecord;
     document.getElementById('showingEnd').textContent = endRecord;

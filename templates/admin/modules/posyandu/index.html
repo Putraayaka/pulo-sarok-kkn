@@ -15,8 +15,8 @@
                 </div>
                 <div class="ml-4">
                     <p class="text-blue-100 text-sm font-medium">Total Balita</p>
-                    <p class="text-3xl font-bold" id="total-balita">-</p>
-                    <p class="text-blue-100 text-xs" id="balita-growth">+0 bulan ini</p>
+                    <p class="text-3xl font-bold">{{ stats.total_balita|default:0 }}</p>
+                    <p class="text-blue-100 text-xs">+{{ stats.balita_growth|default:0 }} bulan ini</p>
                 </div>
             </div>
         </div>
@@ -28,8 +28,8 @@
                 </div>
                 <div class="ml-4">
                     <p class="text-pink-100 text-sm font-medium">Ibu Hamil</p>
-                    <p class="text-3xl font-bold" id="total-ibu-hamil">-</p>
-                    <p class="text-pink-100 text-xs" id="ibu-hamil-growth">+0 bulan ini</p>
+                    <p class="text-3xl font-bold">{{ stats.total_ibu_hamil|default:0 }}</p>
+                    <p class="text-pink-100 text-xs">+{{ stats.ibu_hamil_growth|default:0 }} bulan ini</p>
                 </div>
             </div>
         </div>
@@ -41,8 +41,8 @@
                 </div>
                 <div class="ml-4">
                     <p class="text-green-100 text-sm font-medium">Kader Aktif</p>
-                    <p class="text-3xl font-bold" id="total-kader">-</p>
-                    <p class="text-green-100 text-xs" id="kader-status">Tersebar di posyandu</p>
+                    <p class="text-3xl font-bold">{{ stats.total_kader|default:0 }}</p>
+                    <p class="text-green-100 text-xs">Tersebar di posyandu</p>
                 </div>
             </div>
         </div>
@@ -54,8 +54,8 @@
                 </div>
                 <div class="ml-4">
                     <p class="text-orange-100 text-sm font-medium">Stunting</p>
-                    <p class="text-3xl font-bold" id="total-stunting">-</p>
-                    <p class="text-orange-100 text-xs" id="stunting-percentage">0% dari balita</p>
+                    <p class="text-3xl font-bold">{{ stats.total_stunting|default:0 }}</p>
+                    <p class="text-orange-100 text-xs">{{ stats.stunting_percentage|default:0 }}% dari balita</p>
                 </div>
             </div>
         </div>
@@ -129,13 +129,13 @@
                 <h3 class="text-lg font-semibold text-gray-900">Status Kesehatan</h3>
                 <div class="flex space-x-2">
                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                        <i class="fas fa-check-circle mr-1"></i><span id="normal-percentage">0%</span> Normal
+                        <i class="fas fa-check-circle mr-1"></i>{{ health_status.normal_percentage|default:0 }}% Normal
                     </span>
                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                        <i class="fas fa-exclamation-circle mr-1"></i><span id="warning-percentage">0%</span> Perhatian
+                        <i class="fas fa-exclamation-circle mr-1"></i>{{ health_status.warning_percentage|default:0 }}% Perhatian
                     </span>
                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                        <i class="fas fa-times-circle mr-1"></i><span id="critical-percentage">0%</span> Kritis
+                        <i class="fas fa-times-circle mr-1"></i>{{ health_status.critical_percentage|default:0 }}% Kritis
                     </span>
                 </div>
             </div>
@@ -145,37 +145,37 @@
                 <div>
                     <div class="flex justify-between text-sm mb-1">
                         <span class="text-gray-600">Gizi Normal</span>
-                        <span id="gizi-normal-count" class="font-medium">0 anak</span>
+                        <span class="font-medium">{{ nutrition.gizi_normal|default:0 }} anak</span>
                     </div>
                     <div class="w-full bg-gray-200 rounded-full h-2">
-                        <div class="bg-green-500 h-2 rounded-full" id="gizi-normal-bar" style="width: 0%"></div>
+                        <div class="bg-green-500 h-2 rounded-full" style="width: {{ nutrition.gizi_normal_percentage|default:0 }}%"></div>
                     </div>
                 </div>
                 <div>
                     <div class="flex justify-between text-sm mb-1">
                         <span class="text-gray-600">Gizi Kurang</span>
-                        <span id="gizi-kurang-count" class="font-medium">0 anak</span>
+                        <span class="font-medium">{{ nutrition.gizi_kurang|default:0 }} anak</span>
                     </div>
                     <div class="w-full bg-gray-200 rounded-full h-2">
-                        <div class="bg-yellow-500 h-2 rounded-full" id="gizi-kurang-bar" style="width: 0%"></div>
+                        <div class="bg-yellow-500 h-2 rounded-full" style="width: {{ nutrition.gizi_kurang_percentage|default:0 }}%"></div>
                     </div>
                 </div>
                 <div>
                     <div class="flex justify-between text-sm mb-1">
                         <span class="text-gray-600">Gizi Buruk</span>
-                        <span id="gizi-buruk-count" class="font-medium">0 anak</span>
+                        <span class="font-medium">{{ nutrition.gizi_buruk|default:0 }} anak</span>
                     </div>
                     <div class="w-full bg-gray-200 rounded-full h-2">
-                        <div class="bg-red-500 h-2 rounded-full" id="gizi-buruk-bar" style="width: 0%"></div>
+                        <div class="bg-red-500 h-2 rounded-full" style="width: {{ nutrition.gizi_buruk_percentage|default:0 }}%"></div>
                     </div>
                 </div>
                 <div>
                     <div class="flex justify-between text-sm mb-1">
                         <span class="text-gray-600">Stunting</span>
-                        <span id="stunting-count" class="font-medium">0 anak</span>
+                        <span class="font-medium">{{ nutrition.stunting|default:0 }} anak</span>
                     </div>
                     <div class="w-full bg-gray-200 rounded-full h-2">
-                        <div class="bg-orange-500 h-2 rounded-full" id="stunting-bar" style="width: 0%"></div>
+                        <div class="bg-orange-500 h-2 rounded-full" style="width: {{ nutrition.stunting_percentage|default:0 }}%"></div>
                     </div>
                 </div>
             </div>
@@ -187,8 +187,23 @@
         <!-- Posyandu Locations -->
         <div class="bg-white rounded-lg shadow p-6">
             <h3 class="text-lg font-semibold text-gray-900 mb-4">Lokasi Posyandu</h3>
-            <div class="space-y-3" id="posyandu-locations-chart">
-                <!-- Dynamic content will be loaded here -->
+            <div class="space-y-3">
+                {% for location in posyandu_locations %}
+                <div class="flex justify-between items-center p-3 border border-gray-200 rounded-lg">
+                    <div>
+                        <div class="font-medium text-gray-900">{{ location.name }}</div>
+                        <div class="text-sm text-gray-500">{{ location.address }}</div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-sm font-medium text-gray-900">Kapasitas: {{ location.capacity|default:'-' }}</div>
+                        <div class="text-xs {% if location.is_active %}text-green-600{% else %}text-red-600{% endif %}">
+                            {% if location.is_active %}Aktif{% else %}Tidak Aktif{% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="text-center text-gray-500 py-4">Belum ada lokasi posyandu</div>
+                {% endfor %}
             </div>
         </div>
 
@@ -198,19 +213,19 @@
             <div class="space-y-4">
                 <div class="flex justify-between items-center">
                     <span class="text-sm text-gray-600">Pemeriksaan Balita</span>
-                    <span class="font-bold text-lg" id="monthly-balita-checkups">0</span>
+                    <span class="font-bold text-lg">{{ monthly_activity.balita_checkups|default:0 }}</span>
                 </div>
                 <div class="flex justify-between items-center">
                     <span class="text-sm text-gray-600">Pemeriksaan Ibu Hamil</span>
-                    <span class="font-bold text-lg text-pink-600" id="monthly-ibu-hamil-checkups">0</span>
+                    <span class="font-bold text-lg text-pink-600">{{ monthly_activity.ibu_hamil_checkups|default:0 }}</span>
                 </div>
                 <div class="flex justify-between items-center">
                     <span class="text-sm text-gray-600">Imunisasi</span>
-                    <span class="font-bold text-lg text-blue-600" id="monthly-immunizations">0</span>
+                    <span class="font-bold text-lg text-blue-600">{{ monthly_activity.immunizations|default:0 }}</span>
                 </div>
                 <div class="flex justify-between items-center">
                     <span class="text-sm text-gray-600">Vitamin A</span>
-                    <span class="font-bold text-lg text-orange-600" id="monthly-vitamin-a">0</span>
+                    <span class="font-bold text-lg text-orange-600">{{ monthly_activity.vitamin_a|default:0 }}</span>
                 </div>
             </div>
         </div>
@@ -224,28 +239,28 @@
                 <div class="bg-blue-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-3">
                     <i class="fas fa-baby text-2xl text-blue-600"></i>
                 </div>
-                <div class="text-2xl font-bold text-gray-900" id="recent-balita-records">0</div>
+                <div class="text-2xl font-bold text-gray-900">{{ recent_activity.balita_records|default:0 }}</div>
                 <div class="text-sm text-gray-500">Data Balita Baru</div>
             </div>
             <div class="text-center">
                 <div class="bg-pink-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-3">
                     <i class="fas fa-female text-2xl text-pink-600"></i>
                 </div>
-                <div class="text-2xl font-bold text-gray-900" id="recent-ibu-hamil-records">0</div>
+                <div class="text-2xl font-bold text-gray-900">{{ recent_activity.ibu_hamil_records|default:0 }}</div>
                 <div class="text-sm text-gray-500">Data Ibu Hamil Baru</div>
             </div>
             <div class="text-center">
                 <div class="bg-green-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-3">
                     <i class="fas fa-syringe text-2xl text-green-600"></i>
                 </div>
-                <div class="text-2xl font-bold text-gray-900" id="recent-immunizations">0</div>
+                <div class="text-2xl font-bold text-gray-900">{{ recent_activity.immunizations|default:0 }}</div>
                 <div class="text-sm text-gray-500">Imunisasi</div>
             </div>
             <div class="text-center">
                 <div class="bg-orange-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-3">
                     <i class="fas fa-chart-line text-2xl text-orange-600"></i>
                 </div>
-                <div class="text-2xl font-bold text-gray-900" id="growth-monitoring">0</div>
+                <div class="text-2xl font-bold text-gray-900">{{ recent_activity.growth_monitoring|default:0 }}</div>
                 <div class="text-sm text-gray-500">Pemantauan Tumbuh Kembang</div>
             </div>
         </div>
@@ -268,163 +283,29 @@
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                     </tr>
                 </thead>
-                <tbody id="upcoming-schedules" class="bg-white divide-y divide-gray-200">
-                    <!-- Dynamic content will be loaded here -->
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for schedule in upcoming_schedules %}
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ schedule.schedule_date|date:"d M Y" }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ schedule.location.name }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ schedule.start_time }} - {{ schedule.end_time }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ schedule.coordinator|default:'-' }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full {% if schedule.is_active %}bg-green-100 text-green-800{% else %}bg-gray-100 text-gray-800{% endif %}">
+                                {% if schedule.is_active %}Aktif{% else %}Tidak Aktif{% endif %}
+                            </span>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="px-6 py-4 text-center text-gray-500">Tidak ada jadwal mendatang</td>
+                    </tr>
+                    {% endfor %}
                 </tbody>
             </table>
         </div>
     </div>
 </div>
 
-<!-- JavaScript for Dashboard -->
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    loadDashboardStats();
-    loadUpcomingSchedules();
-    loadPosyanduLocations();
-});
 
-function loadDashboardStats() {
-    fetch('/pulosarok/posyandu/api/stats/')
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                updateStatsCards(data.stats);
-                updateHealthStatusChart(data.health_status);
-                updateMonthlyActivity(data.monthly_activity);
-                updateRecentActivity(data.recent_activity);
-            }
-        })
-        .catch(error => console.error('Error loading dashboard stats:', error));
-}
-
-function updateStatsCards(stats) {
-    document.getElementById('total-balita').textContent = stats.total_balita || 0;
-    document.getElementById('total-ibu-hamil').textContent = stats.total_ibu_hamil || 0;
-    document.getElementById('total-kader').textContent = stats.total_kader || 0;
-    document.getElementById('total-stunting').textContent = stats.total_stunting || 0;
-    
-    document.getElementById('balita-growth').textContent = `+${stats.balita_growth || 0} bulan ini`;
-    document.getElementById('ibu-hamil-growth').textContent = `+${stats.ibu_hamil_growth || 0} bulan ini`;
-    document.getElementById('stunting-percentage').textContent = `${stats.stunting_percentage || 0}% dari balita`;
-}
-
-function updateHealthStatusChart(healthStatus) {
-    const total = healthStatus.normal + healthStatus.warning + healthStatus.critical;
-    
-    if (total > 0) {
-        const normalPercentage = Math.round((healthStatus.normal / total) * 100);
-        const warningPercentage = Math.round((healthStatus.warning / total) * 100);
-        const criticalPercentage = Math.round((healthStatus.critical / total) * 100);
-        
-        document.getElementById('normal-percentage').textContent = `${normalPercentage}%`;
-        document.getElementById('warning-percentage').textContent = `${warningPercentage}%`;
-        document.getElementById('critical-percentage').textContent = `${criticalPercentage}%`;
-    }
-    
-    // Update nutrition bars
-    updateNutritionBars(healthStatus.nutrition);
-}
-
-function updateNutritionBars(nutrition) {
-    const total = Object.values(nutrition).reduce((sum, count) => sum + count, 0);
-    
-    if (total > 0) {
-        Object.keys(nutrition).forEach(status => {
-            const percentage = Math.round((nutrition[status] / total) * 100);
-            const countElement = document.getElementById(`${status.replace('_', '-')}-count`);
-            const barElement = document.getElementById(`${status.replace('_', '-')}-bar`);
-            
-            if (countElement) countElement.textContent = `${nutrition[status]} anak`;
-            if (barElement) barElement.style.width = `${percentage}%`;
-        });
-    }
-}
-
-function updateMonthlyActivity(activity) {
-    document.getElementById('monthly-balita-checkups').textContent = activity.balita_checkups || 0;
-    document.getElementById('monthly-ibu-hamil-checkups').textContent = activity.ibu_hamil_checkups || 0;
-    document.getElementById('monthly-immunizations').textContent = activity.immunizations || 0;
-    document.getElementById('monthly-vitamin-a').textContent = activity.vitamin_a || 0;
-}
-
-function updateRecentActivity(activity) {
-    document.getElementById('recent-balita-records').textContent = activity.balita_records || 0;
-    document.getElementById('recent-ibu-hamil-records').textContent = activity.ibu_hamil_records || 0;
-    document.getElementById('recent-immunizations').textContent = activity.immunizations || 0;
-    document.getElementById('growth-monitoring').textContent = activity.growth_monitoring || 0;
-}
-
-function loadUpcomingSchedules() {
-    fetch('/pulosarok/posyandu/api/schedules/?upcoming=true&limit=5')
-        .then(response => response.json())
-        .then(data => {
-            const tbody = document.getElementById('upcoming-schedules');
-            tbody.innerHTML = '';
-            
-            if (data.results && data.results.length > 0) {
-                data.results.forEach(schedule => {
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${schedule.schedule_date}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${schedule.location_name}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${schedule.start_time} - ${schedule.end_time}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${schedule.coordinator || '-'}</td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                                schedule.is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
-                            }">
-                                ${schedule.is_active ? 'Aktif' : 'Tidak Aktif'}
-                            </span>
-                        </td>
-                    `;
-                    tbody.appendChild(row);
-                });
-            } else {
-                tbody.innerHTML = '<tr><td colspan="5" class="px-6 py-4 text-center text-gray-500">Tidak ada jadwal mendatang</td></tr>';
-            }
-        })
-        .catch(error => {
-            console.error('Error loading schedules:', error);
-            document.getElementById('upcoming-schedules').innerHTML = '<tr><td colspan="5" class="px-6 py-4 text-center text-red-500">Error loading schedules</td></tr>';
-        });
-}
-
-function loadPosyanduLocations() {
-    fetch('/pulosarok/posyandu/api/locations/')
-        .then(response => response.json())
-        .then(data => {
-            const container = document.getElementById('posyandu-locations-chart');
-            container.innerHTML = '';
-            
-            if (data.results && data.results.length > 0) {
-                data.results.forEach(location => {
-                    const locationDiv = document.createElement('div');
-                    locationDiv.className = 'flex justify-between items-center p-3 border border-gray-200 rounded-lg';
-                    locationDiv.innerHTML = `
-                        <div>
-                            <div class="font-medium text-gray-900">${location.name}</div>
-                            <div class="text-sm text-gray-500">${location.address}</div>
-                        </div>
-                        <div class="text-right">
-                            <div class="text-sm font-medium text-gray-900">Kapasitas: ${location.capacity}</div>
-                            <div class="text-xs ${
-                                location.is_active ? 'text-green-600' : 'text-red-600'
-                            }">
-                                ${location.is_active ? 'Aktif' : 'Tidak Aktif'}
-                            </div>
-                        </div>
-                    `;
-                    container.appendChild(locationDiv);
-                });
-            } else {
-                container.innerHTML = '<div class="text-center text-gray-500 py-4">Belum ada lokasi posyandu</div>';
-            }
-        })
-        .catch(error => {
-            console.error('Error loading posyandu locations:', error);
-            document.getElementById('posyandu-locations-chart').innerHTML = '<div class="text-center text-red-500 py-4">Error loading locations</div>';
-        });
-}
-</script>
 {% endblock %}

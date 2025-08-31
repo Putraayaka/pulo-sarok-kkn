@@ -189,35 +189,35 @@ document.addEventListener('DOMContentLoaded', function() {
 
 async function loadStatistics() {
     try {
-        // Fetch Koperasi count
+        // Fetch Koperasi count using public API
         const koperasiResponse = await fetch('/pulosarok/business/public/koperasi/count/');
         if (koperasiResponse.ok) {
             const koperasiData = await koperasiResponse.json();
             document.getElementById('total-koperasi').textContent = koperasiData.total || 0;
         }
         
-        // Fetch BUMG count
+        // Fetch BUMG count using public API
         const bumgResponse = await fetch('/pulosarok/business/public/bumg/count/');
         if (bumgResponse.ok) {
             const bumgData = await bumgResponse.json();
             document.getElementById('total-bumg').textContent = bumgData.total || 0;
         }
         
-        // Fetch UKM count
+        // Fetch UKM count using public API
         const ukmResponse = await fetch('/pulosarok/business/public/ukm/count/');
         if (ukmResponse.ok) {
             const ukmData = await ukmResponse.json();
             document.getElementById('total-ukm').textContent = ukmData.total || 0;
         }
         
-        // Fetch Aset count
+        // Fetch Aset count using public API
         const asetResponse = await fetch('/pulosarok/business/public/aset/count/');
         if (asetResponse.ok) {
             const asetData = await asetResponse.json();
             document.getElementById('total-aset').textContent = asetData.total || 0;
         }
         
-        // Fetch Jasa count
+        // Fetch Jasa count using public API
         const jasaResponse = await fetch('/pulosarok/business/public/jasa/count/');
         if (jasaResponse.ok) {
             const jasaData = await jasaResponse.json();
