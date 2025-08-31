@@ -6,6 +6,7 @@ app_name = 'posyandu'
 urlpatterns = [
     # Main dashboard
     path('', views.posyandu_dashboard, name='posyandu_dashboard'),
+    path('list/', views.posyandu_list, name='posyandu_list'),
     
     # Submenu Views
     path('pengaturan/', views.pengaturan_admin, name='pengaturan_admin'),

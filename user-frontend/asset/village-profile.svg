@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400" width="600" height="400">
+  <defs>
+    <linearGradient id="villageGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#E6FFFA;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#B2F5EA;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="600" height="400" fill="url(#villageGrad)"/>
+  
+  <!-- Sky -->
+  <rect width="600" height="200" fill="#87CEEB" opacity="0.6"/>
+  
+  <!-- Mountains -->
+  <path d="M0 150 Q100 100 200 130 Q300 80 400 120 Q500 90 600 140 L600 400 L0 400 Z" fill="#4A5568" opacity="0.7"/>
+  
+  <!-- Water/Sea -->
+  <rect x="0" y="250" width="600" height="150" fill="#4299E1" opacity="0.8"/>
+  
+  <!-- Island/Village area -->
+  <ellipse cx="300" cy="280" rx="200" ry="50" fill="#68D391" opacity="0.9"/>
+  
+  <!-- Houses -->
+  <rect x="200" y="240" width="40" height="30" fill="#E53E3E" opacity="0.8"/>
+  <path d="M200 240 L220 220 L240 240 Z" fill="#C53030"/>
+  
+  <rect x="260" y="245" width="35" height="25" fill="#3182CE" opacity="0.8"/>
+  <path d="M260 245 L277.5 230 L295 245 Z" fill="#2C5282"/>
+  
+  <rect x="320" y="250" width="45" height="35" fill="#38A169" opacity="0.8"/>
+  <path d="M320 250 L342.5 230 L365 250 Z" fill="#2F855A"/>
+  
+  <rect x="380" y="245" width="38" height="28" fill="#D69E2E" opacity="0.8"/>
+  <path d="M380 245 L399 228 L418 245 Z" fill="#B7791F"/>
+  
+  <!-- Palm trees -->
+  <rect x="150" y="230" width="6" height="40" fill="#8B4513"/>
+  <ellipse cx="153" cy="225" rx="15" ry="10" fill="#38A169"/>
+  
+  <rect x="450" y="235" width="6" height="35" fill="#8B4513"/>
+  <ellipse cx="453" cy="230" rx="12" ry="8" fill="#38A169"/>
+  
+  <!-- Boats -->
+  <ellipse cx="150" cy="320" rx="30" ry="8" fill="#8B4513"/>
+  <rect x="148" y="310" width="4" height="15" fill="#8B4513"/>
+  <path d="M152 305 L165 310 L152 315 Z" fill="#FFFFFF"/>
+  
+  <ellipse cx="450" cy="330" rx="25" ry="6" fill="#8B4513"/>
+  
+  <!-- Waves -->
+  <path d="M0 280 Q50 275 100 280 Q150 285 200 280 Q250 275 300 280 Q350 285 400 280 Q450 275 500 280 Q550 285 600 280" stroke="#FFFFFF" stroke-width="2" fill="none" opacity="0.6"/>
+  
+  <!-- Clouds -->
+  <ellipse cx="150" cy="80" rx="30" ry="18" fill="white" opacity="0.8"/>
+  <ellipse cx="450" cy="60" rx="40" ry="25" fill="white" opacity="0.8"/>
+  
+  <!-- Sun -->
+  <circle cx="500" cy="80" r="25" fill="#FBD38D" opacity="0.8"/>
+  
+  <!-- Title -->
+  <rect x="0" y="350" width="600" height="50" fill="rgba(0,0,0,0.3)"/>
+  <text x="300" y="380" text-anchor="middle" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="white">Kampung Pulo Sarok</text>
+</svg>

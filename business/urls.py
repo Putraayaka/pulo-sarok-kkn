@@ -13,8 +13,8 @@ urlpatterns = [
     
     # Submenu views
     path('koperasi/', views.koperasi_view, name='koperasi'),
-    path('bumg/', views.bumg_view, name='bumg'),
-    path('ukm/', views.ukm_view, name='ukm'),
+    path('bumg/', views.bumg_view, name='bumg_view'),
+    path('ukm/', views.ukm_view, name='ukm_view'),
     path('aset/', views.aset_view, name='aset'),
     path('jasa/', views.jasa_view, name='jasa'),
     

@@ -1583,3 +1583,48 @@ def api_aggregator(request):
             'success': False,
             'error': str(e)
         }, status=500)
+=======
+# Public Frontend Views
+def index_view(request):
+    """Homepage view"""
+    return render(request, 'index.html')
+
+def profil_view(request):
+    """Village profile view"""
+    return render(request, 'profil.html')
+
+def penduduk_view(request):
+    """Penduduk view"""
+    return render(request, 'public/penduduk.html')
+
+def pengajuan_surat_view(request):
+    """Pengajuan Surat view"""
+    return render(request, 'public/pengajuan-surat.html')
+
+def laporan_masyarakat_view(request):
+    """Laporan Masyarakat view"""
+    return render(request, 'public/laporan-masyarakat.html')
+
+def informasi_view(request):
+    """Informasi Terkini view"""
+    return render(request, 'public/informasi.html')
+
+def ukm_view(request):
+    """UKM view"""
+    return render(request, 'public/ukm.html')
+
+def informasi_terkini_view(request):
+    """Informasi Terkini view"""
+    return render(request, 'public/informasi-terkini.html')
+
+def posyandu_view(request):
+    """Posyandu view"""
+    return render(request, 'public/posyandu.html')
+
+def bumg_view(request):
+    """BUMG view"""
+    return render(request, 'public/bumg.html')
+
+def wisata_view(request):
+    """Wisata Gampong view"""
+    return render(request, 'public/wisata.html')

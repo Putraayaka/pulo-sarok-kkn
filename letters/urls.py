@@ -22,6 +22,9 @@ urlpatterns = [
     # Settings
     path('settings/', views.letter_settings, name='settings'),
     
+    # Public letter request
+    path('request/', views.letter_request, name='letter_request'),
+    
     # Letter Type API
     path('letter-types/', views.letter_type_list_api, name='letter_type_list_api'),
     path('letter-types/create/', views.letter_type_create_api, name='letter_type_create_api'),

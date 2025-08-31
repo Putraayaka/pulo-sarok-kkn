@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Informasi Terkini - Kampung Pulo Sarok</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header class="bg-blue-900 text-white py-4 shadow-lg">
+        <div class="container mx-auto px-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <a href="index.html" class="text-2xl font-bold hover:text-blue-200 transition duration-300">
+                        <i class="fas fa-arrow-left mr-2"></i>Kampung Pulo Sarok
+                    </a>
+                </div>
+                <nav class="hidden md:flex space-x-6">
+                    <a href="index.html" class="hover:text-blue-200 transition duration-300">Beranda</a>
+                    <a href="#berita" class="hover:text-blue-200 transition duration-300">Berita</a>
+                    <a href="#pengumuman" class="hover:text-blue-200 transition duration-300">Pengumuman</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="bg-gradient-to-r from-blue-600 to-blue-800 text-white py-16">
+        <div class="container mx-auto px-4 text-center">
+            <h1 class="text-4xl md:text-5xl font-bold mb-4">Informasi Terkini</h1>
+            <p class="text-xl mb-8">Berita dan pengumuman terbaru dari Kampung Pulo Sarok</p>
+            <div class="flex justify-center">
+                <div class="bg-white text-blue-800 px-6 py-2 rounded-full">
+                    <i class="fas fa-calendar-alt mr-2"></i>
+                    <span class="font-semibold">Diperbarui: 15 Januari 2024</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Highlight Berita Utama -->
+    <section class="py-12">
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl font-bold text-center mb-12 text-gray-800">Berita Utama</h2>
+            <div class="bg-white rounded-lg shadow-xl overflow-hidden mb-8">
+                <div class="md:flex">
+                    <div class="md:w-1/2">
+                        <img src="asset/news-placeholder.svg" alt="Berita Utama" class="w-full h-64 md:h-full object-cover">
+                    </div>
+                    <div class="md:w-1/2 p-8">
+                        <div class="flex items-center mb-4">
+                            <span class="bg-red-500 text-white px-3 py-1 rounded-full text-sm font-semibold mr-3">BREAKING</span>
+                            <span class="text-gray-500 text-sm">15 Januari 2024</span>
+                        </div>
+                        <h3 class="text-2xl font-bold mb-4 text-gray-800">Pembangunan Infrastruktur Jalan Kampung Dimulai</h3>
+                        <p class="text-gray-600 mb-6 leading-relaxed">
+                            Pemerintah desa telah memulai proyek pembangunan infrastruktur jalan utama kampung yang diharapkan dapat meningkatkan aksesibilitas dan perekonomian masyarakat. Proyek ini merupakan bagian dari program pembangunan desa tahun 2024.
+                        </p>
+                        <a href="#" class="inline-flex items-center bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition duration-300">
+                            Baca Selengkapnya
+                            <i class="fas fa-arrow-right ml-2"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Berita Terkini -->
+    <section id="berita" class="py-12 bg-white">
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl font-bold text-center mb-12 text-gray-800">Berita Terkini</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Berita 1 -->
+                <article class="bg-gray-50 rounded-lg shadow-md overflow-hidden hover:shadow-lg transition duration-300">
+                    <img src="asset/news-placeholder.svg" alt="Berita 1" class="w-full h-48 object-cover">
+                    <div class="p-6">
+                        <div class="flex items-center mb-3">
+                            <span class="bg-green-500 text-white px-2 py-1 rounded text-xs font-semibold mr-2">EKONOMI</span>
+                            <span class="text-gray-500 text-sm">12 Januari 2024</span>
+                        </div>
+                        <h3 class="text-lg font-bold mb-3 text-gray-800">Pelatihan Kewirausahaan untuk Pemuda Kampung</h3>
+                        <p class="text-gray-600 text-sm mb-4">
+                            Program pelatihan kewirausahaan yang diselenggarakan oleh pemerintah desa berhasil menarik antusiasme pemuda kampung untuk mengembangkan usaha mandiri.
+                        </p>
+                        <a href="#" class="text-blue-600 hover:text-blue-800 font-semibold text-sm">
+                            Baca Selengkapnya <i class="fas fa-arrow-right ml-1"></i>
+                        </a>
+                    </div>
+                </article>
+
+                <!-- Berita 2 -->
+                <article class="bg-gray-50 rounded-lg shadow-md overflow-hidden hover:shadow-lg transition duration-300">
+                    <img src="asset/news-placeholder.svg" alt="Berita 2" class="w-full h-48 object-cover">
+                    <div class="p-6">
+                        <div class="flex items-center mb-3">
+                            <span class="bg-blue-500 text-white px-2 py-1 rounded text-xs font-semibold mr-2">SOSIAL</span>
+                            <span class="text-gray-500 text-sm">10 Januari 2024</span>
+                        </div>
+                        <h3 class="text-lg font-bold mb-3 text-gray-800">Gotong Royong Pembersihan Lingkungan Kampung</h3>
+                        <p class="text-gray-600 text-sm mb-4">
+                            Kegiatan gotong royong pembersihan lingkungan kampung dilaksanakan setiap minggu untuk menjaga kebersihan dan keindahan lingkungan sekitar.
+                        </p>
+                        <a href="#" class="text-blue-600 hover:text-blue-800 font-semibold text-sm">
+                            Baca Selengkapnya <i class="fas fa-arrow-right ml-1"></i>
+                        </a>
+                    </div>
+                </article>
+
+                <!-- Berita 3 -->
+                <article class="bg-gray-50 rounded-lg shadow-md overflow-hidden hover:shadow-lg transition duration-300">
+                    <img src="asset/news-placeholder.svg" alt="Berita 3" class="w-full h-48 object-cover">
+                    <div class="p-6">
+                        <div class="flex items-center mb-3">
+                            <span class="bg-purple-500 text-white px-2 py-1 rounded text-xs font-semibold mr-2">BUDAYA</span>
+                            <span class="text-gray-500 text-sm">8 Januari 2024</span>
+                        </div>
+                        <h3 class="text-lg font-bold mb-3 text-gray-800">Festival Budaya Lokal Kampung Pulo Sarok</h3>
+                        <p class="text-gray-600 text-sm mb-4">
+                            Festival budaya lokal akan diselenggarakan bulan depan untuk melestarikan dan memperkenalkan kekayaan budaya kampung kepada generasi muda.
+                        </p>
+                        <a href="#" class="text-blue-600 hover:text-blue-800 font-semibold text-sm">
+                            Baca Selengkapnya <i class="fas fa-arrow-right ml-1"></i>
+                        </a>
+                    </div>
+                </article>
+
+                <!-- Berita 4 -->
+                <article class="bg-gray-50 rounded-lg shadow-md overflow-hidden hover:shadow-lg transition duration-300">
+                    <img src="asset/news-placeholder.svg" alt="Berita 4" class="w-full h-48 object-cover">
+                    <div class="p-6">
+                        <div class="flex items-center mb-3">
+                            <span class="bg-yellow-500 text-white px-2 py-1 rounded text-xs font-semibold mr-2">PENDIDIKAN</span>
+                            <span class="text-gray-500 text-sm">5 Januari 2024</span>
+                        </div>
+                        <h3 class="text-lg font-bold mb-3 text-gray-800">Program Beasiswa untuk Anak Kampung Berprestasi</h3>
+                        <p class="text-gray-600 text-sm mb-4">
+                            Pemerintah desa meluncurkan program beasiswa untuk mendukung pendidikan anak-anak kampung yang berprestasi namun kurang mampu secara ekonomi.
+                        </p>
+                        <a href="#" class="text-blue-600 hover:text-blue-800 font-semibold text-sm">
+                            Baca Selengkapnya <i class="fas fa-arrow-right ml-1"></i>
+                        </a>
+                    </div>
+                </article>
+
+                <!-- Berita 5 -->
+                <article class="bg-gray-50 rounded-lg shadow-md overflow-hidden hover:shadow-lg transition duration-300">
+                    <img src="asset/news-placeholder.svg" alt="Berita 5" class="w-full h-48 object-cover">
+                    <div class="p-6">
+                        <div class="flex items-center mb-3">
+                            <span class="bg-red-500 text-white px-2 py-1 rounded text-xs font-semibold mr-2">KESEHATAN</span>
+                            <span class="text-gray-500 text-sm">3 Januari 2024</span>
+                        </div>
+                        <h3 class="text-lg font-bold mb-3 text-gray-800">Posyandu Kampung Raih Penghargaan Terbaik</h3>
+                        <p class="text-gray-600 text-sm mb-4">
+                            Posyandu Kampung Pulo Sarok meraih penghargaan sebagai posyandu terbaik tingkat kecamatan berkat pelayanan kesehatan yang prima kepada masyarakat.
+                        </p>
+                        <a href="#" class="text-blue-600 hover:text-blue-800 font-semibold text-sm">
+                            Baca Selengkapnya <i class="fas fa-arrow-right ml-1"></i>
+                        </a>
+                    </div>
+                </article>
+
+                <!-- Berita 6 -->
+                <article class="bg-gray-50 rounded-lg shadow-md overflow-hidden hover:shadow-lg transition duration-300">
+                    <img src="asset/news-placeholder.svg" alt="Berita 6" class="w-full h-48 object-cover">
+                    <div class="p-6">
+                        <div class="flex items-center mb-3">
+                            <span class="bg-indigo-500 text-white px-2 py-1 rounded text-xs font-semibold mr-2">TEKNOLOGI</span>
+                            <span class="text-gray-500 text-sm">1 Januari 2024</span>
+                        </div>
+                        <h3 class="text-lg font-bold mb-3 text-gray-800">Kampung Pulo Sarok Kini Terhubung Internet Cepat</h3>
+                        <p class="text-gray-600 text-sm mb-4">
+                            Infrastruktur internet berkecepatan tinggi telah terpasang di seluruh area kampung, membuka peluang baru untuk pengembangan ekonomi digital.
+                        </p>
+                        <a href="#" class="text-blue-600 hover:text-blue-800 font-semibold text-sm">
+                            Baca Selengkapnya <i class="fas fa-arrow-right ml-1"></i>
+                        </a>
+                    </div>
+                </article>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pengumuman -->
+    <section id="pengumuman" class="py-12 bg-blue-50">
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl font-bold text-center mb-12 text-gray-800">Pengumuman Penting</h2>
+            <div class="max-w-4xl mx-auto space-y-6">
+                <!-- Pengumuman 1 -->
+                <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-red-500">
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-exclamation-triangle text-red-500 text-2xl"></i>
+                        </div>
+                        <div class="ml-4 flex-1">
+                            <h3 class="text-lg font-bold text-gray-800 mb-2">Jadwal Pemadaman Listrik Terjadwal</h3>
+                            <p class="text-gray-600 mb-3">
+                                Akan dilakukan pemadaman listrik terjadwal pada tanggal 20 Januari 2024, pukul 08:00 - 16:00 WIB untuk maintenance jaringan listrik kampung.
+                            </p>
+                            <div class="flex items-center text-sm text-gray-500">
+                                <i class="fas fa-calendar mr-2"></i>
+                                <span>Dipublikasikan: 14 Januari 2024</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pengumuman 2 -->
+                <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-blue-500">
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-info-circle text-blue-500 text-2xl"></i>
+                        </div>
+                        <div class="ml-4 flex-1">
+                            <h3 class="text-lg font-bold text-gray-800 mb-2">Pendaftaran Program Bantuan Sosial</h3>
+                            <p class="text-gray-600 mb-3">
+                                Pendaftaran program bantuan sosial untuk keluarga kurang mampu dibuka mulai tanggal 18 Januari 2024. Silakan datang ke kantor desa dengan membawa dokumen yang diperlukan.
+                            </p>
+                            <div class="flex items-center text-sm text-gray-500">
+                                <i class="fas fa-calendar mr-2"></i>
+                                <span>Dipublikasikan: 13 Januari 2024</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pengumuman 3 -->
+                <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-green-500">
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-bullhorn text-green-500 text-2xl"></i>
+                        </div>
+                        <div class="ml-4 flex-1">
+                            <h3 class="text-lg font-bold text-gray-800 mb-2">Rapat Warga Bulanan</h3>
+                            <p class="text-gray-600 mb-3">
+                                Rapat warga bulanan akan dilaksanakan pada hari Minggu, 21 Januari 2024, pukul 19:00 WIB di Balai Desa. Kehadiran seluruh warga sangat diharapkan.
+                            </p>
+                            <div class="flex items-center text-sm text-gray-500">
+                                <i class="fas fa-calendar mr-2"></i>
+                                <span>Dipublikasikan: 12 Januari 2024</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-8">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div>
+                    <h3 class="text-lg font-bold mb-4">Kampung Pulo Sarok</h3>
+                    <p class="text-gray-300 text-sm">
+                        Desa yang terus berkembang dengan semangat gotong royong dan inovasi untuk kesejahteraan masyarakat.
+                    </p>
+                </div>
+                <div>
+                    <h3 class="text-lg font-bold mb-4">Kontak</h3>
+                    <div class="text-gray-300 text-sm space-y-2">
+                        <p><i class="fas fa-phone mr-2"></i>+62 XXX-XXXX-XXXX</p>
+                        <p><i class="fas fa-envelope mr-2"></i>info@kampungpulosarok.id</p>
+                        <p><i class="fas fa-map-marker-alt mr-2"></i>Kampung Pulo Sarok, Aceh Singkil</p>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-lg font-bold mb-4">Ikuti Kami</h3>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-gray-300 hover:text-white transition duration-300">
+                            <i class="fab fa-facebook-f text-xl"></i>
+                        </a>
+                        <a href="#" class="text-gray-300 hover:text-white transition duration-300">
+                            <i class="fab fa-instagram text-xl"></i>
+                        </a>
+                        <a href="#" class="text-gray-300 hover:text-white transition duration-300">
+                            <i class="fab fa-youtube text-xl"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="border-t border-gray-700 mt-8 pt-8 text-center">
+                <p class="text-gray-300 text-sm">&copy; 2024 Kampung Pulo Sarok. Semua hak dilindungi.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Back to Top Button -->
+    <button id="backToTop" class="fixed bottom-6 right-6 bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-full shadow-lg transition duration-300 opacity-0 invisible">
+        <i class="fas fa-arrow-up"></i>
+    </button>
+
+    <script>
+        // Back to Top functionality
+        const backToTopButton = document.getElementById('backToTop');
+        
+        window.addEventListener('scroll', () => {
+            if (window.pageYOffset > 300) {
+                backToTopButton.classList.remove('opacity-0', 'invisible');
+                backToTopButton.classList.add('opacity-100', 'visible');
+            } else {
+                backToTopButton.classList.add('opacity-0', 'invisible');
+                backToTopButton.classList.remove('opacity-100', 'visible');
+            }
+        });
+        
+        backToTopButton.addEventListener('click', () => {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
+    </script>
+</body>
+</html>

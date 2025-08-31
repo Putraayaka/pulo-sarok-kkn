@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Informasi Terkini - Kampung Pulo Sarok</title>
+    <link rel="stylesheet" href="../static/css/style.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+    <!-- Header Section -->
+    <header class="bg-white shadow-md sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-3">
+            <!-- Top Header -->
+            <div class="flex items-center justify-between mb-3">
+                <div class="flex items-center">
+                    <img src="../static/images/logo-kampung.svg" alt="Logo Kampung" class="h-12 w-12 mr-3">
+                    <div>
+                        <h1 class="text-xl font-bold text-gray-800">Website Kampung Pulo Sarok</h1>
+                        <p class="text-sm text-gray-600">Kecamatan Singkil Kabupaten Aceh Singkil</p>
+                    </div>
+                </div>
+                <!-- Mobile Menu Button -->
+                <button class="md:hidden mobile-menu-button p-2 rounded-md hover:bg-gray-100">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                </button>
+            </div>
+            
+            <!-- Navigation Menu -->
+            <nav class="border-t pt-3">
+                <div class="hidden md:flex md:items-center md:space-x-6">
+                    <a href="../index.html" class="text-gray-700 hover:text-red-600 font-medium transition duration-200 flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                        </svg>
+                        Beranda
+                    </a>
+                    
+                    <!-- Dropdown Profil -->
+                    <div class="relative group">
+                        <button class="text-gray-700 hover:text-red-600 font-medium transition duration-200 flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                            </svg>
+                            Profil Kampung
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
+                        <div class="absolute left-0 mt-2 w-48 bg-white rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+                            <a href="../profil.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Profil Kampung</a>
+                            <a href="penduduk.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Data Penduduk</a>
+                        </div>
+                    </div>
+                    
+                    <!-- Dropdown Layanan Publik -->
+                    <div class="relative group">
+                        <button class="text-gray-700 hover:text-red-600 font-medium transition duration-200 flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                            Layanan Publik
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
+                        <div class="absolute left-0 mt-2 w-48 bg-white rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+                            <a href="pengajuan-surat.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Pengajuan Surat</a>
+                            <a href="laporan-masyarakat.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Laporan Masyarakat</a>
+                        </div>
+                    </div>
+                    
+                    <!-- Dropdown Unit Usaha -->
+                    <div class="relative group">
+                        <button class="text-gray-700 hover:text-red-600 font-medium transition duration-200 flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                            </svg>
+                            Unit Usaha
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
+                        <div class="absolute left-0 mt-2 w-48 bg-white rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+                            <a href="bumg.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">BUMG</a>
+                            <a href="ukm.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">UKM</a>
+                        </div>
+                    </div>
+                    
+                    <!-- Dropdown Kesehatan -->
+                    <div class="relative group">
+                        <button class="text-gray-700 hover:text-red-600 font-medium transition duration-200 flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                            </svg>
+                            Kesehatan
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
+                        <div class="absolute left-0 mt-2 w-48 bg-white rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+                            <a href="posyandu.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Posyandu</a>
+                        </div>
+                    </div>
+                    
+                    <a href="wisata.html" class="text-gray-700 hover:text-red-600 font-medium transition duration-200 flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        Wisata
+                    </a>
+                    
+                    <!-- Dropdown Informasi -->
+                    <div class="relative group">
+                        <button class="text-red-600 font-medium transition duration-200 flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            Informasi
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
+                        <div class="absolute left-0 mt-2 w-48 bg-white rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+                            <a href="informasi.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Informasi Umum</a>
+                            <a href="informasi-terkini.html" class="block px-4 py-2 text-sm text-red-600 font-medium hover:bg-gray-100">Informasi Terkini</a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Mobile Menu -->
+                <div class="mobile-menu hidden md:hidden mt-3 border-t pt-3">
+                    <div class="space-y-2">
+                        <a href="../index.html" class="block px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-md">Beranda</a>
+                        
+                        <div class="px-3 py-2">
+                            <p class="text-sm font-semibold text-gray-500 uppercase tracking-wider">Profil Kampung</p>
+                            <div class="mt-1 space-y-1">
+                                <a href="../profil.html" class="block px-3 py-1 text-gray-700 hover:bg-gray-100 rounded-md">Profil Kampung</a>
+                                <a href="penduduk.html" class="block px-3 py-1 text-gray-700 hover:bg-gray-100 rounded-md">Data Penduduk</a>
+                            </div>
+                        </div>
+                        
+                        <div class="px-3 py-2">
+                            <p class="text-sm font-semibold text-gray-500 uppercase tracking-wider">Layanan Publik</p>
+                            <div class="mt-1 space-y-1">
+                                <a href="pengajuan-surat.html" class="block px-3 py-1 text-gray-700 hover:bg-gray-100 rounded-md">Pengajuan Surat</a>
+                                <a href="laporan-masyarakat.html" class="block px-3 py-1 text-gray-700 hover:bg-gray-100 rounded-md">Laporan Masyarakat</a>
+                            </div>
+                        </div>
+                        
+                        <div class="px-3 py-2">
+                            <p class="text-sm font-semibold text-gray-500 uppercase tracking-wider">Unit Usaha</p>
+                            <div class="mt-1 space-y-1">
+                                <a href="bumg.html" class="block px-3 py-1 text-gray-700 hover:bg-gray-100 rounded-md">BUMG</a>
+                                <a href="ukm.html" class="block px-3 py-1 text-gray-700 hover:bg-gray-100 rounded-md">UKM</a>
+                            </div>
+                        </div>
+                        
+                        <div class="px-3 py-2">
+                            <p class="text-sm font-semibold text-gray-500 uppercase tracking-wider">Kesehatan</p>
+                            <div class="mt-1 space-y-1">
+                                <a href="posyandu.html" class="block px-3 py-1 text-gray-700 hover:bg-gray-100 rounded-md">Posyandu</a>
+                            </div>
+                        </div>
+                        
+                        <a href="wisata.html" class="block px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-md">Wisata</a>
+                        
+                        <div class="px-3 py-2">
+                            <p class="text-sm font-semibold text-red-600 uppercase tracking-wider">Informasi</p>
+                            <div class="mt-1 space-y-1">
+                                <a href="informasi.html" class="block px-3 py-1 text-gray-700 hover:bg-gray-100 rounded-md">Informasi Umum</a>
+                                <a href="informasi-terkini.html" class="block px-3 py-1 text-red-600 font-medium hover:bg-gray-100 rounded-md">Informasi Terkini</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Informasi Terkini Section -->
+    <section class="container mx-auto px-4 py-8">
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-3xl font-bold mb-8 text-center text-blue-900">INFORMASI TERKINI</h2>
+            
+            <!-- Pengumuman Utama -->
+            <div class="mb-12">
+                <div class="bg-gradient-to-r from-orange-500/20 to-red-500/20 backdrop-blur-sm rounded-2xl overflow-hidden shadow-2xl hover:shadow-3xl transition-all duration-500 transform hover:scale-[1.02] border border-orange-300/30">
+                    <div class="p-8">
+                        <!-- Header Pengumuman -->
+                        <div class="flex items-center justify-center mb-6">
+                            <div class="bg-gradient-to-r from-orange-500 to-red-500 rounded-full p-4 mr-4">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
+                                </svg>
+                            </div>
+                            <div>
+                                <h2 class="text-3xl font-bold text-gray-800 mb-2">PENGUMUMAN PENTING</h2>
+                                <div class="flex items-center text-orange-600 text-sm">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                    </svg>
+                                    <span>Diumumkan: 15 Januari 2025</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Konten Pengumuman -->
+                        <div class="bg-white/80 backdrop-blur-sm rounded-xl p-6 mb-6">
+                            <h3 class="text-xl font-bold mb-4 text-gray-800 leading-tight flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                                </svg>
+                                Jadwal Pelayanan Administrasi Desa
+                            </h3>
+                            <div class="space-y-3 text-gray-700">
+                                <p class="leading-relaxed">
+                                    <strong>Kepada Seluruh Masyarakat Kampung Pulo Sarok,</strong><br>
+                                    Diberitahukan bahwa pelayanan administrasi desa akan mengalami perubahan jadwal sementara:
+                                </p>
+                                <ul class="list-disc list-inside space-y-2 ml-4">
+                                    <li><strong>Tanggal 20-22 Januari 2025:</strong> Pelayanan tutup (Rapat Koordinasi)</li>
+                                    <li><strong>Tanggal 23 Januari 2025:</strong> Pelayanan normal kembali</li>
+                                    <li><strong>Jam Operasional:</strong> 08:00 - 15:00 WIB</li>
+                                </ul>
+                                <p class="text-orange-600 font-semibold">
+                                    Untuk keperluan mendesak, silakan hubungi nomor telepon balai desa.
+                                </p>
+                            </div>
+                        </div>
+                        
+                        <!-- Action Button -->
+                        <div class="text-center">
+                            <a href="#pengumuman-lainnya" class="inline-flex items-center bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white px-8 py-4 rounded-xl font-bold text-lg transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-5 5v-5z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4" />
+                                </svg>
+                                <span>Lihat Pengumuman Lainnya</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+                    
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+
+            <!-- News Sections -->
+            <div class="mb-12">
+                <h3 class="text-2xl font-bold mb-8 text-center text-gray-800">Berita Terkini Lainnya</h3>
+                
+                <!-- Desktop Grid Version -->
+                <div class="hidden md:block">
+                    <!-- Kesehatan & Ekonomi -->
+                    <div class="mb-12">
+                        <h4 class="text-xl font-semibold mb-6 text-gray-700 border-b-2 border-blue-200 pb-2">Kesehatan & Ekonomi</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <!-- News Item 1 -->
+                            <div class="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300">
+                                <div class="h-48 bg-gray-300 flex items-center justify-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 002 2v12a2 2 0 002 2z" />
+                                    </svg>
+                                </div>
+                                <div class="p-4">
+                                    <div class="flex items-center mb-3">
+                                        <span class="bg-green-500 text-white px-2 py-1 rounded text-xs font-semibold mr-2">KESEHATAN</span>
+                                        <span class="text-gray-500 text-sm">28 Agustus 2025</span>
+                                    </div>
+                                    <h4 class="text-lg font-semibold text-gray-800 mb-3">Posyandu Balita Bulan Ini Mencapai Target 100%</h4>
+                                    <p class="text-gray-600 text-sm leading-relaxed mb-4">
+                                        Kegiatan Posyandu bulan Agustus berhasil mencapai target 100% dengan partisipasi 45 balita.
+                                    </p>
+                                    <div class="flex items-center text-blue-600 text-sm hover:text-blue-800 cursor-pointer">
+                                        <span class="font-medium">Baca Selengkapnya</span>
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                                        </svg>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- News Item 2 -->
+                            <div class="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300">
+                                <div class="h-48 bg-gray-300 flex items-center justify-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 002 2v12a2 2 0 002 2z" />
+                                    </svg>
+                                </div>
+                                <div class="p-4">
+                                    <div class="flex items-center mb-3">
+                                        <span class="bg-orange-500 text-white px-2 py-1 rounded text-xs font-semibold mr-2">EKONOMI</span>
+                                        <span class="text-gray-500 text-sm">27 Agustus 2025</span>
+                                    </div>
+                                    <h4 class="text-lg font-semibold text-gray-800 mb-3">BUMG Pulo Sarok Raih Penghargaan Terbaik</h4>
+                                    <p class="text-gray-600 text-sm leading-relaxed mb-4">
+                                        BUMG Pulo Sarok meraih penghargaan sebagai BUMG terbaik tingkat Kabupaten Aceh Singkil.
+                                    </p>
+                                    <div class="flex items-center text-blue-600 text-sm hover:text-blue-800 cursor-pointer">
+                                        <span class="font-medium">Baca Selengkapnya</span>
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                                        </svg>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Pendidikan & Infrastruktur -->
+                    <div class="mb-12">
+                        <h4 class="text-xl font-semibold mb-6 text-gray-700 border-b-2 border-blue-200 pb-2">Pendidikan & Infrastruktur</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <!-- News Item 3 -->
+                            <div class="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300">
+                                <div class="h-48 bg-gray-300 flex items-center justify-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 002 2v12a2 2 0 002 2z" />
+                                    </svg>
+                                </div>
+                                <div class="p-4">
+                                    <div class="flex items-center mb-3">
+                                        <span class="bg-purple-500 text-white px-2 py-1 rounded text-xs font-semibold mr-2">PENDIDIKAN</span>
+                                        <span class="text-gray-500 text-sm">26 Agustus 2025</span>
+                                    </div>
+                                    <h4 class="text-lg font-semibold text-gray-800 mb-3">Program Bimbingan Belajar Gratis Dimulai September</h4>
+                                    <p class="text-gray-600 text-sm leading-relaxed mb-4">
+                                        Kampung Pulo Sarok akan mengadakan program bimbingan belajar gratis untuk anak-anak SD dan SMP.
+                                    </p>
+                                    <div class="flex items-center text-blue-600 text-sm hover:text-blue-800 cursor-pointer">
+                                        <span class="font-medium">Baca Selengkapnya</span>
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                                        </svg>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- News Item 4 -->
+                            <div class="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300">
+                                <div class="h-48 bg-gray-300 flex items-center justify-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 002 2v12a2 2 0 002 2z" />
+                                    </svg>
+                                </div>
+                                <div class="p-4">
+                                    <div class="flex items-center mb-3">
+                                        <span class="bg-blue-500 text-white px-2 py-1 rounded text-xs font-semibold mr-2">INFRASTRUKTUR</span>
+                                        <span class="text-gray-500 text-sm">25 Agustus 2025</span>
+                                    </div>
+                                    <h4 class="text-lg font-semibold text-gray-800 mb-3">Perbaikan Jalan Utama Kampung Mencapai 80%</h4>
+                                    <p class="text-gray-600 text-sm leading-relaxed mb-4">
+                                        Proyek perbaikan jalan utama kampung telah mencapai progress 80% dan diperkirakan selesai akhir September.
+                                    </p>
+                                    <div class="flex items-center text-blue-600 text-sm hover:text-blue-800 cursor-pointer">
+                                        <span class="font-medium">Baca Selengkapnya</span>
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                                        </svg>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Lingkungan & Keamanan -->
+                    <div class="mb-8">
+                        <h4 class="text-xl font-semibold mb-6 text-gray-700 border-b-2 border-blue-200 pb-2">Lingkungan & Keamanan</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <!-- News Item 5 -->
+                            <div class="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300">
+                                <div class="h-48 bg-gray-300 flex items-center justify-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 002 2v12a2 2 0 002 2z" />
+                                    </svg>
+                                </div>
+                                <div class="p-4">
+                                    <div class="flex items-center mb-3">
+                                        <span class="bg-teal-500 text-white px-2 py-1 rounded text-xs font-semibold mr-2">LINGKUNGAN</span>
+                                        <span class="text-gray-500 text-sm">24 Agustus 2025</span>
+                                    </div>
+                                    <h4 class="text-lg font-semibold text-gray-800 mb-3">Gotong Royong Bersih Kampung Setiap Jumat Pagi</h4>
+                                    <p class="text-gray-600 text-sm leading-relaxed mb-4">
+                                        Mulai September 2025, setiap Jumat pagi akan diadakan gotong royong bersih kampung.
+                                    </p>
+                                    <div class="flex items-center text-blue-600 text-sm hover:text-blue-800 cursor-pointer">
+                                        <span class="font-medium">Baca Selengkapnya</span>
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                                        </svg>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- News Item 6 -->
+                            <div class="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300">
+                                <div class="h-48 bg-gray-300 flex items-center justify-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 002 2v12a2 2 0 002 2z" />
+                                    </svg>
+                                </div>
+                                <div class="p-4">
+                                    <div class="flex items-center mb-3">
+                                        <span class="bg-red-500 text-white px-2 py-1 rounded text-xs font-semibold mr-2">KEAMANAN</span>
+                                        <span class="text-gray-500 text-sm">23 Agustus 2025</span>
+                                    </div>
+                                    <h4 class="text-lg font-semibold text-gray-800 mb-3">Pembentukan Tim Keamanan Kampung (Siskamling)</h4>
+                                    <p class="text-gray-600 text-sm leading-relaxed mb-4">
+                                        Kampung Pulo Sarok membentuk tim keamanan kampung (Siskamling) untuk meningkatkan keamanan.
+                                    </p>
+                                    <div class="flex items-center text-blue-600 text-sm hover:text-blue-800 cursor-pointer">
+                                        <span class="font-medium">Baca Selengkapnya</span>
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                                        </svg>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mobile Slider Version (Hidden on Desktop) -->
+                <div class="md:hidden">
+                    <div class="relative overflow-hidden">
+                        <div id="newsSlider" class="flex transition-transform duration-300 ease-in-out">
+                            <!-- Slide 1: Kesehatan & Ekonomi -->
+                            <div class="w-full flex-shrink-0 px-4">
+                                <h4 class="text-lg font-semibold mb-4 text-gray-700 border-b-2 border-blue-200 pb-2">Kesehatan & Ekonomi</h4>
+                                <div class="space-y-4">
+                                    <!-- News Item 1 -->
+                                    <div class="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm">
+                                        <div class="h-32 bg-gray-300 flex items-center justify-center">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 002 2v12a2 2 0 002 2z" />
+                                            </svg>
+                                        </div>
+                                        <div class="p-3">
+                                            <div class="flex items-center mb-2">
+                                                <span class="bg-green-500 text-white px-2 py-1 rounded text-xs font-semibold mr-2">KESEHATAN</span>
+                                                <span class="text-gray-500 text-xs">28 Agustus 2025</span>
+                                            </div>
+                                            <h4 class="text-sm font-semibold text-gray-800 mb-2">Posyandu Balita Bulan Ini Mencapai Target 100%</h4>
+                                            <p class="text-gray-600 text-xs leading-relaxed mb-2">
+                                                Kegiatan Posyandu bulan Agustus berhasil mencapai target 100% dengan partisipasi 45 balita.
+                                            </p>
+                                            <div class="flex items-center text-blue-600 text-xs">
+                                                <span class="font-medium">Baca Selengkapnya</span>
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                                                </svg>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- News Item 2 -->
+                                    <div class="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm">
+                                        <div class="h-32 bg-gray-300 flex items-center justify-center">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 002 2v12a2 2 0 002 2z" />
+                                            </svg>
+                                        </div>
+                                        <div class="p-3">
+                                            <div class="flex items-center mb-2">
+                                                <span class="bg-orange-500 text-white px-2 py-1 rounded text-xs font-semibold mr-2">EKONOMI</span>
+                                                <span class="text-gray-500 text-xs">27 Agustus 2025</span>
+                                            </div>
+                                            <h4 class="text-sm font-semibold text-gray-800 mb-2">BUMG Pulo Sarok Raih Penghargaan Terbaik</h4>
+                                            <p class="text-gray-600 text-xs leading-relaxed mb-2">
+                                                BUMG Pulo Sarok meraih penghargaan sebagai BUMG terbaik tingkat Kabupaten Aceh Singkil.
+                                            </p>
+                                            <div class="flex items-center text-blue-600 text-xs">
+                                                <span class="font-medium">Baca Selengkapnya</span>
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                                                </svg>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Slide 2: Pendidikan & Infrastruktur -->
+                            <div class="w-full flex-shrink-0 px-4">
+                                <h4 class="text-lg font-semibold mb-4 text-gray-700 border-b-2 border-blue-200 pb-2">Pendidikan & Infrastruktur</h4>
+                                <div class="space-y-4">
+                                    <!-- News Item 3 -->
+                                    <div class="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm">
+                                        <div class="h-32 bg-gray-300 flex items-center justify-center">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 002 2v12a2 2 0 002 2z" />
+                                            </svg>
+                                        </div>
+                                        <div class="p-3">
+                                            <div class="flex items-center mb-2">
+                                                <span class="bg-purple-500 text-white px-2 py-1 rounded text-xs font-semibold mr-2">PENDIDIKAN</span>
+                                                <span class="text-gray-500 text-xs">26 Agustus 2025</span>
+                                            </div>
+                                            <h4 class="text-sm font-semibold text-gray-800 mb-2">Program Bimbingan Belajar Gratis Dimulai September</h4>
+                                            <p class="text-gray-600 text-xs leading-relaxed mb-2">
+                                                Kampung Pulo Sarok akan mengadakan program bimbingan belajar gratis untuk anak-anak SD dan SMP.
+                                            </p>
+                                            <div class="flex items-center text-blue-600 text-xs">
+                                                <span class="font-medium">Baca Selengkapnya</span>
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                                                </svg>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- News Item 4 -->
+                                    <div class="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm">
+                                        <div class="h-32 bg-gray-300 flex items-center justify-center">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 002 2v12a2 2 0 002 2z" />
+                                            </svg>
+                                        </div>
+                                        <div class="p-3">
+                                            <div class="flex items-center mb-2">
+                                                <span class="bg-blue-500 text-white px-2 py-1 rounded text-xs font-semibold mr-2">INFRASTRUKTUR</span>
+                                                <span class="text-gray-500 text-xs">25 Agustus 2025</span>
+                                            </div>
+                                            <h4 class="text-sm font-semibold text-gray-800 mb-2">Perbaikan Jalan Utama Kampung Mencapai 80%</h4>
+                                            <p class="text-gray-600 text-xs leading-relaxed mb-2">
+                                                Proyek perbaikan jalan utama kampung telah mencapai progress 80% dan diperkirakan selesai akhir September.
+                                            </p>
+                                            <div class="flex items-center text-blue-600 text-xs">
+                                                <span class="font-medium">Baca Selengkapnya</span>
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                                                </svg>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Slide 3: Lingkungan & Keamanan -->
+                            <div class="w-full flex-shrink-0 px-4">
+                                <h4 class="text-lg font-semibold mb-4 text-gray-700 border-b-2 border-blue-200 pb-2">Lingkungan & Keamanan</h4>
+                                <div class="space-y-4">
+                                    <!-- News Item 5 -->
+                                    <div class="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm">
+                                        <div class="h-32 bg-gray-300 flex items-center justify-center">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 002 2v12a2 2 0 002 2z" />
+                                            </svg>
+                                        </div>
+                                        <div class="p-3">
+                                            <div class="flex items-center mb-2">
+                                                <span class="bg-teal-500 text-white px-2 py-1 rounded text-xs font-semibold mr-2">LINGKUNGAN</span>
+                                                <span class="text-gray-500 text-xs">24 Agustus 2025</span>
+                                            </div>
+                                            <h4 class="text-sm font-semibold text-gray-800 mb-2">Gotong Royong Bersih Kampung Setiap Jumat Pagi</h4>
+                                            <p class="text-gray-600 text-xs leading-relaxed mb-2">
+                                                Mulai September 2025, setiap Jumat pagi akan diadakan gotong royong bersih kampung.
+                                            </p>
+                                            <div class="flex items-center text-blue-600 text-xs">
+                                                <span class="font-medium">Baca Selengkapnya</span>
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                                                </svg>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- News Item 6 -->
+                                    <div class="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm">
+                                        <div class="h-32 bg-gray-300 flex items-center justify-center">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 002 2v12a2 2 0 002 2z" />
+                                            </svg>
+                                        </div>
+                                        <div class="p-3">
+                                            <div class="flex items-center mb-2">
+                                                <span class="bg-red-500 text-white px-2 py-1 rounded text-xs font-semibold mr-2">KEAMANAN</span>
+                                                <span class="text-gray-500 text-xs">23 Agustus 2025</span>
+                                            </div>
+                                            <h4 class="text-sm font-semibold text-gray-800 mb-2">Pembentukan Tim Keamanan Kampung (Siskamling)</h4>
+                                            <p class="text-gray-600 text-xs leading-relaxed mb-2">
+                                                Kampung Pulo Sarok membentuk tim keamanan kampung (Siskamling) untuk meningkatkan keamanan.
+                                            </p>
+                                            <div class="flex items-center text-blue-600 text-xs">
+                                                <span class="font-medium">Baca Selengkapnya</span>
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                                                </svg>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Slider Dots -->
+                        <div class="flex justify-center mt-6 space-x-2">
+                            <button class="slider-dot w-3 h-3 rounded-full bg-blue-600 transition-all duration-300" data-slide="0"></button>
+                            <button class="slider-dot w-3 h-3 rounded-full bg-gray-300 transition-all duration-300" data-slide="1"></button>
+                            <button class="slider-dot w-3 h-3 rounded-full bg-gray-300 transition-all duration-300" data-slide="2"></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Load More Button -->
+            <div class="text-center">
+                <button class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-8 py-3 rounded-lg shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-300">
+                    Muat Berita Lainnya
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section Berita Highlight -->
+    <section class="container mx-auto px-4 py-8">
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-3xl font-bold mb-8 text-center text-blue-900">BERITA HIGHLIGHT</h2>
+            
+            <!-- 3 Layout Berita Highlight -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <!-- Berita Highlight 1 -->
+                <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+                    <div class="h-48 bg-gray-300 rounded-lg flex items-center justify-center mb-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
+                        </svg>
+                    </div>
+                    <div class="flex items-center mb-3">
+                        <span class="bg-red-500 text-white px-3 py-1 rounded-full text-xs font-semibold mr-2">URGENT</span>
+                        <span class="text-gray-500 text-xs">30 Agustus 2025</span>
+                    </div>
+                    <h3 class="text-lg font-bold text-gray-800 mb-3">Rapat Koordinasi Perangkat Desa Bulan September</h3>
+                    <p class="text-gray-600 text-sm leading-relaxed mb-4">
+                        Seluruh perangkat desa diharapkan hadir dalam rapat koordinasi yang akan membahas program kerja bulan September dan evaluasi kinerja.
+                    </p>
+                    <div class="flex items-center text-blue-600 hover:text-blue-800 cursor-pointer">
+                        <span class="font-medium text-sm">Baca Selengkapnya</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- Berita Highlight 2 -->
+                <div class="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+                    <div class="h-48 bg-gray-300 rounded-lg flex items-center justify-center mb-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                        </svg>
+                    </div>
+                    <div class="flex items-center mb-3">
+                        <span class="bg-green-500 text-white px-3 py-1 rounded-full text-xs font-semibold mr-2">EKONOMI</span>
+                        <span class="text-gray-500 text-xs">29 Agustus 2025</span>
+                    </div>
+                    <h3 class="text-lg font-bold text-gray-800 mb-3">Program Bantuan UMKM Tahap 2 Dibuka</h3>
+                    <p class="text-gray-600 text-sm leading-relaxed mb-4">
+                        Pemerintah desa membuka kembali program bantuan untuk UMKM dengan total dana 50 juta rupiah untuk 25 pelaku usaha terpilih.
+                    </p>
+                    <div class="flex items-center text-blue-600 hover:text-blue-800 cursor-pointer">
+                        <span class="font-medium text-sm">Baca Selengkapnya</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- Berita Highlight 3 -->
+                <div class="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+                    <div class="h-48 bg-gray-300 rounded-lg flex items-center justify-center mb-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+                        </svg>
+                    </div>
+                    <div class="flex items-center mb-3">
+                        <span class="bg-purple-500 text-white px-3 py-1 rounded-full text-xs font-semibold mr-2">PENDIDIKAN</span>
+                        <span class="text-gray-500 text-xs">28 Agustus 2025</span>
+                    </div>
+                    <h3 class="text-lg font-bold text-gray-800 mb-3">Beasiswa Pendidikan Anak Berprestasi 2025</h3>
+                    <p class="text-gray-600 text-sm leading-relaxed mb-4">
+                        Kampung Pulo Sarok memberikan beasiswa pendidikan untuk 10 anak berprestasi dari keluarga kurang mampu untuk melanjutkan sekolah.
+                    </p>
+                    <div class="flex items-center text-blue-600 hover:text-blue-800 cursor-pointer">
+                        <span class="font-medium text-sm">Baca Selengkapnya</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tombol Berita Lainnya -->
+            <div class="text-center">
+                <button class="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-bold px-10 py-4 rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300">
+                    <span class="flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
+                        </svg>
+                        Berita Lainnya
+                    </span>
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-white py-6 mt-8">
+        <div class="container mx-auto px-4 text-center">
+            <img src="../static/images/logo-kampung.svg" alt="Logo Footer" class="h-12 w-12 mx-auto mb-2">
+            <p class="text-gray-600 text-sm">© 2025 Kampung Pulo Sarok. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="../static/js/script.js"></script>
+    
+    <script>
+        // News Slider Functionality
+        let currentSlide = 0;
+        const slider = document.getElementById('newsSlider');
+        const dots = document.querySelectorAll('.slider-dot');
+        const totalSlides = 3;
+
+        function showSlide(slideIndex) {
+            currentSlide = slideIndex;
+            const translateX = -slideIndex * 100;
+            slider.style.transform = `translateX(${translateX}%)`;
+            
+            // Update dots
+            dots.forEach((dot, index) => {
+                if (index === slideIndex) {
+                    dot.classList.remove('bg-gray-300');
+                    dot.classList.add('bg-blue-600');
+                } else {
+                    dot.classList.remove('bg-blue-600');
+                    dot.classList.add('bg-gray-300');
+                }
+            });
+        }
+
+        function nextSlide() {
+            currentSlide = (currentSlide + 1) % totalSlides;
+            showSlide(currentSlide);
+        }
+
+        function prevSlide() {
+            currentSlide = (currentSlide - 1 + totalSlides) % totalSlides;
+            showSlide(currentSlide);
+        }
+
+        // Add event listeners to dots
+        dots.forEach((dot, index) => {
+            dot.addEventListener('click', () => {
+                showSlide(index);
+            });
+        });
+
+        // Touch/Swipe functionality
+        let startX = 0;
+        let endX = 0;
+
+        slider.addEventListener('touchstart', (e) => {
+            startX = e.touches[0].clientX;
+        });
+
+        slider.addEventListener('touchend', (e) => {
+            endX = e.changedTouches[0].clientX;
+            handleSwipe();
+        });
+
+        function handleSwipe() {
+            const swipeThreshold = 50;
+            const diff = startX - endX;
+
+            if (Math.abs(diff) > swipeThreshold) {
+                if (diff > 0) {
+                    nextSlide();
+                } else {
+                    prevSlide();
+                }
+            }
+        }
+
+        // Auto-slide (optional)
+        setInterval(() => {
+            nextSlide();
+        }, 5000); // Change slide every 5 seconds
+    </script>
+
+</body>
+</html>
