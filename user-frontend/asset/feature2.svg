@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 200" width="300" height="200">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#EDF2F7;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#E2E8F0;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="300" height="200" fill="url(#bgGrad)"/>
+  
+  <!-- Building structure -->
+  <rect x="50" y="60" width="200" height="100" fill="#4299E1" opacity="0.9"/>
+  <rect x="50" y="50" width="200" height="15" fill="#3182CE"/>
+  
+  <!-- Windows -->
+  <rect x="70" y="80" width="25" height="20" fill="#BEE3F8" stroke="#2B6CB0" stroke-width="1"/>
+  <rect x="110" y="80" width="25" height="20" fill="#BEE3F8" stroke="#2B6CB0" stroke-width="1"/>
+  <rect x="150" y="80" width="25" height="20" fill="#BEE3F8" stroke="#2B6CB0" stroke-width="1"/>
+  <rect x="190" y="80" width="25" height="20" fill="#BEE3F8" stroke="#2B6CB0" stroke-width="1"/>
+  
+  <rect x="70" y="120" width="25" height="20" fill="#BEE3F8" stroke="#2B6CB0" stroke-width="1"/>
+  <rect x="110" y="120" width="25" height="20" fill="#BEE3F8" stroke="#2B6CB0" stroke-width="1"/>
+  <rect x="150" y="120" width="25" height="20" fill="#BEE3F8" stroke="#2B6CB0" stroke-width="1"/>
+  <rect x="190" y="120" width="25" height="20" fill="#BEE3F8" stroke="#2B6CB0" stroke-width="1"/>
+  
+  <!-- Main entrance -->
+  <rect x="130" y="130" width="40" height="30" fill="#2B6CB0"/>
+  <rect x="135" y="135" width="30" height="20" fill="#BEE3F8"/>
+  
+  <!-- Steps -->
+  <rect x="125" y="160" width="50" height="3" fill="#A0AEC0"/>
+  <rect x="120" y="163" width="60" height="3" fill="#A0AEC0"/>
+  <rect x="115" y="166" width="70" height="3" fill="#A0AEC0"/>
+  
+  <!-- Flag pole -->
+  <rect x="30" y="40" width="3" height="80" fill="#8B4513"/>
+  <rect x="33" y="40" width="25" height="15" fill="#E53E3E"/>
+  <rect x="33" y="55" width="25" height="15" fill="#FFFFFF"/>
+  
+  <!-- People silhouettes -->
+  <circle cx="90" cy="175" r="5" fill="#4A5568"/>
+  <rect x="87" y="180" width="6" height="15" fill="#4A5568"/>
+  <rect x="85" y="185" width="4" height="8" fill="#4A5568"/>
+  <rect x="91" y="185" width="4" height="8" fill="#4A5568"/>
+  
+  <circle cx="210" cy="175" r="5" fill="#4A5568"/>
+  <rect x="207" y="180" width="6" height="15" fill="#4A5568"/>
+  <rect x="205" y="185" width="4" height="8" fill="#4A5568"/>
+  <rect x="211" y="185" width="4" height="8" fill="#4A5568"/>
+  
+  <!-- Service icons -->
+  <circle cx="80" cy="90" r="8" fill="#38A169" opacity="0.8"/>
+  <text x="80" y="95" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">✓</text>
+  
+  <circle cx="200" cy="90" r="8" fill="#E53E3E" opacity="0.8"/>
+  <text x="200" y="95" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">i</text>
+  
+  <!-- Title overlay -->
+  <rect x="0" y="160" width="300" height="40" fill="rgba(0,0,0,0.3)"/>
+  <text x="150" y="185" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="white">Layanan Publik</text>
+</svg>
