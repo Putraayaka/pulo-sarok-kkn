@@ -1671,3 +1671,13 @@ def letter_apply_template_api(request, pk):
         
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
+
+
+# Public Views
+def letter_request(request):
+    """Public letter request page"""
+    context = {
+        'page_title': 'Pengajuan Surat',
+        'page_subtitle': 'Ajukan permohonan surat kepada pemerintah desa'
+    }
+    return render(request, 'public/letter_request.html', context)
