@@ -1080,6 +1080,14 @@ def posyandu_dashboard(request):
     }
     return render(request, 'admin/modules/posyandu/index.html', context)
 
+def posyandu_list(request):
+    """Public posyandu list page"""
+    context = {
+        'page_title': 'Daftar Posyandu',
+        'page_subtitle': 'Informasi jadwal dan lokasi posyandu'
+    }
+    return render(request, 'public/posyandu_list.html', context)
+
 @login_required
 def kader_admin(request):
     """Kader admin page"""

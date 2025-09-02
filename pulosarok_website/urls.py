@@ -19,18 +19,37 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from django.views.generic import TemplateView
 
+# Tambahkan import
+from core import views as core_views
+
+# Tambahkan di awal urlpatterns
 urlpatterns = [
     # Django admin interface
     path('admin/', admin.site.urls),
-    
-    # Public pages and API (root level)
-    path('', include('public.urls')),
     
     # Additional API endpoints (no authentication required)
     path('api/references/', include('references.urls')),
     
     # Custom admin interface
+    # Frontend public pages
+    path('', core_views.index_view, name='home'),
+    path('profil/', core_views.profil_view, name='profil'),
+    path('penduduk/', core_views.penduduk_view, name='penduduk'),
+    path('pengajuan-surat/', core_views.pengajuan_surat_view, name='pengajuan_surat'),
+    path('laporan-masyarakat/', core_views.laporan_masyarakat_view, name='laporan_masyarakat'),
+    path('informasi/', core_views.informasi_view, name='informasi'),
+    path('ukm/', core_views.ukm_view, name='ukm'),
+    path('informasi-terkini/', core_views.informasi_terkini_view, name='informasi_terkini'),
+    path('posyandu/', core_views.posyandu_view, name='posyandu'),
+    path('bumg/', core_views.bumg_view, name='bumg'),
+    path('wisata/', core_views.wisata_view, name='wisata'),
+
+    # Compatibility route for hardcoded public path
+    path('public/penduduk.html', TemplateView.as_view(template_name='public/penduduk.html'), name='public_penduduk_html'),
+    
+    # Existing admin URLs...
     path('pulosarok/', include('custom_admin.urls')),
     path('pulosarok/core/', include('core.urls')),
     path('pulosarok/references/', include('references.urls')),
@@ -50,10 +69,5 @@ urlpatterns = [
 
 # Serve media files during development
 if settings.DEBUG:
-    import debug_toolbar
-    urlpatterns = [
-        path('__debug__/', include(debug_toolbar.urls)),
-    ] + urlpatterns
-    
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATICFILES_DIRS[0] if settings.STATICFILES_DIRS else None)

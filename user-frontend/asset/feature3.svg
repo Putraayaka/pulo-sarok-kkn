@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 200" width="300" height="200">
+  <defs>
+    <linearGradient id="seaGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#4299E1;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#2B6CB0;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="skyGrad2" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#FED7D7;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#FBB6CE;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#F687B3;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Sky background -->
+  <rect width="300" height="120" fill="url(#skyGrad2)"/>
+  
+  <!-- Sea -->
+  <rect x="0" y="120" width="300" height="80" fill="url(#seaGrad)"/>
+  
+  <!-- Island/Beach -->
+  <ellipse cx="150" cy="140" rx="80" ry="25" fill="#F7FAFC"/>
+  <ellipse cx="150" cy="145" rx="70" ry="20" fill="#EDF2F7"/>
+  
+  <!-- Palm trees -->
+  <rect x="100" y="120" width="4" height="25" fill="#8B4513"/>
+  <ellipse cx="102" cy="115" rx="12" ry="8" fill="#38A169"/>
+  <ellipse cx="98" cy="110" rx="10" ry="6" fill="#38A169"/>
+  <ellipse cx="106" cy="110" rx="10" ry="6" fill="#38A169"/>
+  
+  <rect x="180" y="125" width="4" height="20" fill="#8B4513"/>
+  <ellipse cx="182" cy="120" rx="10" ry="6" fill="#38A169"/>
+  <ellipse cx="178" cy="115" rx="8" ry="5" fill="#38A169"/>
+  <ellipse cx="186" cy="115" rx="8" ry="5" fill="#38A169"/>
+  
+  <!-- Boat -->
+  <ellipse cx="80" cy="160" rx="25" ry="8" fill="#8B4513"/>
+  <rect x="78" y="150" width="4" height="15" fill="#8B4513"/>
+  <path d="M82 145 L95 150 L82 155 Z" fill="#FFFFFF"/>
+  
+  <!-- Seagulls -->
+  <path d="M50 60 Q55 55 60 60 Q55 65 50 60" fill="#4A5568" opacity="0.6"/>
+  <path d="M200 40 Q205 35 210 40 Q205 45 200 40" fill="#4A5568" opacity="0.6"/>
+  <path d="M250 70 Q255 65 260 70 Q255 75 250 70" fill="#4A5568" opacity="0.6"/>
+  
+  <!-- Sun -->
+  <circle cx="250" cy="50" r="20" fill="#FBD38D" opacity="0.8"/>
+  <path d="M250 20 L250 30 M270 30 L280 30 M270 70 L280 70 M250 70 L250 80 M230 70 L220 70 M230 30 L220 30 M265 35 L272 28 M265 65 L272 72 M235 35 L228 28 M235 65 L228 72" stroke="#FBD38D" stroke-width="2" opacity="0.6"/>
+  
+  <!-- Waves -->
+  <path d="M0 140 Q25 135 50 140 Q75 145 100 140 Q125 135 150 140 Q175 145 200 140 Q225 135 250 140 Q275 145 300 140" stroke="#FFFFFF" stroke-width="2" fill="none" opacity="0.6"/>
+  <path d="M0 160 Q30 155 60 160 Q90 165 120 160 Q150 155 180 160 Q210 165 240 160 Q270 155 300 160" stroke="#FFFFFF" stroke-width="2" fill="none" opacity="0.4"/>
+  
+  <!-- Fish jumping -->
+  <ellipse cx="220" cy="150" rx="8" ry="4" fill="#4299E1" opacity="0.8"/>
+  <path d="M212 150 Q215 145 220 150" stroke="#2B6CB0" stroke-width="2" fill="none"/>
+  
+  <!-- Title overlay -->
+  <rect x="0" y="160" width="300" height="40" fill="rgba(0,0,0,0.3)"/>
+  <text x="150" y="185" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="white">Wisata Bahari</text>
+</svg>

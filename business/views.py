@@ -731,11 +731,6 @@ def koperasi_view(request):
     return render(request, 'admin/modules/business/koperasi.html')
 
 @login_required
-def bumg_view(request):
-    """BUMG management page"""
-    return render(request, 'admin/modules/business/bumg.html')
-
-@login_required
 def ukm_view(request):
     """UKM management page"""
     return render(request, 'admin/modules/business/ukm.html')

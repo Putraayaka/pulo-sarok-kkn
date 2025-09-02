@@ -1,0 +1,566 @@
+{% extends 'public/base.html' %}
+{% load static %}
+{% block title %}Posyandu - Kampung Pulo Sarok{% endblock %}
+{% block extra_css %}{% endblock %}
+{% comment %}
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Posyandu - Kampung Pulo Sarok</title>
+    <link rel="stylesheet" href="../static/css/style.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+    <!-- Header Section -->
+    <header class="bg-white shadow-md sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-3">
+            <!-- Top Header -->
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    <img src="../static/images/logo-kampung.svg" alt="Logo Kampung" class="h-12 w-12 mr-3">
+                    <div>
+                        <h1 class="text-xl font-bold text-gray-800">Website Kampung Pulo Sarok</h1>
+                        <p class="text-sm text-gray-600">Kecamatan Singkil Kabupaten Aceh Singkil</p>
+                    </div>
+                </div>
+                <!-- Mobile Menu Button -->
+                <button id="mobile-menu-button" class="md:hidden flex flex-col space-y-1 p-2">
+                    <span class="block w-6 h-0.5 bg-gray-600 transition-all duration-300"></span>
+                    <span class="block w-6 h-0.5 bg-gray-600 transition-all duration-300"></span>
+                    <span class="block w-6 h-0.5 bg-gray-600 transition-all duration-300"></span>
+                </button>
+            </div>
+            
+            <!-- Navigation Menu -->
+            <nav class="hidden md:block mt-4">
+                <ul class="flex space-x-6">
+                    <li><a href="/" class="text-gray-700 hover:text-blue-600 font-medium transition-colors duration-300">Beranda</a></li>
+                    <li class="relative group">
+                        <a href="#" class="text-gray-700 hover:text-blue-600 font-medium transition-colors duration-300 flex items-center">
+                            Profil Kampung
+                            <svg class="ml-1 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </a>
+                        <ul class="absolute left-0 mt-2 w-48 bg-white shadow-lg rounded-md opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300">
+                            <li><a href="{% url 'profil' %}" class="block px-4 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-600">Profil Desa</a></li>
+                            <li><a href="{% url 'penduduk' %}" class="block px-4 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-600">Data Penduduk</a></li>
+                        </ul>
+                    </li>
+                    <li class="relative group">
+                        <a href="#" class="text-gray-700 hover:text-blue-600 font-medium transition-colors duration-300 flex items-center">
+                            Layanan Publik
+                            <svg class="ml-1 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </a>
+                        <ul class="absolute left-0 mt-2 w-48 bg-white shadow-lg rounded-md opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300">
+                            <li><a href="{% url 'pengajuan_surat' %}" class="block px-4 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-600">Pengajuan Surat</a></li>
+<li><a href="{% url 'laporan_masyarakat' %}" class="block px-4 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-600">Laporan Masyarakat</a></li>
+                        </ul>
+                    </li>
+                    <li class="relative group">
+                        <a href="#" class="text-gray-700 hover:text-blue-600 font-medium transition-colors duration-300 flex items-center">
+                            Unit Usaha
+                            <svg class="ml-1 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </a>
+                        <ul class="absolute left-0 mt-2 w-48 bg-white shadow-lg rounded-md opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300">
+                            <li><a href="{% url 'bumg' %}" class="block px-4 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-600">BUMDes</a></li>
+<li><a href="{% url 'ukm' %}" class="block px-4 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-600">UKM</a></li>
+                        </ul>
+                    </li>
+                    <li class="relative group">
+                        <a href="#" class="text-blue-600 font-medium transition-colors duration-300 flex items-center">
+                            Kesehatan
+                            <svg class="ml-1 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </a>
+                        <ul class="absolute left-0 mt-2 w-48 bg-white shadow-lg rounded-md opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300">
+                            <li><a href="{% url 'posyandu' %}" class="block px-4 py-2 text-blue-600 bg-blue-50">Posyandu</a></li>
+<li><a href="{% url 'wisata' %}" class="block px-4 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-600">Wisata</a></li>
+                        </ul>
+                    </li>
+                    <li class="relative group">
+                        <a href="#" class="text-gray-700 hover:text-blue-600 font-medium transition-colors duration-300 flex items-center">
+                            Informasi
+                            <svg class="ml-1 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </a>
+                        <ul class="absolute left-0 mt-2 w-48 bg-white shadow-lg rounded-md opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300">
+                            <li><a href="{% url 'informasi' %}" class="block px-4 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-600">Informasi Umum</a></li>
+<li><a href="{% url 'informasi_terkini' %}" class="block px-4 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-600">Informasi Terkini</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </nav>
+            
+            <!-- Mobile Menu -->
+            <nav id="mobile-menu" class="md:hidden mt-4 hidden">
+                <ul class="space-y-2">
+                    <li><a href="/" class="block py-2 text-gray-700 hover:text-blue-600 font-medium">Beranda</a></li>
+                    <li>
+                        <div class="py-2 text-gray-700 font-medium">Profil Kampung</div>
+                        <ul class="ml-4 space-y-1">
+                            <li><a href="{% url 'profil' %}" class="block py-1 text-gray-600 hover:text-blue-600">Profil Desa</a></li>
+<li><a href="{% url 'penduduk' %}" class="block py-1 text-gray-600 hover:text-blue-600">Data Penduduk</a></li>
+                        </ul>
+                    </li>
+                    <li>
+                        <div class="py-2 text-gray-700 font-medium">Layanan Publik</div>
+                        <ul class="ml-4 space-y-1">
+                            <li><a href="{% url 'pengajuan_surat' %}" class="block py-1 text-gray-600 hover:text-blue-600">Pengajuan Surat</a></li>
+<li><a href="{% url 'laporan_masyarakat' %}" class="block py-1 text-gray-600 hover:text-blue-600">Laporan Masyarakat</a></li>
+                        </ul>
+                    </li>
+                    <li>
+                        <div class="py-2 text-gray-700 font-medium">Unit Usaha</div>
+                        <ul class="ml-4 space-y-1">
+                            <li><a href="{% url 'bumg' %}" class="block py-1 text-gray-600 hover:text-blue-600">BUMDes</a></li>
+<li><a href="{% url 'ukm' %}" class="block py-1 text-gray-600 hover:text-blue-600">UKM</a></li>
+                        </ul>
+                    </li>
+                    <li>
+                        <div class="py-2 text-blue-600 font-medium">Kesehatan</div>
+                        <ul class="ml-4 space-y-1">
+                            <li><a href="{% url 'posyandu' %}" class="block py-1 text-blue-600">Posyandu</a></li>
+<li><a href="{% url 'wisata' %}" class="block py-1 text-gray-600 hover:text-blue-600">Wisata</a></li>
+                        </ul>
+                    </li>
+                    <li>
+                        <div class="py-2 text-gray-700 font-medium">Informasi</div>
+                        <ul class="ml-4 space-y-1">
+                            <li><a href="{% url 'informasi' %}" class="block py-1 text-gray-600 hover:text-blue-600">Informasi Umum</a></li>
+<li><a href="{% url 'informasi_terkini' %}" class="block py-1 text-gray-600 hover:text-blue-600">Informasi Terkini</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+{% endcomment %}
+
+{% block content %}
+
+    <!-- Posyandu Section -->
+    <section class="container mx-auto px-4 py-8">
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-3xl font-bold mb-8 text-center text-blue-900">POSYANDU KAMPUNG PULO SAROK</h2>
+            
+            <!-- Hero Section -->
+            <div class="bg-gradient-to-r from-pink-50 to-purple-50 rounded-xl p-8 mb-12">
+                <div class="flex flex-col lg:flex-row items-center gap-8">
+                    <div class="lg:w-1/2">
+                        <div class="h-64 bg-gradient-to-br from-pink-100 to-purple-100 rounded-lg flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-24 w-24 text-pink-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="lg:w-1/2">
+                        <h3 class="text-2xl font-bold text-gray-800 mb-4">Pos Pelayanan Terpadu (Posyandu)</h3>
+                        <p class="text-gray-600 leading-relaxed mb-6">
+                            Posyandu Kampung Pulo Sarok merupakan wadah pelayanan kesehatan masyarakat yang dikelola dan diselenggarakan dari, oleh, untuk dan bersama masyarakat dalam penyelenggaraan pembangunan kesehatan, guna memberdayakan masyarakat dan memberikan kemudahan kepada masyarakat dalam memperoleh pelayanan kesehatan dasar.
+                        </p>
+                        <div class="flex items-center text-pink-600">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <span class="font-medium">Melayani dengan Sepenuh Hati</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Statistik Posyandu -->
+            <div class="mb-12">
+                <h3 class="text-2xl font-semibold mb-6 text-center text-gray-800">Data Posyandu</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div class="bg-pink-50 p-6 rounded-lg text-center border border-pink-200">
+                        <div class="text-3xl font-bold text-pink-600 mb-2">3</div>
+                        <div class="text-gray-700 font-medium">Lokasi Posyandu</div>
+                    </div>
+                    <div class="bg-blue-50 p-6 rounded-lg text-center border border-blue-200">
+                        <div class="text-3xl font-bold text-blue-600 mb-2">45</div>
+                        <div class="text-gray-700 font-medium">Balita Aktif</div>
+                    </div>
+                    <div class="bg-green-50 p-6 rounded-lg text-center border border-green-200">
+                        <div class="text-3xl font-bold text-green-600 mb-2">28</div>
+                        <div class="text-gray-700 font-medium">Ibu Hamil</div>
+                    </div>
+                    <div class="bg-purple-50 p-6 rounded-lg text-center border border-purple-200">
+                        <div class="text-3xl font-bold text-purple-600 mb-2">65</div>
+                        <div class="text-gray-700 font-medium">Lansia Aktif</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Lokasi Posyandu -->
+            <div class="mb-12">
+                <h3 class="text-2xl font-semibold mb-6 text-gray-800">Lokasi Posyandu</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <!-- Posyandu Melati -->
+                    <div class="bg-white border border-gray-200 rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow duration-300">
+                        <div class="flex items-center mb-4">
+                            <div class="w-12 h-12 bg-pink-500 rounded-full flex items-center justify-center mr-4">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                </svg>
+                            </div>
+                            <div>
+                                <h4 class="text-lg font-semibold text-gray-800">Posyandu Melati</h4>
+                                <p class="text-sm text-gray-600">Lorong 1 & 2</p>
+                            </div>
+                        </div>
+                        <div class="space-y-2 text-sm text-gray-600">
+                            <div class="flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                <span>Setiap Rabu, 08:00 - 11:00</span>
+                            </div>
+                            <div class="flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                </svg>
+                                <span>Kader: Ibu Siti Aminah</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Posyandu Mawar -->
+                    <div class="bg-white border border-gray-200 rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow duration-300">
+                        <div class="flex items-center mb-4">
+                            <div class="w-12 h-12 bg-red-500 rounded-full flex items-center justify-center mr-4">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                </svg>
+                            </div>
+                            <div>
+                                <h4 class="text-lg font-semibold text-gray-800">Posyandu Mawar</h4>
+                                <p class="text-sm text-gray-600">Lorong 3 & 4</p>
+                            </div>
+                        </div>
+                        <div class="space-y-2 text-sm text-gray-600">
+                            <div class="flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                <span>Setiap Kamis, 08:00 - 11:00</span>
+                            </div>
+                            <div class="flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                </svg>
+                                <span>Kader: Ibu Fatimah</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Posyandu Dahlia -->
+                    <div class="bg-white border border-gray-200 rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow duration-300">
+                        <div class="flex items-center mb-4">
+                            <div class="w-12 h-12 bg-yellow-500 rounded-full flex items-center justify-center mr-4">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                </svg>
+                            </div>
+                            <div>
+                                <h4 class="text-lg font-semibold text-gray-800">Posyandu Dahlia</h4>
+                                <p class="text-sm text-gray-600">Lorong 5 & 6</p>
+                            </div>
+                        </div>
+                        <div class="space-y-2 text-sm text-gray-600">
+                            <div class="flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                <span>Setiap Jumat, 08:00 - 11:00</span>
+                            </div>
+                            <div class="flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                </svg>
+                                <span>Kader: Ibu Mariam</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Layanan Posyandu -->
+            <div class="mb-12">
+                <h3 class="text-2xl font-semibold mb-6 text-gray-800">Layanan Posyandu</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <!-- Layanan Balita -->
+                    <div class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-200">
+                        <div class="flex items-center mb-4">
+                            <div class="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center mr-4">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                            </div>
+                            <h4 class="text-xl font-semibold text-gray-800">Pelayanan Balita</h4>
+                        </div>
+                        <ul class="space-y-2 text-gray-600">
+                            <li class="flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                </svg>
+                                Penimbangan berat badan
+                            </li>
+                            <li class="flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                </svg>
+                                Pengukuran tinggi badan
+                            </li>
+                            <li class="flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                </svg>
+                                Imunisasi dasar lengkap
+                            </li>
+                            <li class="flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                </svg>
+                                Pemberian vitamin A
+                            </li>
+                            <li class="flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                </svg>
+                                Deteksi dini stunting
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Layanan Ibu Hamil -->
+                    <div class="bg-gradient-to-br from-pink-50 to-rose-50 rounded-xl p-6 border border-pink-200">
+                        <div class="flex items-center mb-4">
+                            <div class="w-12 h-12 bg-pink-500 rounded-full flex items-center justify-center mr-4">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                                </svg>
+                            </div>
+                            <h4 class="text-xl font-semibold text-gray-800">Pelayanan Ibu Hamil</h4>
+                        </div>
+                        <ul class="space-y-2 text-gray-600">
+                            <li class="flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                </svg>
+                                Pemeriksaan kehamilan (ANC)
+                            </li>
+                            <li class="flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                </svg>
+                                Pemberian tablet Fe
+                            </li>
+                            <li class="flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                </svg>
+                                Imunisasi TT (Tetanus Toxoid)
+                            </li>
+                            <li class="flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                </svg>
+                                Konseling gizi dan kesehatan
+                            </li>
+                            <li class="flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                </svg>
+                                Deteksi dini komplikasi
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Layanan Lansia -->
+                    <div class="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-6 border border-green-200">
+                        <div class="flex items-center mb-4">
+                            <div class="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center mr-4">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                </svg>
+                            </div>
+                            <h4 class="text-xl font-semibold text-gray-800">Pelayanan Lansia</h4>
+                        </div>
+                        <ul class="space-y-2 text-gray-600">
+                            <li class="flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                </svg>
+                                Pemeriksaan kesehatan rutin
+                            </li>
+                            <li class="flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                </svg>
+                                Pengukuran tekanan darah
+                            </li>
+                            <li class="flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                </svg>
+                                Senam lansia
+                            </li>
+                            <li class="flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                </svg>
+                                Konseling kesehatan
+                            </li>
+                            <li class="flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                </svg>
+                                Deteksi dini penyakit degeneratif
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Layanan Umum -->
+                    <div class="bg-gradient-to-br from-purple-50 to-indigo-50 rounded-xl p-6 border border-purple-200">
+                        <div class="flex items-center mb-4">
+                            <div class="w-12 h-12 bg-purple-500 rounded-full flex items-center justify-center mr-4">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                            </div>
+                            <h4 class="text-xl font-semibold text-gray-800">Layanan Umum</h4>
+                        </div>
+                        <ul class="space-y-2 text-gray-600">
+                            <li class="flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                </svg>
+                                Penyuluhan kesehatan
+                            </li>
+                            <li class="flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                </svg>
+                                Konsultasi gizi
+                            </li>
+                            <li class="flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                </svg>
+                                Rujukan ke puskesmas
+                            </li>
+                            <li class="flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                </svg>
+                                Pencatatan dan pelaporan
+                            </li>
+                            <li class="flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                </svg>
+                                Koordinasi dengan tenaga kesehatan
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Jadwal Kegiatan -->
+            <div class="mb-12">
+                <h3 class="text-2xl font-semibold mb-6 text-gray-800">Jadwal Kegiatan Posyandu</h3>
+                <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-200">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="text-center">
+                            <div class="bg-pink-500 text-white rounded-lg p-4 mb-3">
+                                <div class="text-2xl font-bold">RABU</div>
+                                <div class="text-sm">08:00 - 11:00</div>
+                            </div>
+                            <h4 class="font-semibold text-gray-800">Posyandu Melati</h4>
+                            <p class="text-sm text-gray-600">Lorong 1 & 2</p>
+                        </div>
+                        <div class="text-center">
+                            <div class="bg-red-500 text-white rounded-lg p-4 mb-3">
+                                <div class="text-2xl font-bold">KAMIS</div>
+                                <div class="text-sm">08:00 - 11:00</div>
+                            </div>
+                            <h4 class="font-semibold text-gray-800">Posyandu Mawar</h4>
+                            <p class="text-sm text-gray-600">Lorong 3 & 4</p>
+                        </div>
+                        <div class="text-center">
+                            <div class="bg-yellow-500 text-white rounded-lg p-4 mb-3">
+                                <div class="text-2xl font-bold">JUMAT</div>
+                                <div class="text-sm">08:00 - 11:00</div>
+                            </div>
+                            <h4 class="font-semibold text-gray-800">Posyandu Dahlia</h4>
+                            <p class="text-sm text-gray-600">Lorong 5 & 6</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Kontak dan Informasi -->
+            <div class="bg-gradient-to-r from-gray-50 to-blue-50 rounded-xl p-8">
+                <h3 class="text-2xl font-semibold mb-6 text-center text-gray-800">Kontak dan Informasi</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div>
+                        <h4 class="text-lg font-semibold text-gray-800 mb-4">Koordinator Posyandu</h4>
+                        <div class="space-y-3">
+                            <div class="flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                </svg>
+                                <span class="text-gray-700">Ibu Nurhayati, S.Kep</span>
+                            </div>
+                            <div class="flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                                </svg>
+                                <span class="text-gray-700">+62 813-6789-0123</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <h4 class="text-lg font-semibold text-gray-800 mb-4">Informasi Penting</h4>
+                        <div class="space-y-2 text-gray-600">
+                            <p>• Pelayanan gratis untuk seluruh masyarakat</p>
+                            <p>• Bawa buku KIA/KMS saat berkunjung</p>
+                            <p>• Datang tepat waktu sesuai jadwal</p>
+                            <p>• Konsultasi kesehatan tersedia setiap hari</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+{% endblock %}
+{% block extra_js %}
+<script src="{% static 'js/script.js' %}"></script>
+{% endblock %}
+{% comment %}
+    <!-- Footer -->
+    <!-- Footer -->
+    <footer class="bg-black py-6 mt-8">
+        <div class="container mx-auto px-4 text-center">
+            <img src="../static/images/logo-kampung.svg" alt="Logo Footer" class="h-12 w-12 mx-auto mb-2">
+            <p class="text-white text-sm">© 2025 Kampung Pulo Sarok. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="../static/js/script.js"></script>
+</body>
+</html>
+{% endcomment %}

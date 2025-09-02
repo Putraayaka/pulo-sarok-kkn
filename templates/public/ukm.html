@@ -1,0 +1,541 @@
+{% extends 'public/base.html' %}
+{% load static %}
+{% block title %}UKM - Kampung Pulo Sarok{% endblock %}
+{% block extra_css %}{% endblock %}
+{% block content %}
+{% comment %}
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UKM - Kampung Pulo Sarok</title>
+    <link rel="stylesheet" href="../static/css/style.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom responsive styles for header */
+        @media (max-width: 768px) {
+            .header-title {
+                font-size: 1.1rem;
+            }
+            .header-subtitle {
+                font-size: 0.8rem;
+            }
+            .mobile-menu {
+                max-height: 0;
+                overflow: hidden;
+                transition: max-height 0.3s ease-in-out;
+            }
+            .mobile-menu:not(.hidden) {
+                max-height: 500px;
+            }
+        }
+        
+        /* Center navigation with proper spacing */
+        .nav-center {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+        }
+        
+        @media (max-width: 1024px) {
+            .nav-center {
+                gap: 1rem;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <!-- Header Section -->
+    <header class="bg-white shadow-md sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-3">
+            <!-- Top Header -->
+            <div class="flex items-center justify-between mb-3">
+                <div class="flex items-center">
+                    <img src="../static/images/logo-kampung.svg" alt="Logo Kampung" class="h-10 w-10 sm:h-12 sm:w-12 mr-2 sm:mr-3">
+                    <div>
+                        <h1 class="text-lg sm:text-xl font-bold text-gray-800 header-title">Website Kampung Pulo Sarok</h1>
+                        <p class="text-xs sm:text-sm text-gray-600 header-subtitle">Kecamatan Singkil Kabupaten Aceh Singkil</p>
+                    </div>
+                </div>
+                
+                <!-- Login Button (Desktop) -->
+                <div class="hidden md:flex items-center space-x-4">
+                    <a href="{% url 'login' %}" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium transition duration-200 flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+                        </svg>
+                        Login
+                    </a>
+                </div>
+                
+                <!-- Mobile Menu Button -->
+                <button class="md:hidden mobile-menu-button p-2 rounded-md hover:bg-gray-100">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                </button>
+            </div>
+            
+            <!-- Navigation Menu -->
+            <nav class="border-t pt-3">
+                <div class="hidden md:flex md:items-center nav-center">
+                    <a href="{% url 'home' %}" class="text-gray-700 hover:text-red-600 font-medium transition duration-200 flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                        </svg>
+                        Beranda
+                    </a>
+                    
+                    <!-- Dropdown Profil -->
+                    <div class="relative group">
+                        <button class="text-gray-700 hover:text-red-600 font-medium transition duration-200 flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                            </svg>
+                            Profil Kampung
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
+                        <div class="absolute left-0 mt-2 w-48 bg-white rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+                            <a href="{% url 'profil' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Profil Kampung</a>
+                            <a href="{% url 'penduduk' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Data Penduduk</a>
+                        </div>
+                    </div>
+                    
+                    <!-- Dropdown Layanan Publik -->
+                    <div class="relative group">
+                        <button class="text-gray-700 hover:text-red-600 font-medium transition duration-200 flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                            Layanan Publik
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
+                        <div class="absolute left-0 mt-2 w-48 bg-white rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+                            <a href="{% url 'pengajuan_surat' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Pengajuan Surat</a>
+                            <a href="{% url 'laporan_masyarakat' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Laporan Masyarakat</a>
+                        </div>
+                    </div>
+                    
+                    <!-- Dropdown Unit Usaha -->
+                    <div class="relative group">
+                        <button class="text-red-600 hover:text-red-700 font-medium transition duration-200 flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                            </svg>
+                            Unit Usaha
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
+                        <div class="absolute left-0 mt-2 w-48 bg-white rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+                            <a href="{% url 'bumg' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">BUMG</a>
+                            <a href="{% url 'ukm' %}" class="block px-4 py-2 text-sm text-red-600 bg-red-50">UKM</a>
+                        </div>
+                    </div>
+                    
+                    <!-- Dropdown Kesehatan -->
+                    <div class="relative group">
+                        <button class="text-gray-700 hover:text-red-600 font-medium transition duration-200 flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                            </svg>
+                            Kesehatan
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
+                        <div class="absolute left-0 mt-2 w-48 bg-white rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+                            <a href="{% url 'posyandu' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Posyandu</a>
+                        </div>
+                    </div>
+                    
+                    <a href="{% url 'wisata' %}" class="text-gray-700 hover:text-red-600 font-medium transition duration-200 flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        Wisata
+                    </a>
+                    
+                    <!-- Dropdown Informasi -->
+                    <div class="relative group">
+                        <button class="text-gray-700 hover:text-red-600 font-medium transition duration-200 flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            Informasi
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
+                        <div class="absolute left-0 mt-2 w-48 bg-white rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+                            <a href="{% url 'informasi' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Informasi Umum</a>
+                            <a href="{% url 'informasi_terkini' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Informasi Terkini</a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Mobile Menu -->
+                <div class="mobile-menu hidden md:hidden mt-3 border-t pt-3">
+                    <div class="space-y-2">
+                        <!-- Login Button (Mobile) -->
+                        <div class="px-3 py-2">
+                            <a href="{% url 'login' %}" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium transition duration-200 flex items-center justify-center w-full">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+                                </svg>
+                                Login
+                            </a>
+                        </div>
+                        
+                        <a href="{% url 'home' %}" class="block px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-md">Beranda</a>
+                        
+                        <div class="px-3 py-2">
+                            <p class="text-sm font-semibold text-gray-500 uppercase tracking-wider">Profil Kampung</p>
+                            <div class="mt-1 space-y-1">
+                                <a href="{% url 'profil' %}" class="block px-3 py-1 text-gray-700 hover:bg-gray-100 rounded-md">Profil Kampung</a>
+                                <a href="{% url 'penduduk' %}" class="block px-3 py-1 text-gray-700 hover:bg-gray-100 rounded-md">Data Penduduk</a>
+                            </div>
+                        </div>
+                        
+                        <div class="px-3 py-2">
+                            <p class="text-sm font-semibold text-gray-500 uppercase tracking-wider">Layanan Publik</p>
+                            <div class="mt-1 space-y-1">
+                                <a href="{% url 'pengajuan_surat' %}" class="block px-3 py-1 text-gray-700 hover:bg-gray-100 rounded-md">Pengajuan Surat</a>
+                                <a href="{% url 'laporan_masyarakat' %}" class="block px-3 py-1 text-gray-700 hover:bg-gray-100 rounded-md">Laporan Masyarakat</a>
+                            </div>
+                        </div>
+                        
+                        <div class="px-3 py-2">
+                            <p class="text-sm font-semibold text-red-500 uppercase tracking-wider">Unit Usaha</p>
+                            <div class="mt-1 space-y-1">
+                                <a href="{% url 'bumg' %}" class="block px-3 py-1 text-gray-700 hover:bg-gray-100 rounded-md">BUMG</a>
+                                <a href="{% url 'ukm' %}" class="block px-3 py-1 text-red-600 bg-red-50 rounded-md">UKM</a>
+                            </div>
+                        </div>
+                        
+                        <div class="px-3 py-2">
+                            <p class="text-sm font-semibold text-gray-500 uppercase tracking-wider">Kesehatan</p>
+                            <div class="mt-1 space-y-1">
+                                <a href="{% url 'posyandu' %}" class="block px-3 py-1 text-gray-700 hover:bg-gray-100 rounded-md">Posyandu</a>
+                            </div>
+                        </div>
+                        
+                        <a href="{% url 'wisata' %}" class="block px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-md">Wisata</a>
+                        
+                        <div class="px-3 py-2">
+                            <p class="text-sm font-semibold text-gray-500 uppercase tracking-wider">Informasi</p>
+                            <div class="mt-1 space-y-1">
+                                <a href="{% url 'informasi' %}" class="block px-3 py-1 text-gray-700 hover:bg-gray-100 rounded-md">Informasi Umum</a>
+                                <a href="{% url 'informasi_terkini' %}" class="block px-3 py-1 text-gray-700 hover:bg-gray-100 rounded-md">Informasi Terkini</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+        </div>
+    </header>
+{% endcomment %}
+
+    <!-- UKM Section -->
+    <section class="container mx-auto px-4 py-8">
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-2xl font-bold mb-6 text-center text-red-900">USAHA KECIL MENENGAH (UKM)</h2>
+            
+            <div class="mb-8">
+                <h3 class="text-xl font-semibold mb-4 text-red-800">Tentang UKM Pulo Sarok</h3>
+                <p class="mb-4 text-gray-700 leading-relaxed">
+                    Usaha Kecil Menengah (UKM) di Gampong Pulo Sarok merupakan penggerak ekonomi lokal yang dikelola oleh 
+                    masyarakat gampong. UKM ini menjadi sumber pendapatan utama bagi banyak keluarga dan berkontribusi 
+                    signifikan terhadap perekonomian gampong.
+                </p>
+                <p class="text-gray-700 mb-4 leading-relaxed">
+                    Pemerintah Gampong Pulo Sarok berkomitmen untuk mendukung pertumbuhan UKM lokal melalui berbagai 
+                    program pembinaan, pelatihan, dan bantuan permodalan. Halaman ini menyajikan informasi tentang 
+                    UKM yang ada di Gampong Pulo Sarok dan bagaimana Anda dapat terlibat atau mendukung mereka.
+                </p>
+            </div>
+            
+            <!-- UKM Categories -->
+            <div class="mb-8">
+                <h3 class="text-xl font-semibold mb-4 text-red-800">Kategori UKM</h3>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <div class="bg-red-50 p-5 rounded-lg shadow-sm hover:shadow-md transition duration-300">
+                        <div class="bg-red-100 rounded-full p-3 inline-block mb-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 15.546c-.523 0-1.046.151-1.5.454a2.704 2.704 0 01-3 0 2.704 2.704 0 00-3 0 2.704 2.704 0 01-3 0 2.704 2.704 0 00-3 0 2.704 2.704 0 01-3 0 2.701 2.701 0 00-1.5-.454M9 6v2m3-2v2m3-2v2M9 3h.01M12 3h.01M15 3h.01M21 21v-7a2 2 0 00-2-2H5a2 2 0 00-2 2v7h18zm-3-9v-2a2 2 0 00-2-2H8a2 2 0 00-2 2v2h12z" />
+                            </svg>
+                        </div>
+                        <h4 class="text-lg font-semibold mb-2 text-gray-800">Kuliner</h4>
+                        <p class="text-gray-600 mb-3 leading-relaxed">
+                            UKM kuliner di Pulo Sarok menawarkan berbagai makanan dan minuman tradisional khas Aceh Singkil. Produk-produk ini mencakup kue tradisional, makanan olahan ikan, dan berbagai hidangan khas lainnya.
+                        </p>
+                    </div>
+                    
+                    <div class="bg-red-50 p-5 rounded-lg shadow-sm hover:shadow-md transition duration-300">
+                        <div class="bg-red-100 rounded-full p-3 inline-block mb-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
+                            </svg>
+                        </div>
+                        <h4 class="text-lg font-semibold mb-2 text-gray-800">Kerajinan</h4>
+                        <p class="text-gray-600 mb-3 leading-relaxed">
+                            UKM kerajinan memproduksi berbagai produk seperti anyaman, ukiran kayu, dan kerajinan tangan lainnya yang menampilkan kekayaan budaya dan keterampilan tradisional masyarakat Pulo Sarok.
+                        </p>
+                    </div>
+                    
+                    <div class="bg-red-50 p-5 rounded-lg shadow-sm hover:shadow-md transition duration-300">
+                        <div class="bg-red-100 rounded-full p-3 inline-block mb-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                            </svg>
+                        </div>
+                        <h4 class="text-lg font-semibold mb-2 text-gray-800">Pendidikan</h4>
+                        <p class="text-gray-600 mb-3 leading-relaxed">
+                            UKM di bidang pendidikan menyediakan layanan bimbingan belajar, kursus keterampilan, dan pelatihan vokasi untuk meningkatkan kapasitas sumber daya manusia di Gampong Pulo Sarok.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Featured UKMs -->
+            <div class="mb-8">
+                <h3 class="text-xl font-semibold mb-4 text-red-800">UKM Unggulan</h3>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition duration-300">
+                        <div class="h-48 bg-gray-300 flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                        </div>
+                        <div class="p-4">
+                            <h4 class="text-lg font-semibold mb-2">Kerajinan Anyaman Pandan "Pulo Craft"</h4>
+                            <p class="text-gray-600 mb-3 leading-relaxed">
+                                UKM yang memproduksi berbagai kerajinan anyaman dari daun pandan seperti tas, tikar, dan hiasan rumah. Produk-produk ini dibuat dengan teknik tradisional yang diwariskan secara turun-temurun.
+                            </p>
+                            <div class="flex items-center text-sm text-gray-500">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                </svg>
+                                <span>Jl. Pandan Wangi No. 5, Pulo Sarok</span>
+                            </div>
+                            <div class="flex items-center text-sm text-gray-500 mt-1">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                                </svg>
+                                <span>0812-3456-7890</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition duration-300">
+                        <div class="h-48 bg-gray-300 flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                        </div>
+                        <div class="p-4">
+                            <h4 class="text-lg font-semibold mb-2">Kuliner "Rasa Pulo"</h4>
+                            <p class="text-gray-600 mb-3 leading-relaxed">
+                                UKM yang memproduksi makanan olahan ikan dan seafood khas Aceh Singkil. Produk unggulannya adalah ikan kayu, kerupuk ikan, dan berbagai olahan udang yang telah dipasarkan hingga ke luar daerah.
+                            </p>
+                            <div class="flex items-center text-sm text-gray-500">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                </svg>
+                                <span>Jl. Nelayan No. 12, Pulo Sarok</span>
+                            </div>
+                            <div class="flex items-center text-sm text-gray-500 mt-1">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                                </svg>
+                                <span>0823-4567-8901</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Support Program -->
+            <div class="mb-8">
+                <h3 class="text-xl font-semibold mb-4 text-red-800">Program Dukungan UKM</h3>
+                
+                <div class="bg-red-50 p-5 rounded-lg">
+                    <h4 class="text-lg font-semibold mb-3">Bantuan dan Dukungan untuk UKM</h4>
+                    <ul class="list-disc pl-5 space-y-2 text-gray-700">
+                        <li>Pelatihan kewirausahaan dan manajemen usaha</li>
+                        <li>Bantuan permodalan melalui program simpan pinjam BUMG</li>
+                        <li>Fasilitasi pemasaran produk UKM melalui pameran dan bazar</li>
+                        <li>Pendampingan pengembangan produk dan pengemasan</li>
+                        <li>Bantuan sertifikasi produk (PIRT, halal, dll)</li>
+                        <li>Pelatihan pemasaran digital dan e-commerce</li>
+                    </ul>
+                    
+                    <div class="mt-4">
+                        <h5 class="font-semibold mb-2">Cara Mendaftar Program:</h5>
+                        <p class="text-gray-700 leading-relaxed">
+                            Untuk mendaftar program dukungan UKM, silakan kunjungi kantor BUMG Pulo Sarok atau hubungi nomor telepon 0812-3456-7890. Pendaftaran juga dapat dilakukan melalui email ke ukm.pulosarok@gmail.com dengan melampirkan profil usaha dan jenis dukungan yang dibutuhkan.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Registration Section -->
+            <div class="mb-8">
+                <h3 class="text-xl font-semibold mb-4 text-red-800">Pendaftaran UKM Baru</h3>
+                <div class="bg-blue-50 p-6 rounded-lg">
+                    <p class="mb-6 text-gray-700 leading-relaxed">
+                        Apakah Anda memiliki usaha atau ingin memulai usaha di bidang barang atau jasa? Daftarkan UKM Anda untuk mendapatkan dukungan dan pembinaan dari Pemerintah Gampong Pulo Sarok.
+                    </p>
+                    
+                    <form class="space-y-4" id="ukmRegistrationForm">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label for="ownerName" class="block text-sm font-medium text-gray-700 mb-2">Nama Pemilik Usaha *</label>
+                                <input type="text" id="ownerName" name="ownerName" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500">
+                            </div>
+                            <div>
+                                <label for="businessName" class="block text-sm font-medium text-gray-700 mb-2">Nama Usaha *</label>
+                                <input type="text" id="businessName" name="businessName" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500">
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label for="phone" class="block text-sm font-medium text-gray-700 mb-2">Nomor Telepon *</label>
+                            <input type="tel" id="phone" name="phone" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500">
+                        </div>
+                        
+                        <div>
+                            <label for="address" class="block text-sm font-medium text-gray-700 mb-2">Alamat Usaha *</label>
+                            <textarea id="address" name="address" rows="4" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"></textarea>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label for="businessType" class="block text-sm font-medium text-gray-700 mb-2">Jenis Usaha *</label>
+                                <select id="businessType" name="businessType" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500">
+                                    <option value="">Pilih Jenis Usaha</option>
+                                    <option value="barang">Penjualan Barang</option>
+                                    <option value="jasa">Penyediaan Jasa</option>
+                                    <option value="keduanya">Barang dan Jasa</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="category" class="block text-sm font-medium text-gray-700 mb-2">Kategori *</label>
+                                <select id="category" name="category" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500">
+                                    <option value="">Pilih Kategori</option>
+                                    <option value="kuliner">Kuliner</option>
+                                    <option value="kerajinan">Kerajinan</option>
+                                    <option value="pendidikan">Pendidikan</option>
+                                    <option value="pertanian">Pertanian</option>
+                                    <option value="perikanan">Perikanan</option>
+                                    <option value="teknologi">Teknologi</option>
+                                    <option value="lainnya">Lainnya</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label for="description" class="block text-sm font-medium text-gray-700 mb-2">Deskripsi Usaha *</label>
+                            <textarea id="description" name="description" rows="4" required placeholder="Jelaskan produk/jasa yang Anda tawarkan, target pasar, dan keunggulan usaha Anda..." class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"></textarea>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label for="startDate" class="block text-sm font-medium text-gray-700 mb-2">Tanggal Mulai Usaha</label>
+                                <input type="date" id="startDate" name="startDate" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500">
+                            </div>
+                            <div>
+                                <label for="employees" class="block text-sm font-medium text-gray-700 mb-2">Jumlah Karyawan</label>
+                                <input type="number" id="employees" name="employees" min="0" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500">
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label for="support" class="block text-sm font-medium text-gray-700 mb-2">Jenis Dukungan yang Dibutuhkan</label>
+                            <div class="space-y-2">
+                                <label class="flex items-center">
+                                    <input type="checkbox" name="support[]" value="modal" class="mr-2 text-red-600 focus:ring-red-500">
+                                    <span class="text-sm text-gray-700">Bantuan Permodalan</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" name="support[]" value="pelatihan" class="mr-2 text-red-600 focus:ring-red-500">
+                                    <span class="text-sm text-gray-700">Pelatihan dan Pembinaan</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" name="support[]" value="pemasaran" class="mr-2 text-red-600 focus:ring-red-500">
+                                    <span class="text-sm text-gray-700">Bantuan Pemasaran</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" name="support[]" value="legalitas" class="mr-2 text-red-600 focus:ring-red-500">
+                                    <span class="text-sm text-gray-700">Bantuan Legalitas Usaha</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" name="support[]" value="teknologi" class="mr-2 text-red-600 focus:ring-red-500">
+                                    <span class="text-sm text-gray-700">Bantuan Teknologi</span>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center">
+                            <input type="checkbox" id="agreement" name="agreement" required class="mr-2 text-red-600 focus:ring-red-500">
+                            <label for="agreement" class="text-sm text-gray-700">
+                                Saya menyetujui bahwa data yang saya berikan adalah benar dan dapat digunakan untuk keperluan pendaftaran UKM *
+                            </label>
+                        </div>
+                        
+                        <div class="flex justify-end space-x-4">
+                            <button type="reset" class="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500">
+                                Reset
+                            </button>
+                            <button type="submit" class="px-6 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500">
+                                Daftar UKM
+                            </button>
+                        </div>
+                    </form>
+                    
+                    <div class="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-md">
+                        <div class="flex items-start">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-yellow-600 mt-0.5 mr-2 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <div>
+                                <h4 class="text-sm font-medium text-yellow-800 mb-1">Informasi Penting:</h4>
+                                <ul class="text-sm text-yellow-700 space-y-1">
+                                    <li>• Pendaftaran ini gratis dan tidak dipungut biaya apapun</li>
+                                    <li>• Setelah mendaftar, tim pengelola UKM akan menghubungi Anda dalam 3-5 hari kerja</li>
+                                    <li>• Pastikan data yang diisi lengkap dan benar untuk mempercepat proses verifikasi</li>
+                                    <li>• Untuk informasi lebih lanjut, hubungi kontak di bawah ini</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Contact Section -->
+            <div>
+                <h3 class="text-xl font-semibold mb-4 text-red-800">Kontak Pengelola UKM</h3>
+                <div class="bg-red-50 p-5 rounded-lg">
+                    <p class="mb-2"><strong>Alamat:</strong> Sekretariat UKM Pulo Sarok, Kantor BUMG Pulo Sarok, Jl. Utama Gampong No. 10</p>
+                    <p class="mb-2"><strong>Telepon:</strong> 0812-3456-7890</p>
+                    <p class="mb-2"><strong>Email:</strong> ukm.pulosarok@gmail.com</p>
+                    <p class="mb-2"><strong>Jam Operasional:</strong> Senin-Jumat, 08.00-16.00 WIB</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+{% endblock %}
+{% block extra_js %}
+<script src="{% static 'js/script.js' %}"></script>
+{% endblock %}

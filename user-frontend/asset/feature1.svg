@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 200" width="300" height="200">
+  <defs>
+    <linearGradient id="skyGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#87CEEB;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#E0F6FF;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Sky background -->
+  <rect width="300" height="200" fill="url(#skyGrad)"/>
+  
+  <!-- Mountains -->
+  <path d="M0 120 Q50 80 100 100 Q150 60 200 90 Q250 70 300 100 L300 200 L0 200 Z" fill="#4A5568" opacity="0.8"/>
+  <path d="M0 140 Q75 100 150 120 Q225 90 300 120 L300 200 L0 200 Z" fill="#2D3748" opacity="0.6"/>
+  
+  <!-- Buildings/Infrastructure -->
+  <rect x="80" y="130" width="20" height="40" fill="#E53E3E" opacity="0.8"/>
+  <rect x="85" y="125" width="10" height="10" fill="#C53030"/>
+  <rect x="120" y="135" width="25" height="35" fill="#3182CE" opacity="0.8"/>
+  <rect x="125" y="130" width="15" height="10" fill="#2C5282"/>
+  <rect x="160" y="140" width="18" height="30" fill="#38A169" opacity="0.8"/>
+  <rect x="163" y="135" width="12" height="8" fill="#2F855A"/>
+  
+  <!-- Road -->
+  <path d="M0 170 Q150 160 300 170 L300 180 Q150 170 0 180 Z" fill="#4A5568" opacity="0.7"/>
+  <path d="M50 175 L80 175 M120 175 L150 175 M190 175 L220 175" stroke="white" stroke-width="2" stroke-dasharray="10,5"/>
+  
+  <!-- Trees -->
+  <circle cx="40" cy="150" r="8" fill="#38A169"/>
+  <rect x="38" y="150" width="4" height="15" fill="#8B4513"/>
+  <circle cx="220" cy="145" r="10" fill="#38A169"/>
+  <rect x="218" y="145" width="4" height="18" fill="#8B4513"/>
+  
+  <!-- Clouds -->
+  <ellipse cx="80" cy="40" rx="20" ry="12" fill="white" opacity="0.8"/>
+  <ellipse cx="95" cy="35" rx="15" ry="10" fill="white" opacity="0.8"/>
+  <ellipse cx="200" cy="50" rx="25" ry="15" fill="white" opacity="0.8"/>
+  <ellipse cx="220" cy="45" rx="18" ry="12" fill="white" opacity="0.8"/>
+  
+  <!-- Title overlay -->
+  <rect x="0" y="160" width="300" height="40" fill="rgba(0,0,0,0.3)"/>
+  <text x="150" y="185" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="white">Infrastruktur Kampung</text>
+</svg>
