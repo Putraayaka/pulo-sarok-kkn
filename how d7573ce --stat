@@ -1,0 +1,10 @@
+[33m887eedb[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mapi-feature[m[33m, [m[1;31morigin/api-feature[m[33m)[m backend-feature
+[33mb4b51d6[m fix penduduk_create_api(penambahan @CSRF yang hilang)
+[33md7573ce[m Merge branch 'main' into api-feature
+[33mc74e891[m Merge remote-tracking branch 'origin/main' into main
+[33m27ae043[m fix penduduk form
+[33m5577874[m Fix penduduk form: Add missing API choices, fix form validation, and update database migrations
+[33m65b00de[m fix: gabisa save penduduk
+[33m2dd4395[m Merge pull request #10 from Putraayaka/api-feature
+[33m47d2359[m ..
+[33md674d23[m Merge pull request #9 from Putraayaka/api-feature

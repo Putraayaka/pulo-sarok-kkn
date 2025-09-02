@@ -40,7 +40,6 @@ urlpatterns = [
     path('pulosarok/posyandu/', include('posyandu.urls')),
     
     path('pulosarok/beneficiaries/', include('beneficiaries.urls')),
-    path('pulosarok/api/beneficiaries/', include('beneficiaries.api_urls')),
     path('pulosarok/documents/', include('documents.urls')),
     path('pulosarok/news/', include('news.urls')),
     path('pulosarok/letters/', include('letters.urls')),
