@@ -1,114 +1,189 @@
+{% extends "public/base.html" %}
+{% load static %}
+{% block title %}Pengajuan Surat - Kampung Pulo Sarok{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/style.css' %}">{% endblock %}
+{% comment %}
 <!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pengajuan Surat - Kampung Pulo Sarok</title>
-    <link rel="stylesheet" href="../static/css/style.css">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-100">
-    <header>
-        <div class="header-container">
-            <div class="logo-section">
-                <img src="../static/images/logo-desa.png" alt="Logo Desa" class="logo">
-                <div class="header-text">
-                    <h1>Kampung Pulo Sarok</h1>
-                    <p>Kelurahan Kebon Pala, Kecamatan Makasar, Jakarta Timur</p>
+    <!-- Header Section -->
+    <header class="bg-white shadow-md sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-3">
+            <!-- Top Header -->
+            <div class="flex items-center justify-between mb-3">
+                <div class="flex items-center">
+                    <img src="{% static 'images/logo-kampung.svg' %}" alt="Logo Kampung" class="h-12 w-12 mr-3">
+                    <div>
+                        <h1 class="text-xl font-bold text-gray-800">Website Kampung Pulo Sarok</h1>
+                        <p class="text-sm text-gray-600">Kecamatan Singkil Kabupaten Aceh Singkil</p>
+                    </div>
                 </div>
+                <!-- Mobile Menu Button -->
+                <button class="md:hidden mobile-menu-button p-2 rounded-md hover:bg-gray-100">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                </button>
             </div>
-            <nav class="main-nav">
-                <ul class="nav-menu">
-                    <li><a href="../index.html">Beranda</a></li>
-                    <li class="dropdown">
-                        <a href="#" class="dropdown-toggle">Profil <i class="fas fa-chevron-down"></i></a>
-                        <ul class="dropdown-menu">
-                            <li><a href="../profil.html">Sejarah Desa</a></li>
-                            <li><a href="#">Visi & Misi</a></li>
-                            <li><a href="#">Struktur Organisasi</a></li>
-                        </ul>
-                    </li>
-                    <li class="dropdown">
-                        <a href="#" class="dropdown-toggle">Informasi <i class="fas fa-chevron-down"></i></a>
-                        <ul class="dropdown-menu">
-                            <li><a href="informasi.html">Informasi Umum</a></li>
-                            <li><a href="informasi-terkini.html">Informasi Terkini</a></li>
-                            <li><a href="penduduk.html">Data Penduduk</a></li>
-                        </ul>
-                    </li>
-                    <li class="dropdown active">
-                        <a href="#" class="dropdown-toggle">Layanan Publik <i class="fas fa-chevron-down"></i></a>
-                        <ul class="dropdown-menu">
-                            <li class="active"><a href="pengajuan-surat.html">Pengajuan Surat</a></li>
-                            <li><a href="laporan-masyarakat.html">Laporan Masyarakat</a></li>
-                        </ul>
-                    </li>
-                    <li class="dropdown">
-                        <a href="#" class="dropdown-toggle">Unit Usaha <i class="fas fa-chevron-down"></i></a>
-                        <ul class="dropdown-menu">
-                            <li><a href="ukm.html">UKM</a></li>
-                            <li><a href="bumg.html">BUMG</a></li>
-                        </ul>
-                    </li>
-                    <li class="dropdown">
-                        <a href="#" class="dropdown-toggle">Kesehatan <i class="fas fa-chevron-down"></i></a>
-                        <ul class="dropdown-menu">
-                            <li><a href="posyandu.html">Posyandu</a></li>
-                            <li><a href="wisata.html">Wisata</a></li>
-                        </ul>
-                    </li>
-                </ul>
-                <div class="mobile-menu-toggle">
-                    <span></span>
-                    <span></span>
-                    <span></span>
+            
+            <!-- Navigation Menu -->
+            <nav class="border-t pt-3">
+                <div class="hidden md:flex md:items-center md:space-x-6">
+                    <a href="{% url 'home' %}" class="text-gray-700 hover:text-red-600 font-medium transition duration-200 flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                        </svg>
+                        Beranda
+                    </a>
+                    
+                    <!-- Dropdown Profil -->
+                    <div class="relative group">
+                        <button class="text-gray-700 hover:text-red-600 font-medium transition duration-200 flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                            </svg>
+                            Profil Kampung
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
+                        <div class="absolute left-0 mt-2 w-48 bg-white rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+                            <a href="{% url 'profil' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Profil Kampung</a>
+                            <a href="{% url 'penduduk' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Data Penduduk</a>
+                        </div>
+                    </div>
+                    
+                    <!-- Dropdown Layanan Publik -->
+                    <div class="relative group">
+                        <button class="text-red-600 font-medium transition duration-200 flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                            Layanan Publik
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
+                        <div class="absolute left-0 mt-2 w-48 bg-white rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+                            <a href="{% url 'pengajuan_surat' %}" class="block px-4 py-2 text-sm text-red-600 bg-red-50 hover:bg-red-100">Pengajuan Surat</a>
+                            <a href="{% url 'laporan_masyarakat' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Laporan Masyarakat</a>
+                        </div>
+                    </div>
+                    
+                    <!-- Dropdown Unit Usaha -->
+                    <div class="relative group">
+                        <button class="text-gray-700 hover:text-red-600 font-medium transition duration-200 flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                            </svg>
+                            Unit Usaha
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
+                        <div class="absolute left-0 mt-2 w-48 bg-white rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+                            <a href="{% url 'ukm' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">UKM</a>
+                <a href="{% url 'bumg' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">BUMG</a>
+                        </div>
+                    </div>
+                    
+                    <!-- Dropdown Kesehatan -->
+                    <div class="relative group">
+                        <button class="text-gray-700 hover:text-red-600 font-medium transition duration-200 flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                            </svg>
+                            Kesehatan
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
+                        <div class="absolute left-0 mt-2 w-48 bg-white rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+                            <a href="{% url 'posyandu' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Posyandu</a>
+                            <a href="{% url 'wisata' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Wisata</a>
+                        </div>
+                    </div>
                 </div>
             </nav>
         </div>
+        
         <!-- Mobile Menu -->
-        <div class="mobile-menu">
-            <ul>
-                <li><a href="../index.html">Beranda</a></li>
-                <li class="mobile-dropdown">
-                    <a href="#" class="mobile-dropdown-toggle">Profil <i class="fas fa-chevron-down"></i></a>
-                    <ul class="mobile-dropdown-menu">
-                        <li><a href="../profil.html">Sejarah Desa</a></li>
-                        <li><a href="#">Visi & Misi</a></li>
-                        <li><a href="#">Struktur Organisasi</a></li>
-                    </ul>
-                </li>
-                <li class="mobile-dropdown">
-                    <a href="#" class="mobile-dropdown-toggle">Informasi <i class="fas fa-chevron-down"></i></a>
-                    <ul class="mobile-dropdown-menu">
-                        <li><a href="informasi.html">Informasi Umum</a></li>
-                        <li><a href="informasi-terkini.html">Informasi Terkini</a></li>
-                        <li><a href="penduduk.html">Data Penduduk</a></li>
-                    </ul>
-                </li>
-                <li class="mobile-dropdown active">
-                    <a href="#" class="mobile-dropdown-toggle">Layanan Publik <i class="fas fa-chevron-down"></i></a>
-                    <ul class="mobile-dropdown-menu">
-                        <li class="active"><a href="pengajuan-surat.html">Pengajuan Surat</a></li>
-                        <li><a href="laporan-masyarakat.html">Laporan Masyarakat</a></li>
-                    </ul>
-                </li>
-                <li class="mobile-dropdown">
-                    <a href="#" class="mobile-dropdown-toggle">Unit Usaha <i class="fas fa-chevron-down"></i></a>
-                    <ul class="mobile-dropdown-menu">
-                        <li><a href="ukm.html">UKM</a></li>
-                        <li><a href="bumg.html">BUMG</a></li>
-                    </ul>
-                </li>
-                <li class="mobile-dropdown">
-                    <a href="#" class="mobile-dropdown-toggle">Kesehatan <i class="fas fa-chevron-down"></i></a>
-                    <ul class="mobile-dropdown-menu">
-                        <li><a href="posyandu.html">Posyandu</a></li>
-                        <li><a href="wisata.html">Wisata</a></li>
-                    </ul>
-                </li>
-            </ul>
+        <div class="mobile-menu hidden md:hidden bg-white border-t">
+            <div class="px-4 py-2 space-y-1">
+                <a href="{% url 'home' %}" class="block px-3 py-2 text-gray-700 hover:text-red-600 hover:bg-gray-50 rounded-md transition duration-200">
+                    Beranda
+                </a>
+                <div class="mobile-dropdown">
+                    <button class="mobile-dropdown-toggle w-full text-left px-3 py-2 text-gray-700 hover:text-red-600 hover:bg-gray-50 rounded-md transition duration-200 flex items-center justify-between">
+                        Profil Kampung
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </button>
+                    <div class="mobile-dropdown-menu hidden pl-4 space-y-1">
+                        <a href="{% url 'profil' %}" class="block px-3 py-2 text-sm text-gray-600 hover:text-red-600 hover:bg-gray-50 rounded-md transition duration-200">
+                            Profil Kampung
+                        </a>
+                        <a href="{% url 'penduduk' %}" class="block px-3 py-2 text-sm text-gray-600 hover:text-red-600 hover:bg-gray-50 rounded-md transition duration-200">
+                            Data Penduduk
+                        </a>
+                    </div>
+                </div>
+                <div class="mobile-dropdown">
+                    <button class="mobile-dropdown-toggle w-full text-left px-3 py-2 text-red-600 bg-red-50 rounded-md transition duration-200 flex items-center justify-between">
+                        Layanan Publik
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </button>
+                    <div class="mobile-dropdown-menu hidden pl-4 space-y-1">
+                        <a href="{% url 'pengajuan_surat' %}" class="block px-3 py-2 text-sm text-red-600 bg-red-50 hover:text-red-600 hover:bg-red-50 rounded-md transition duration-200">
+                            Pengajuan Surat
+                        </a>
+                        <a href="{% url 'laporan_masyarakat' %}" class="block px-3 py-2 text-sm text-gray-600 hover:text-red-600 hover:bg-gray-50 rounded-md transition duration-200">
+                            Laporan Masyarakat
+                        </a>
+                    </div>
+                </div>
+                <div class="mobile-dropdown">
+                    <button class="mobile-dropdown-toggle w-full text-left px-3 py-2 text-gray-700 hover:text-red-600 hover:bg-gray-50 rounded-md transition duration-200 flex items-center justify-between">
+                        Unit Usaha
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </button>
+                    <div class="mobile-dropdown-menu hidden pl-4 space-y-1">
+                        <a href="{% url 'ukm' %}" class="block px-3 py-2 text-sm text-gray-600 hover:text-red-600 hover:bg-gray-50 rounded-md transition duration-200">UKM</a>
+                        <a href="{% url 'bumg' %}" class="block px-3 py-2 text-sm text-gray-600 hover:text-red-600 hover:bg-gray-50 rounded-md transition duration-200">BUMG</a>
+                    </div>
+                </div>
+                <div class="mobile-dropdown">
+                    <button class="mobile-dropdown-toggle w-full text-left px-3 py-2 text-gray-700 hover:text-red-600 hover:bg-gray-50 rounded-md transition duration-200 flex items-center justify-between">
+                        Kesehatan
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </button>
+                    <div class="mobile-dropdown-menu hidden pl-4 space-y-1">
+                        <a href="{% url 'posyandu' %}" class="block px-3 py-2 text-sm text-gray-600 hover:text-red-600 hover:bg-gray-50 rounded-md transition duration-200">Posyandu
+                        </a>
+                        <a href="{% url 'wisata' %}" class="block px-3 py-2 text-sm text-gray-600 hover:text-red-600 hover:bg-gray-50 rounded-md transition duration-200">Wisata
+                        </a>
+                    </div>
+                </div>
+            </div>
         </div>
     </header>
+{% endcomment %}
+
+{% block content %}
 
     <!-- Pengajuan Surat Section -->
     <section class="container mx-auto px-4 py-8">
@@ -289,14 +364,8 @@
         </div>
     </section>
 
-    <!-- Footer -->
-    <footer class="bg-white py-6 mt-8">
-        <div class="container mx-auto px-4 text-center">
-            <img src="../static/images/logo-kampung.svg" alt="Logo Footer" class="h-12 w-12 mx-auto mb-2">
-            <p class="text-gray-600 text-sm">© 2025 Kampung Pulo Sarok. All rights reserved.</p>
-        </div>
-    </footer>
+{% endblock %}
 
-    <script src="../static/js/script.js"></script>
-</body>
-</html>
+{% block extra_js %}
+<script src="{% static 'js/script.js' %}"></script>
+{% endblock %}

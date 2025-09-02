@@ -19,6 +19,7 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from django.views.generic import TemplateView
 
 # Tambahkan import
 from core import views as core_views
@@ -27,9 +28,6 @@ from core import views as core_views
 urlpatterns = [
     # Django admin interface
     path('admin/', admin.site.urls),
-    
-    # Public pages and API (root level)
-    path('', include('public.urls')),
     
     # Additional API endpoints (no authentication required)
     path('api/references/', include('references.urls')),
@@ -47,6 +45,9 @@ urlpatterns = [
     path('posyandu/', core_views.posyandu_view, name='posyandu'),
     path('bumg/', core_views.bumg_view, name='bumg'),
     path('wisata/', core_views.wisata_view, name='wisata'),
+
+    # Compatibility route for hardcoded public path
+    path('public/penduduk.html', TemplateView.as_view(template_name='public/penduduk.html'), name='public_penduduk_html'),
     
     # Existing admin URLs...
     path('pulosarok/', include('custom_admin.urls')),
@@ -69,10 +70,5 @@ urlpatterns = [
 
 # Serve media files during development
 if settings.DEBUG:
-    import debug_toolbar
-    urlpatterns = [
-        path('__debug__/', include(debug_toolbar.urls)),
-    ] + urlpatterns
-    
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATICFILES_DIRS[0] if settings.STATICFILES_DIRS else None)
