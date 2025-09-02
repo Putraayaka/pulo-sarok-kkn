@@ -6,6 +6,39 @@
     <title>Kampung Pulo Sarok - Kecamatan Singkil Kabupaten Aceh Singkil</title>
     <link rel="stylesheet" href="static/css/style.css">
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom responsive styles for header */
+        @media (max-width: 768px) {
+            .header-title {
+                font-size: 1.1rem;
+            }
+            .header-subtitle {
+                font-size: 0.8rem;
+            }
+            .mobile-menu {
+                max-height: 0;
+                overflow: hidden;
+                transition: max-height 0.3s ease-in-out;
+            }
+            .mobile-menu:not(.hidden) {
+                max-height: 500px;
+            }
+        }
+        
+        /* Center navigation with proper spacing */
+        .nav-center {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+        }
+        
+        @media (max-width: 1024px) {
+            .nav-center {
+                gap: 1rem;
+            }
+        }
+    </style>
 </head>
 <body class="bg-gray-100">
     <!-- Header Section -->
@@ -14,12 +47,23 @@
             <!-- Top Header -->
             <div class="flex items-center justify-between mb-3">
                 <div class="flex items-center">
-                    <img src="static/images/logo-kampung.svg" alt="Logo Kampung" class="h-12 w-12 mr-3">
+                    <img src="static/images/logo-kampung.svg" alt="Logo Kampung" class="h-10 w-10 sm:h-12 sm:w-12 mr-2 sm:mr-3">
                     <div>
-                        <h1 class="text-xl font-bold text-gray-800">Website Kampung Pulo Sarok</h1>
-                        <p class="text-sm text-gray-600">Kecamatan Singkil Kabupaten Aceh Singkil</p>
+                        <h1 class="text-lg sm:text-xl font-bold text-gray-800 header-title">Website Kampung Pulo Sarok</h1>
+                        <p class="text-xs sm:text-sm text-gray-600 header-subtitle">Kecamatan Singkil Kabupaten Aceh Singkil</p>
                     </div>
                 </div>
+                
+                <!-- Login Button (Desktop) -->
+                <div class="hidden md:flex items-center space-x-4">
+                    <a href="/login-new/" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium transition duration-200 flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+                        </svg>
+                        Login
+                    </a>
+                </div>
+                
                 <!-- Mobile Menu Button -->
                 <button class="md:hidden mobile-menu-button p-2 rounded-md hover:bg-gray-100">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -30,8 +74,8 @@
             
             <!-- Navigation Menu -->
             <nav class="border-t pt-3">
-                <div class="hidden md:flex md:items-center md:space-x-6">
-                    <a href="index.html" class="text-gray-700 hover:text-red-600 font-medium transition duration-200 flex items-center">
+                <div class="hidden md:flex md:items-center nav-center">
+                    <a href="/" class="text-gray-700 hover:text-red-600 font-medium transition duration-200 flex items-center">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
                         </svg>
@@ -50,8 +94,8 @@
                             </svg>
                         </button>
                         <div class="absolute left-0 mt-2 w-48 bg-white rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
-                            <a href="profil.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Profil Kampung</a>
-                            <a href="public/penduduk.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Data Penduduk</a>
+                            <a href="/profil/" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Profil Kampung</a>
+                            <a href="{% url 'penduduk' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Data Penduduk</a>
                         </div>
                     </div>
                     
@@ -67,8 +111,8 @@
                             </svg>
                         </button>
                         <div class="absolute left-0 mt-2 w-48 bg-white rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
-                            <a href="public/pengajuan-surat.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Pengajuan Surat</a>
-                            <a href="public/laporan-masyarakat.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Laporan Masyarakat</a>
+                            <a href="{% url 'pengajuan_surat' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Pengajuan Surat</a>
+                            <a href="{% url 'laporan_masyarakat' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Laporan Masyarakat</a>
                         </div>
                     </div>
                     
@@ -84,8 +128,8 @@
                             </svg>
                         </button>
                         <div class="absolute left-0 mt-2 w-48 bg-white rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
-                            <a href="public/bumg.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">BUMG</a>
-                            <a href="public/ukm.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">UKM</a>
+                            <a href="/bumg/" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">BUMG</a>
+                            <a href="/ukm/" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">UKM</a>
                         </div>
                     </div>
                     
@@ -101,11 +145,11 @@
                             </svg>
                         </button>
                         <div class="absolute left-0 mt-2 w-48 bg-white rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
-                            <a href="public/posyandu.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Posyandu</a>
+                            <a href="{% url 'posyandu' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Posyandu</a>
                         </div>
                     </div>
                     
-                    <a href="public/wisata.html" class="text-gray-700 hover:text-red-600 font-medium transition duration-200 flex items-center">
+                    <a href="/wisata/" class="text-gray-700 hover:text-red-600 font-medium transition duration-200 flex items-center">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
@@ -124,8 +168,8 @@
                             </svg>
                         </button>
                         <div class="absolute left-0 mt-2 w-48 bg-white rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
-                            <a href="public/informasi.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Informasi Umum</a>
-                            <a href="public/informasi-terkini.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Informasi Terkini</a>
+                            <a href="/informasi/" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Informasi Umum</a>
+                            <a href="/informasi-terkini/" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Informasi Terkini</a>
                         </div>
                     </div>
                 </div>
@@ -133,46 +177,56 @@
                 <!-- Mobile Menu -->
                 <div class="mobile-menu hidden md:hidden mt-3 border-t pt-3">
                     <div class="space-y-2">
-                        <a href="index.html" class="block px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-md">Beranda</a>
+                        <!-- Login Button (Mobile) -->
+                        <div class="px-3 py-2">
+                            <a href="/login-new/" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium transition duration-200 flex items-center justify-center w-full">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+                                </svg>
+                                Login
+                            </a>
+                        </div>
+                        
+                        <a href="/" class="block px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-md">Beranda</a>
                         
                         <div class="px-3 py-2">
                             <p class="text-sm font-semibold text-gray-500 uppercase tracking-wider">Profil Kampung</p>
                             <div class="mt-1 space-y-1">
-                                <a href="profil.html" class="block px-3 py-1 text-gray-700 hover:bg-gray-100 rounded-md">Profil Kampung</a>
-                                <a href="public/penduduk.html" class="block px-3 py-1 text-gray-700 hover:bg-gray-100 rounded-md">Data Penduduk</a>
+                                <a href="/profil/" class="block px-3 py-1 text-gray-700 hover:bg-gray-100 rounded-md">Profil Kampung</a>
+                                <a href="{% url 'penduduk' %}" class="block px-3 py-1 text-gray-700 hover:bg-gray-100 rounded-md">Data Penduduk</a>
                             </div>
                         </div>
                         
                         <div class="px-3 py-2">
                             <p class="text-sm font-semibold text-gray-500 uppercase tracking-wider">Layanan Publik</p>
                             <div class="mt-1 space-y-1">
-                                <a href="public/pengajuan-surat.html" class="block px-3 py-1 text-gray-700 hover:bg-gray-100 rounded-md">Pengajuan Surat</a>
-                                <a href="public/laporan-masyarakat.html" class="block px-3 py-1 text-gray-700 hover:bg-gray-100 rounded-md">Laporan Masyarakat</a>
+                                <a href="{% url 'pengajuan_surat' %}" class="block px-3 py-1 text-gray-700 hover:bg-gray-100 rounded-md">Pengajuan Surat</a>
+                                <a href="{% url 'laporan_masyarakat' %}" class="block px-3 py-1 text-gray-700 hover:bg-gray-100 rounded-md">Laporan Masyarakat</a>
                             </div>
                         </div>
                         
                         <div class="px-3 py-2">
                             <p class="text-sm font-semibold text-gray-500 uppercase tracking-wider">Unit Usaha</p>
                             <div class="mt-1 space-y-1">
-                                <a href="public/bumg.html" class="block px-3 py-1 text-gray-700 hover:bg-gray-100 rounded-md">BUMG</a>
-                                <a href="public/ukm.html" class="block px-3 py-1 text-gray-700 hover:bg-gray-100 rounded-md">UKM</a>
+                                <a href="/bumg/" class="block px-3 py-1 text-gray-700 hover:bg-gray-100 rounded-md">BUMG</a>
+                                <a href="/ukm/" class="block px-3 py-1 text-gray-700 hover:bg-gray-100 rounded-md">UKM</a>
                             </div>
                         </div>
                         
                         <div class="px-3 py-2">
                             <p class="text-sm font-semibold text-gray-500 uppercase tracking-wider">Kesehatan</p>
                             <div class="mt-1 space-y-1">
-                                <a href="public/posyandu.html" class="block px-3 py-1 text-gray-700 hover:bg-gray-100 rounded-md">Posyandu</a>
+                                <a href="{% url 'posyandu' %}" class="block px-3 py-1 text-gray-700 hover:bg-gray-100 rounded-md">Posyandu</a>
                             </div>
                         </div>
                         
-                        <a href="public/wisata.html" class="block px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-md">Wisata</a>
+                        <a href="/wisata/" class="block px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-md">Wisata</a>
                         
                         <div class="px-3 py-2">
                             <p class="text-sm font-semibold text-gray-500 uppercase tracking-wider">Informasi</p>
                             <div class="mt-1 space-y-1">
-                                <a href="public/informasi.html" class="block px-3 py-1 text-gray-700 hover:bg-gray-100 rounded-md">Informasi Umum</a>
-                                <a href="public/informasi-terkini.html" class="block px-3 py-1 text-gray-700 hover:bg-gray-100 rounded-md">Informasi Terkini</a>
+                                <a href="/informasi/" class="block px-3 py-1 text-gray-700 hover:bg-gray-100 rounded-md">Informasi Umum</a>
+                                <a href="/informasi-terkini/" class="block px-3 py-1 text-gray-700 hover:bg-gray-100 rounded-md">Informasi Terkini</a>
                             </div>
                         </div>
                     </div>
@@ -222,7 +276,7 @@
 
                 <!-- Wisata Gampong -->
                 <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 overflow-hidden">
-                    <a href="public/wisata.html" class="block p-6 text-white text-center">
+                    <a href="{% url 'wisata' %}" class="block p-6 text-white text-center">
                         <div class="bg-white bg-opacity-20 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -611,16 +665,7 @@
                             </div>
                         </div>
                         
-                        <!-- Action Button -->
-                        <div class="text-center">
-                            <a href="public/informasi-terkini.html" class="inline-flex items-center bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white px-8 py-4 rounded-xl font-bold text-lg transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-5 5v-5z" />
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4" />
-                                </svg>
-                                <span>Lihat Pengumuman Lainnya</span>
-                            </a>
-                        </div>
+                        <!-- Action Button removed per request -->
                     </div>
                 </div>
             </div>
@@ -644,7 +689,7 @@
                         </div>
                         <h4 class="text-lg font-bold text-white mb-3 leading-tight">Perbaikan Jalan Utama Kampung Dimulai</h4>
                         <p class="text-blue-100 text-sm mb-4 leading-relaxed">Proyek perbaikan jalan utama kampung telah dimulai dengan target selesai dalam 3 bulan ke depan...</p>
-                        <a href="public/informasi-terkini.html" class="text-blue-300 hover:text-white text-sm font-semibold flex items-center transition-colors duration-300">
+                        <a href="{% url 'informasi_terkini' %}" class="text-blue-300 hover:text-white text-sm font-semibold flex items-center transition-colors duration-300">
                             <span>Baca Selengkapnya</span>
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
@@ -670,7 +715,7 @@
                         </div>
                         <h4 class="text-lg font-bold text-white mb-3 leading-tight">Kegiatan Gotong Royong Bersih Kampung</h4>
                         <p class="text-blue-100 text-sm mb-4 leading-relaxed">Masyarakat kampung bergotong royong membersihkan lingkungan dalam rangka menyambut tahun baru...</p>
-                        <a href="public/informasi-terkini.html" class="text-blue-300 hover:text-white text-sm font-semibold flex items-center transition-colors duration-300">
+                        <a href="{% url 'informasi_terkini' %}" class="text-blue-300 hover:text-white text-sm font-semibold flex items-center transition-colors duration-300">
                             <span>Baca Selengkapnya</span>
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
@@ -696,7 +741,7 @@
                         </div>
                         <h4 class="text-lg font-bold text-white mb-3 leading-tight">Pelatihan Kewirausahaan untuk Pemuda</h4>
                         <p class="text-blue-100 text-sm mb-4 leading-relaxed">Program pelatihan kewirausahaan untuk pemuda kampung dilaksanakan untuk meningkatkan ekonomi lokal...</p>
-                        <a href="informasi-terkini.html" class="text-blue-300 hover:text-white text-sm font-semibold flex items-center transition-colors duration-300">
+                        <a href="{% url 'informasi_terkini' %}" class="text-blue-300 hover:text-white text-sm font-semibold flex items-center transition-colors duration-300">
                             <span>Baca Selengkapnya</span>
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
@@ -727,7 +772,7 @@
                                 </div>
                                 <h4 class="text-lg font-bold text-white mb-3 leading-tight">Perbaikan Jalan Utama Kampung Dimulai</h4>
                                 <p class="text-blue-100 text-sm mb-4 leading-relaxed">Proyek perbaikan jalan utama kampung telah dimulai dengan target selesai dalam 3 bulan ke depan...</p>
-                                <a href="public/informasi-terkini.html" class="text-blue-300 hover:text-white text-sm font-semibold flex items-center transition-colors duration-300">
+                                <a href="{% url 'informasi_terkini' %}" class="text-blue-300 hover:text-white text-sm font-semibold flex items-center transition-colors duration-300">
                                     <span>Baca Selengkapnya</span>
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
@@ -753,7 +798,7 @@
                                 </div>
                                 <h4 class="text-lg font-bold text-white mb-3 leading-tight">Kegiatan Gotong Royong Bersih Kampung</h4>
                                 <p class="text-blue-100 text-sm mb-4 leading-relaxed">Masyarakat kampung bergotong royong membersihkan lingkungan dalam rangka menyambut tahun baru...</p>
-                                <a href="public/informasi-terkini.html" class="text-blue-300 hover:text-white text-sm font-semibold flex items-center transition-colors duration-300">
+                                <a href="{% url 'informasi_terkini' %}" class="text-blue-300 hover:text-white text-sm font-semibold flex items-center transition-colors duration-300">
                                     <span>Baca Selengkapnya</span>
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
@@ -779,7 +824,7 @@
                                 </div>
                                 <h4 class="text-lg font-bold text-white mb-3 leading-tight">Pelatihan Kewirausahaan untuk Pemuda</h4>
                                 <p class="text-blue-100 text-sm mb-4 leading-relaxed">Program pelatihan kewirausahaan untuk pemuda kampung dilaksanakan untuk meningkatkan ekonomi lokal...</p>
-                                <a href="informasi-terkini.html" class="text-blue-300 hover:text-white text-sm font-semibold flex items-center transition-colors duration-300">
+                                <a href="{% url 'informasi_terkini' %}" class="text-blue-300 hover:text-white text-sm font-semibold flex items-center transition-colors duration-300">
                                     <span>Baca Selengkapnya</span>
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
@@ -800,7 +845,7 @@
             
             <!-- View All News Button -->
             <div class="text-center">
-                <a href="public/informasi-terkini.html" class="inline-flex items-center bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white px-8 py-4 rounded-xl font-bold text-lg transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl">
+                <a href="{% url 'informasi_terkini' %}" class="inline-flex items-center bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white px-8 py-4 rounded-xl font-bold text-lg transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
                     </svg>
@@ -826,7 +871,7 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     <!-- Penduduk Menu -->
                     <div class="relative group">
-                        <a href="public/penduduk.html" class="block">
+                        <a href="{% url 'penduduk' %}" class="block">
                             <div class="bg-gradient-to-br from-blue-500 to-blue-700 rounded-2xl p-6 text-center text-white shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:scale-105 hover:-translate-y-2 border border-blue-400">
                                 <div class="mb-4">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto text-white group-hover:animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -840,7 +885,7 @@
 
                     <!-- Laporan Masyarakat Menu -->
                     <div class="relative group">
-                        <a href="public/laporan-masyarakat.html" class="block">
+                        <a href="{% url 'laporan_masyarakat' %}" class="block">
                             <div class="bg-gradient-to-br from-blue-500 to-blue-700 rounded-2xl p-6 text-center text-white shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:scale-105 hover:-translate-y-2 border border-blue-400">
                                 <div class="mb-4">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto text-white group-hover:animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -854,7 +899,7 @@
 
                     <!-- Pengajuan Surat Menu -->
                     <div class="relative group">
-                        <a href="public/pengajuan-surat.html" class="block">
+                        <a href="{% url 'pengajuan_surat' %}" class="block">
                             <div class="bg-gradient-to-br from-blue-500 to-blue-700 rounded-2xl p-6 text-center text-white shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:scale-105 hover:-translate-y-2 border border-blue-400">
                                 <div class="mb-4">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto text-white group-hover:animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -868,7 +913,7 @@
 
                     <!-- Posyandu Menu -->
                     <div class="relative group">
-                        <a href="public/posyandu.html" class="block">
+                        <a href="{% url 'posyandu' %}" class="block">
                             <div class="bg-gradient-to-br from-blue-500 to-blue-700 rounded-2xl p-6 text-center text-white shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:scale-105 hover:-translate-y-2 border border-blue-400">
                                 <div class="mb-4">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto text-white group-hover:animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -959,7 +1004,7 @@
             
             <!-- Tombol Selengkapnya -->
             <div class="text-center mt-12">
-                <a href="public/wisata.html" class="inline-flex items-center bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-8 py-4 rounded-xl font-bold text-lg transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl">
+                <a href="{% url 'wisata' %}" class="inline-flex items-center bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-8 py-4 rounded-xl font-bold text-lg transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
                     </svg>
@@ -985,7 +1030,7 @@
                 <div class="grid grid-cols-2 gap-6 max-w-2xl">
                     <!-- BUMG Menu -->
                     <div class="relative group">
-                        <a href="public/bumg.html" class="block">
+                        <a href="{% url 'bumg' %}" class="block">
                             <div class="bg-white p-6 rounded-xl text-center text-gray-800 shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:scale-110 hover:rotate-1 border-2 border-transparent hover:border-red-300">
                                 <div class="bg-gradient-to-br from-red-400 to-red-600 rounded-full p-4 inline-block mb-4 group-hover:animate-pulse">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -1000,7 +1045,7 @@
 
                     <!-- UKM Menu -->
                     <div class="relative group">
-                        <a href="public/ukm.html" class="block">
+                        <a href="{% url 'ukm' %}" class="block">
                             <div class="bg-white p-6 rounded-xl text-center text-gray-800 shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:scale-110 hover:-rotate-1 border-2 border-transparent hover:border-red-300">
                                 <div class="bg-gradient-to-br from-orange-400 to-orange-600 rounded-full p-4 inline-block mb-4 group-hover:animate-bounce">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -1043,10 +1088,55 @@
     </section>
 
     <!-- Footer -->
-    <footer class="bg-white py-6">
-        <div class="container mx-auto px-4 text-center">
-            <img src="static/images/logo-kampung.svg" alt="Logo Footer" class="h-12 w-12 mx-auto mb-2">
-            <p class="text-gray-600 text-sm">© 2025 Kampung Pulo Sarok. All rights reserved.</p>
+    <footer class="bg-black relative overflow-hidden">
+        
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 lg:py-20 relative z-10">
+            <!-- Logo Section -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 sm:gap-10 lg:gap-12 mb-12">
+                <!-- Logo Pemerintah Aceh -->
+                <div class="text-center group transform transition-all duration-500 hover:scale-105">
+                    <div class="relative mb-6">
+                        <img src="../static/images/logo-pemerintah-aceh.png" alt="Logo Pemerintah Aceh" class="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 mx-auto transition-transform duration-300 group-hover:rotate-6">
+                    </div>
+                    <h3 class="text-white text-sm sm:text-base lg:text-lg font-bold mb-2 group-hover:text-blue-300 transition-colors duration-300">Pemerintah Aceh</h3>
+                    <p class="text-gray-300 text-xs sm:text-sm leading-relaxed px-2">Provinsi Aceh</p>
+
+                </div>
+                
+                <!-- Logo Singkil -->
+                <div class="text-center group transform transition-all duration-500 hover:scale-105">
+                    <div class="relative mb-6">
+                        <img src="../static/images/logo-singkil.png" alt="Logo Singkil" class="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 mx-auto transition-transform duration-300 group-hover:rotate-6">
+                    </div>
+                    <h3 class="text-white text-sm sm:text-base lg:text-lg font-bold mb-2 group-hover:text-green-300 transition-colors duration-300">Pemerintah Kabupaten</h3>
+                    <p class="text-gray-300 text-xs sm:text-sm leading-relaxed px-2">Aceh Singkil</p>
+
+                </div>
+                
+                <!-- Logo UMSU -->
+                <div class="text-center group transform transition-all duration-500 hover:scale-105 sm:col-span-2 lg:col-span-1">
+                    <div class="relative mb-6">
+                        <img src="../static/images/logo-umsu.png" alt="Logo UMSU" class="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 mx-auto transition-transform duration-300 group-hover:rotate-6">
+                    </div>
+                    <h3 class="text-white text-sm sm:text-base lg:text-lg font-bold mb-2 group-hover:text-yellow-300 transition-colors duration-300">Universitas Muhammadiyah</h3>
+                    <p class="text-gray-300 text-xs sm:text-sm leading-relaxed px-2">Sumatera Utara - Teknologi Informasi</p>
+
+                </div>
+            </div>
+            
+            <!-- Divider -->
+            <div class="w-full h-px bg-gradient-to-r from-transparent via-gray-600 to-transparent mb-8"></div>
+            
+            <!-- Copyright Section -->
+            <div class="text-center">
+                <p class="text-gray-400 text-xs sm:text-sm mb-2">
+                    © 2025 Kampung Pulo Sarok. Dikembangkan dengan ❤️ oleh Tim KKN UMSU
+                </p>
+                <div class="flex justify-center items-center space-x-2 text-xs text-gray-500">
+                    <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                    <span>Website Resmi Kampung Pulo Sarok</span>
+                </div>
+            </div>
         </div>
     </footer>
 
@@ -1239,6 +1329,8 @@
             startNewsAutoSlide();
         }
     </script>
+
+
 
     <script src="static/js/script.js"></script>
 </body>

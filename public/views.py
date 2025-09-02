@@ -5,7 +5,7 @@ import json
 
 def public_home(request):
     """Public homepage view"""
-    return render(request, 'index.html')
+    return render(request, 'public/index.html')
 
 def public_profile(request):
     """Public village profile view"""

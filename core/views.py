@@ -1583,11 +1583,11 @@ def api_aggregator(request):
             'success': False,
             'error': str(e)
         }, status=500)
-=======
+
 # Public Frontend Views
 def index_view(request):
     """Homepage view"""
-    return render(request, 'index.html')
+    return render(request, 'public/index.html')
 
 def profil_view(request):
     """Village profile view"""

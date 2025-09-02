@@ -1,3 +1,8 @@
+{% extends 'public/base.html' %}
+{% load static %}
+{% block title %}Posyandu - Kampung Pulo Sarok{% endblock %}
+{% block extra_css %}{% endblock %}
+{% comment %}
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -31,7 +36,7 @@
             <!-- Navigation Menu -->
             <nav class="hidden md:block mt-4">
                 <ul class="flex space-x-6">
-                    <li><a href="../index.html" class="text-gray-700 hover:text-blue-600 font-medium transition-colors duration-300">Beranda</a></li>
+                    <li><a href="/" class="text-gray-700 hover:text-blue-600 font-medium transition-colors duration-300">Beranda</a></li>
                     <li class="relative group">
                         <a href="#" class="text-gray-700 hover:text-blue-600 font-medium transition-colors duration-300 flex items-center">
                             Profil Kampung
@@ -40,8 +45,8 @@
                             </svg>
                         </a>
                         <ul class="absolute left-0 mt-2 w-48 bg-white shadow-lg rounded-md opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300">
-                            <li><a href="../profil.html" class="block px-4 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-600">Profil Desa</a></li>
-                            <li><a href="penduduk.html" class="block px-4 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-600">Data Penduduk</a></li>
+                            <li><a href="{% url 'profil' %}" class="block px-4 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-600">Profil Desa</a></li>
+                            <li><a href="{% url 'penduduk' %}" class="block px-4 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-600">Data Penduduk</a></li>
                         </ul>
                     </li>
                     <li class="relative group">
@@ -52,8 +57,8 @@
                             </svg>
                         </a>
                         <ul class="absolute left-0 mt-2 w-48 bg-white shadow-lg rounded-md opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300">
-                            <li><a href="pengajuan-surat.html" class="block px-4 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-600">Pengajuan Surat</a></li>
-                            <li><a href="laporan-masyarakat.html" class="block px-4 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-600">Laporan Masyarakat</a></li>
+                            <li><a href="{% url 'pengajuan_surat' %}" class="block px-4 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-600">Pengajuan Surat</a></li>
+<li><a href="{% url 'laporan_masyarakat' %}" class="block px-4 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-600">Laporan Masyarakat</a></li>
                         </ul>
                     </li>
                     <li class="relative group">
@@ -64,8 +69,8 @@
                             </svg>
                         </a>
                         <ul class="absolute left-0 mt-2 w-48 bg-white shadow-lg rounded-md opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300">
-                            <li><a href="bumg.html" class="block px-4 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-600">BUMDes</a></li>
-                            <li><a href="ukm.html" class="block px-4 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-600">UKM</a></li>
+                            <li><a href="{% url 'bumg' %}" class="block px-4 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-600">BUMDes</a></li>
+<li><a href="{% url 'ukm' %}" class="block px-4 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-600">UKM</a></li>
                         </ul>
                     </li>
                     <li class="relative group">
@@ -76,8 +81,8 @@
                             </svg>
                         </a>
                         <ul class="absolute left-0 mt-2 w-48 bg-white shadow-lg rounded-md opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300">
-                            <li><a href="posyandu.html" class="block px-4 py-2 text-blue-600 bg-blue-50">Posyandu</a></li>
-                            <li><a href="wisata.html" class="block px-4 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-600">Wisata</a></li>
+                            <li><a href="{% url 'posyandu' %}" class="block px-4 py-2 text-blue-600 bg-blue-50">Posyandu</a></li>
+<li><a href="{% url 'wisata' %}" class="block px-4 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-600">Wisata</a></li>
                         </ul>
                     </li>
                     <li class="relative group">
@@ -88,8 +93,8 @@
                             </svg>
                         </a>
                         <ul class="absolute left-0 mt-2 w-48 bg-white shadow-lg rounded-md opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300">
-                            <li><a href="informasi.html" class="block px-4 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-600">Informasi Umum</a></li>
-                            <li><a href="informasi-terkini.html" class="block px-4 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-600">Informasi Terkini</a></li>
+                            <li><a href="{% url 'informasi' %}" class="block px-4 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-600">Informasi Umum</a></li>
+<li><a href="{% url 'informasi_terkini' %}" class="block px-4 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-600">Informasi Terkini</a></li>
                         </ul>
                     </li>
                 </ul>
@@ -98,46 +103,49 @@
             <!-- Mobile Menu -->
             <nav id="mobile-menu" class="md:hidden mt-4 hidden">
                 <ul class="space-y-2">
-                    <li><a href="../index.html" class="block py-2 text-gray-700 hover:text-blue-600 font-medium">Beranda</a></li>
+                    <li><a href="/" class="block py-2 text-gray-700 hover:text-blue-600 font-medium">Beranda</a></li>
                     <li>
                         <div class="py-2 text-gray-700 font-medium">Profil Kampung</div>
                         <ul class="ml-4 space-y-1">
-                            <li><a href="../profil.html" class="block py-1 text-gray-600 hover:text-blue-600">Profil Desa</a></li>
-                            <li><a href="penduduk.html" class="block py-1 text-gray-600 hover:text-blue-600">Data Penduduk</a></li>
+                            <li><a href="{% url 'profil' %}" class="block py-1 text-gray-600 hover:text-blue-600">Profil Desa</a></li>
+<li><a href="{% url 'penduduk' %}" class="block py-1 text-gray-600 hover:text-blue-600">Data Penduduk</a></li>
                         </ul>
                     </li>
                     <li>
                         <div class="py-2 text-gray-700 font-medium">Layanan Publik</div>
                         <ul class="ml-4 space-y-1">
-                            <li><a href="pengajuan-surat.html" class="block py-1 text-gray-600 hover:text-blue-600">Pengajuan Surat</a></li>
-                            <li><a href="laporan-masyarakat.html" class="block py-1 text-gray-600 hover:text-blue-600">Laporan Masyarakat</a></li>
+                            <li><a href="{% url 'pengajuan_surat' %}" class="block py-1 text-gray-600 hover:text-blue-600">Pengajuan Surat</a></li>
+<li><a href="{% url 'laporan_masyarakat' %}" class="block py-1 text-gray-600 hover:text-blue-600">Laporan Masyarakat</a></li>
                         </ul>
                     </li>
                     <li>
                         <div class="py-2 text-gray-700 font-medium">Unit Usaha</div>
                         <ul class="ml-4 space-y-1">
-                            <li><a href="bumg.html" class="block py-1 text-gray-600 hover:text-blue-600">BUMDes</a></li>
-                            <li><a href="ukm.html" class="block py-1 text-gray-600 hover:text-blue-600">UKM</a></li>
+                            <li><a href="{% url 'bumg' %}" class="block py-1 text-gray-600 hover:text-blue-600">BUMDes</a></li>
+<li><a href="{% url 'ukm' %}" class="block py-1 text-gray-600 hover:text-blue-600">UKM</a></li>
                         </ul>
                     </li>
                     <li>
                         <div class="py-2 text-blue-600 font-medium">Kesehatan</div>
                         <ul class="ml-4 space-y-1">
-                            <li><a href="posyandu.html" class="block py-1 text-blue-600">Posyandu</a></li>
-                            <li><a href="wisata.html" class="block py-1 text-gray-600 hover:text-blue-600">Wisata</a></li>
+                            <li><a href="{% url 'posyandu' %}" class="block py-1 text-blue-600">Posyandu</a></li>
+<li><a href="{% url 'wisata' %}" class="block py-1 text-gray-600 hover:text-blue-600">Wisata</a></li>
                         </ul>
                     </li>
                     <li>
                         <div class="py-2 text-gray-700 font-medium">Informasi</div>
                         <ul class="ml-4 space-y-1">
-                            <li><a href="informasi.html" class="block py-1 text-gray-600 hover:text-blue-600">Informasi Umum</a></li>
-                            <li><a href="informasi-terkini.html" class="block py-1 text-gray-600 hover:text-blue-600">Informasi Terkini</a></li>
+                            <li><a href="{% url 'informasi' %}" class="block py-1 text-gray-600 hover:text-blue-600">Informasi Umum</a></li>
+<li><a href="{% url 'informasi_terkini' %}" class="block py-1 text-gray-600 hover:text-blue-600">Informasi Terkini</a></li>
                         </ul>
                     </li>
                 </ul>
             </nav>
         </div>
     </header>
+{% endcomment %}
+
+{% block content %}
 
     <!-- Posyandu Section -->
     <section class="container mx-auto px-4 py-8">
@@ -538,14 +546,21 @@
         </div>
     </section>
 
+{% endblock %}
+{% block extra_js %}
+<script src="{% static 'js/script.js' %}"></script>
+{% endblock %}
+{% comment %}
     <!-- Footer -->
-    <footer class="bg-white py-6 mt-8">
+    <!-- Footer -->
+    <footer class="bg-black py-6 mt-8">
         <div class="container mx-auto px-4 text-center">
             <img src="../static/images/logo-kampung.svg" alt="Logo Footer" class="h-12 w-12 mx-auto mb-2">
-            <p class="text-gray-600 text-sm">© 2025 Kampung Pulo Sarok. All rights reserved.</p>
+            <p class="text-white text-sm">© 2025 Kampung Pulo Sarok. All rights reserved.</p>
         </div>
     </footer>
 
     <script src="../static/js/script.js"></script>
 </body>
 </html>
+{% endcomment %}
