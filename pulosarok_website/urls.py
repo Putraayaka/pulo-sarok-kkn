@@ -30,7 +30,10 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     
     # Additional API endpoints (no authentication required)
-    path('api/references/', include('references.urls')),
+    # path('api/references/', include('references.urls')),  # Commented out to avoid namespace conflict
+    
+    # Public API endpoints
+    path('public/api/', include('public.api_urls')),
     
     # Custom admin interface
     # Frontend public pages
@@ -59,13 +62,15 @@ urlpatterns = [
     path('pulosarok/posyandu/', include('posyandu.urls')),
     
     path('pulosarok/beneficiaries/', include('beneficiaries.urls')),
-    path('pulosarok/api/beneficiaries/', include('beneficiaries.api_urls')),
     path('pulosarok/documents/', include('documents.urls')),
     path('pulosarok/news/', include('news.urls')),
     path('pulosarok/letters/', include('letters.urls')),
     path('pulosarok/tourism/', include('tourism.urls')),
     # Note: services app doesn't exist yet, but templates are ready
     # path('pulosarok/services/', include('services.urls')),
+    
+    # Django Summernote
+    path('summernote/', include('django_summernote.urls')),
 ]
 
 # Serve media files during development

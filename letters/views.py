@@ -48,6 +48,15 @@ def letters_admin(request):
     return render(request, 'admin/modules/letters.html', context)
 
 @login_required
+def letters_view(request):
+    """Letters management view with modern UI"""
+    context = {
+        'page_title': 'Manajemen Surat',
+        'page_subtitle': 'Kelola surat masuk, keluar, dan template'
+    }
+    return render(request, 'admin/modules/letters/letters.html', context)
+
+@login_required
 def letter_dashboard(request):
     """Dashboard dengan statistik dan overview letters"""
     today = timezone.now().date()

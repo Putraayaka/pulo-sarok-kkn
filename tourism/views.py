@@ -495,6 +495,15 @@ def admin_location_list(request):
     return render(request, 'admin/modules/tourism/admin_location_list.html', context)
 
 @login_required
+def admin_locations_view(request):
+    """Admin view for tourism locations management with modern UI"""
+    context = {
+        'page_title': 'Manajemen Lokasi Wisata',
+        'page_subtitle': 'Kelola data lokasi wisata dan destinasi'
+    }
+    return render(request, 'admin/modules/tourism/locations.html', context)
+
+@login_required
 def admin_package_list(request):
     """Admin view for listing tourism packages"""
     packages = TourismPackage.objects.all().order_by('-created_at')

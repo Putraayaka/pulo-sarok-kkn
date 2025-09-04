@@ -1,6 +1,8 @@
 from django.db import models
 from django.utils import timezone
 from django.conf import settings
+from django.db.models.signals import post_save, post_delete
+from django.dispatch import receiver
 
 
 class Dusun(models.Model):
@@ -20,6 +22,16 @@ class Dusun(models.Model):
 
     def __str__(self):
         return f"{self.name} ({self.code})"
+    
+    def update_population_count(self):
+        """Update population count based on active residents"""
+        self.population_count = self.residents.filter(is_active=True, is_alive=True).count()
+        self.save(update_fields=['population_count'])
+    
+    @property
+    def active_population(self):
+        """Get current active population count"""
+        return self.residents.filter(is_active=True, is_alive=True).count()
 
 
 class Lorong(models.Model):
@@ -280,6 +292,21 @@ class DisabilitasType(models.Model):
 
     def __str__(self):
         return self.name
+
+
+# Signals to automatically update population count
+@receiver(post_save, sender=Penduduk)
+def update_dusun_population_on_save(sender, instance, created, **kwargs):
+    """Update dusun population count when a Penduduk is saved"""
+    if instance.dusun:
+        instance.dusun.update_population_count()
+
+
+@receiver(post_delete, sender=Penduduk)
+def update_dusun_population_on_delete(sender, instance, **kwargs):
+    """Update dusun population count when a Penduduk is deleted"""
+    if instance.dusun:
+        instance.dusun.update_population_count()
 
 
 class DisabilitasData(models.Model):

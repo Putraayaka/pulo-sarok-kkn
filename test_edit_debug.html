@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Edit Debug</title>
+</head>
+<body>
+    <h1>Test Edit Debug</h1>
+    <div id="results"></div>
+    
+    <script>
+        const resultsDiv = document.getElementById('results');
+        
+        // Test penduduk API
+        fetch('/pulosarok/references/admin-api/penduduk/337/')
+            .then(response => response.json())
+            .then(data => {
+                resultsDiv.innerHTML += '<h3>Penduduk Data:</h3>';
+                resultsDiv.innerHTML += '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+                
+                // Test dusun API
+                return fetch('/pulosarok/references/admin-api/dusun/');
+            })
+            .then(response => response.json())
+            .then(data => {
+                resultsDiv.innerHTML += '<h3>Dusun Data:</h3>';
+                resultsDiv.innerHTML += '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+                
+                // Test family head API
+                return fetch('/pulosarok/references/admin-api/penduduk/?is_family_head=true');
+            })
+            .then(response => response.json())
+            .then(data => {
+                resultsDiv.innerHTML += '<h3>Family Head Data:</h3>';
+                resultsDiv.innerHTML += '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+            })
+            .catch(error => {
+                resultsDiv.innerHTML += '<h3>Error:</h3>';
+                resultsDiv.innerHTML += '<pre>' + error.toString() + '</pre>';
+                console.error('Error:', error);
+            });
+    </script>
+</body>
+</html>

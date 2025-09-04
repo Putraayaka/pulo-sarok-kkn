@@ -364,7 +364,7 @@ async function loadUkmData(page = 1) {
         const statusFilter = document.getElementById('statusFilter').value;
         const kategoriFilter = document.getElementById('kategoriFilter').value;
         
-        let url = `/pulosarok/business/api/ukm/?page=${page}&page_size=${recordsPerPage}`;
+        let url = `/pulosarok/business/api/ukm/list/?page=${page}&page_size=${recordsPerPage}`;
         
         if (searchTerm) {
             url += `&search=${encodeURIComponent(searchTerm)}`;
@@ -386,12 +386,12 @@ async function loadUkmData(page = 1) {
         });
         const data = await response.json();
         
-        if (response.ok && data.results) {
-            ukmData = data.results;
+        if (response.ok && data.data) {
+            ukmData = data.data;
             currentPage = page;
             totalRecords = data.count;
             displayUkmData();
-            updatePagination(data.num_pages, data.current_page);
+            updatePagination(data.total_pages, data.page);
             updateStatistics();
         } else {
             console.error('Error loading UKM data:', data.message || 'Unknown error');
@@ -429,17 +429,33 @@ function getCategoryName(category) {
     return categories[category] || category;
 }
 
-// Update statistics
-function updateStatistics() {
-    const totalUkm = ukmData.length;
-    const ukmAktif = ukmData.filter(item => item.status === 'aktif').length;
-    const totalPekerja = ukmData.reduce((sum, item) => sum + (item.jumlah_karyawan || 0), 0);
-    const totalOmzet = ukmData.reduce((sum, item) => sum + (item.omzet_bulanan || 0), 0);
-    
-    document.getElementById('totalUkm').textContent = totalUkm;
-    document.getElementById('ukmAktif').textContent = ukmAktif;
-    document.getElementById('totalPekerja').textContent = totalPekerja;
-    document.getElementById('totalOmzet').textContent = formatCurrency(totalOmzet);
+// Update statistics from API
+async function updateStatistics() {
+    try {
+        const response = await fetch('/pulosarok/business/api/ukm/stats/');
+        const data = await response.json();
+        
+        if (response.ok) {
+            document.getElementById('totalUkm').textContent = data.total_ukm || 0;
+            document.getElementById('ukmAktif').textContent = data.ukm_aktif || 0;
+            document.getElementById('totalPekerja').textContent = data.total_pekerja || 0;
+            document.getElementById('totalOmzet').textContent = formatCurrency(data.total_omzet_bulanan || 0);
+        } else {
+            console.error('Error loading statistics:', data.message || 'Unknown error');
+            // Fallback to showing 0 values
+            document.getElementById('totalUkm').textContent = '0';
+            document.getElementById('ukmAktif').textContent = '0';
+            document.getElementById('totalPekerja').textContent = '0';
+            document.getElementById('totalOmzet').textContent = 'Rp 0';
+        }
+    } catch (error) {
+        console.error('Error fetching statistics:', error);
+        // Fallback to showing 0 values
+        document.getElementById('totalUkm').textContent = '0';
+        document.getElementById('ukmAktif').textContent = '0';
+        document.getElementById('totalPekerja').textContent = '0';
+        document.getElementById('totalOmzet').textContent = 'Rp 0';
+    }
 }
 
 // Display UKM data in table and mobile cards
@@ -570,8 +586,6 @@ function editUkm(id) {
         document.getElementById('status').value = ukm.status;
         document.getElementById('izinUsaha').value = ukm.nomor_izin || '';
         document.getElementById('deskripsi').value = ukm.produk_utama || '';
-        document.getElementById('website').value = ukm.website || '';
-        document.getElementById('bantuanDibutuhkan').value = ukm.bantuan_dibutuhkan || '';
         document.getElementById('ukmModal').classList.remove('hidden');
     }
 }
@@ -582,11 +596,13 @@ async function deleteUkm(id) {
         try {
             const csrfToken = await getCSRFToken();
             
-            const response = await fetch(`/pulosarok/business/api/ukm/${id}/`, {
+            const response = await fetch(`/pulosarok/business/api/ukm/operations/`, {
                 method: 'DELETE',
                 headers: {
+                    'Content-Type': 'application/json',
                     'X-CSRFToken': csrfToken
-                }
+                },
+                body: JSON.stringify({id: id})
             });
             
             const data = await response.json();
@@ -703,10 +719,7 @@ function viewDetail(id) {
                             <label class="block text-sm font-medium text-gray-500">Deskripsi Produk/Jasa</label>
                             <p class="text-gray-900">${ukm.produk_utama || 'Tidak ada deskripsi'}</p>
                         </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-500">Bantuan yang Dibutuhkan</label>
-                            <p class="text-gray-900">${ukm.bantuan_dibutuhkan || 'Tidak ada'}</p>
-                        </div>
+
                     </div>
                 </div>
             </div>
@@ -760,14 +773,12 @@ document.getElementById('ukmForm').addEventListener('submit', async function(e) 
              alamat_pemilik: document.getElementById('alamat').value,
              skala_usaha: 'mikro',
              produk_utama: document.getElementById('deskripsi').value,
-             target_pasar: 'lokal',
-             website: document.getElementById('website').value,
-             bantuan_dibutuhkan: document.getElementById('bantuanDibutuhkan').value
+             target_pasar: 'lokal'
          };
         
         const method = formData.id ? 'PUT' : 'POST';
         
-        const response = await fetch('/pulosarok/business/api/ukm/', {
+        const response = await fetch('/pulosarok/business/api/ukm/operations/', {
             method: method,
             headers: {
                 'Content-Type': 'application/json',

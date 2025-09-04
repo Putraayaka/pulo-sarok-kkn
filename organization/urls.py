@@ -45,6 +45,16 @@ urlpatterns = [
     # API untuk choices
     path('api/penduduk-choices/', views.api_penduduk_choices, name='api_penduduk_choices'),
     
+    # API untuk recent activities
+    path('api/recent-activities/', views.api_recent_activities, name='api_recent_activities'),
+    
+    # PUBLIC API ENDPOINTS FOR WEBSITE
+    path('perangkat-desa/', api_views.api_perangkat_desa, name='public_api_perangkat_desa'),
+    path('organization-stats/', api_views.api_organization_stats, name='public_api_organization_stats'),
+    
+    # API untuk toggle organization status
+    path('api/toggle-status/', views.api_toggle_organization_status, name='api_toggle_organization_status'),
+    
     # API endpoints untuk CRUD operations
     # Perangkat Desa API
     path('api/perangkat-desa/', views.api_perangkat_desa_list, name='api_perangkat_desa_list'),

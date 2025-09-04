@@ -26,6 +26,7 @@ urlpatterns = [
     # Admin views (require login)
     path('admin/', views.admin_dashboard, name='admin_dashboard'),
     path('admin/locations/', views.admin_location_list, name='admin_location_list'),
+    path('admin/locations-view/', views.admin_locations_view, name='admin_locations_view'),
     path('admin/location/create/', views.admin_location_create, name='admin_location_create'),
     path('admin/location/<int:location_id>/', views.admin_location_detail, name='admin_location_detail'),
     path('admin/location/<int:location_id>/edit/', views.admin_location_edit, name='admin_location_edit'),

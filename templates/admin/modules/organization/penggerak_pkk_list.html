@@ -503,43 +503,50 @@ function showDetail(id) {
     // Load detail data
     fetch(`/pulosarok/organization/api/penggerak-pkk/${id}/`)
         .then(response => response.json())
-        .then(data => {
-            content.innerHTML = `
-                <div class="space-y-6">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
-                            <h4 class="text-sm font-medium text-gray-500 mb-2">Informasi Pribadi</h4>
-                            <div class="bg-gray-50 p-4 rounded-lg space-y-2">
-                                <div><span class="font-medium">Nama:</span> ${data.penduduk_nama || '-'}</div>
-                                <div><span class="font-medium">NIK:</span> ${data.penduduk_nik || '-'}</div>
-                                <div><span class="font-medium">Telepon:</span> ${data.no_telepon || '-'}</div>
-                                <div><span class="font-medium">Email:</span> ${data.email || '-'}</div>
+        .then(response => {
+            if (response.success) {
+                const data = response.data;
+                content.innerHTML = `
+                    <div class="space-y-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <h4 class="text-sm font-medium text-gray-500 mb-2">Informasi Pribadi</h4>
+                                <div class="bg-gray-50 p-4 rounded-lg space-y-2">
+                                    <div><span class="font-medium">Nama:</span> ${data.nama || '-'}</div>
+                                    <div><span class="font-medium">NIK:</span> ${data.nik || '-'}</div>
+                                    <div><span class="font-medium">WhatsApp:</span> ${data.kontak_whatsapp || '-'}</div>
+                                    <div><span class="font-medium">Alamat:</span> ${data.alamat_lengkap || '-'}</div>
+                                </div>
+                            </div>
+                            <div>
+                                <h4 class="text-sm font-medium text-gray-500 mb-2">Informasi Jabatan</h4>
+                                <div class="bg-gray-50 p-4 rounded-lg space-y-2">
+                                    <div><span class="font-medium">Jabatan:</span> ${data.jabatan || '-'}</div>
+                                    <div><span class="font-medium">Nomor Anggota:</span> ${data.nomor_anggota || '-'}</div>
+                                    <div><span class="font-medium">Keahlian:</span> ${data.keahlian || '-'}</div>
+                                    <div><span class="font-medium">Status:</span> ${data.status || '-'}</div>
+                                </div>
                             </div>
                         </div>
                         <div>
-                            <h4 class="text-sm font-medium text-gray-500 mb-2">Informasi Jabatan</h4>
+                            <h4 class="text-sm font-medium text-gray-500 mb-2">Periode Jabatan</h4>
                             <div class="bg-gray-50 p-4 rounded-lg space-y-2">
-                                <div><span class="font-medium">Jabatan:</span> ${getJabatanDisplay(data.jabatan) || '-'}</div>
-                                <div><span class="font-medium">Bidang Tugas:</span> ${data.bidang_tugas || '-'}</div>
-                                <div><span class="font-medium">Status:</span> ${data.status ? getStatusBadge(data.status) : '-'}</div>
+                                <div><span class="font-medium">Mulai:</span> ${data.tanggal_bergabung ? new Date(data.tanggal_bergabung).toLocaleDateString('id-ID') : '-'}</div>
+                                <div><span class="font-medium">Selesai:</span> ${data.tanggal_keluar ? new Date(data.tanggal_keluar).toLocaleDateString('id-ID') : 'Masih aktif'}</div>
+                            </div>
+                        </div>
+                        <div>
+                            <h4 class="text-sm font-medium text-gray-500 mb-2">Pengalaman & Prestasi</h4>
+                            <div class="bg-gray-50 p-4 rounded-lg space-y-2">
+                                <div><span class="font-medium">Pengalaman Organisasi:</span><br>${data.pengalaman_organisasi || 'Tidak ada data'}</div>
+                                <div><span class="font-medium">Prestasi:</span><br>${data.prestasi || 'Tidak ada data'}</div>
                             </div>
                         </div>
                     </div>
-                    <div>
-                        <h4 class="text-sm font-medium text-gray-500 mb-2">Periode Jabatan</h4>
-                        <div class="bg-gray-50 p-4 rounded-lg space-y-2">
-                            <div><span class="font-medium">Mulai:</span> ${data.periode_mulai || '-'}</div>
-                            <div><span class="font-medium">Selesai:</span> ${data.periode_selesai || 'Masih aktif'}</div>
-                        </div>
-                    </div>
-                    <div>
-                        <h4 class="text-sm font-medium text-gray-500 mb-2">Keterangan</h4>
-                        <div class="bg-gray-50 p-4 rounded-lg">
-                            ${data.keterangan || 'Tidak ada keterangan'}
-                        </div>
-                    </div>
-                </div>
-            `;
+                `;
+            } else {
+                content.innerHTML = '<p class="text-red-500">Gagal memuat detail</p>';
+            }
         })
         .catch(error => {
             console.error('Error:', error);
@@ -592,6 +599,29 @@ document.addEventListener('DOMContentLoaded', function() {
             deleteId = null;
         }
     });
+    
+    // Setup ESC key functionality
+    setupEscKeyHandler();
 });
+
+// Add ESC key functionality to close modals
+function setupEscKeyHandler() {
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            // Check if detail modal is currently open and close it
+            const detailModal = document.getElementById('detail-modal');
+            if (detailModal && !detailModal.classList.contains('hidden')) {
+                detailModal.classList.add('hidden');
+            }
+            
+            // Check if delete modal is currently open and close it
+            const deleteModal = document.getElementById('delete-modal');
+            if (deleteModal && !deleteModal.classList.contains('hidden')) {
+                deleteModal.classList.add('hidden');
+                deleteId = null;
+            }
+        }
+    });
+}
 </script>
 {% endblock %}

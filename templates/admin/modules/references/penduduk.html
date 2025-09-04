@@ -66,11 +66,6 @@
                 <p class="text-gray-600">Kelola data penduduk Desa Pulosarok</p>
             </div>
             <div class="flex flex-col sm:flex-row gap-3">
-                <button onclick="exportData()" class="btn btn-outline-success btn-action flex items-center justify-center px-4 py-2 rounded-lg">
-                    <i class="fas fa-download mr-2"></i>
-                    <span class="hidden sm:inline">Export Excel</span>
-                    <span class="sm:hidden">Export</span>
-                </button>
                 <a href="{% url 'references:add_penduduk_new' %}" class="btn btn-primary btn-action flex items-center justify-center px-4 py-2 rounded-lg">
                     <i class="fas fa-plus mr-2"></i>
                     <span class="hidden sm:inline">Tambah Penduduk</span>
@@ -190,6 +185,17 @@
             <!-- Mobile cards will be loaded here -->
         </div>
 
+        <!-- Empty State -->
+        <div id="empty-state" class="hidden p-8 text-center">
+            <i class="fas fa-users text-4xl text-gray-300 mb-4"></i>
+            <h3 class="text-lg font-medium text-gray-900 mb-2">Belum ada data penduduk</h3>
+            <p class="text-gray-500 mb-4">Mulai dengan menambahkan data penduduk pertama</p>
+            <a href="/pulosarok/references/admin/penduduk/add/" 
+               class="inline-flex items-center px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700">
+                <i class="fas fa-plus mr-2"></i>Tambah Penduduk
+            </a>
+        </div>
+
         <!-- Pagination -->
         <div class="pagination-container">
             <div class="pagination-info">
@@ -265,7 +271,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Load dusun options for filter
 function loadDusunOptions() {
-    fetch('/api/references/api/dusun/')
+    fetch('/pulosarok/references/admin-api/dusun/')
         .then(response => {
             if (!response.ok) {
                 throw new Error(`HTTP ${response.status}`);
@@ -295,7 +301,7 @@ function loadPendudukList(page = 1) {
     const searchQuery = document.getElementById('searchInput').value;
     const dusunFilter = document.getElementById('dusunFilter').value;
     
-    let url = `/api/references/api/penduduk/?page=${page}`;
+    let url = `/pulosarok/references/admin-api/penduduk/?page=${page}`;
     if (searchQuery) url += `&search=${encodeURIComponent(searchQuery)}`;
     if (dusunFilter) url += `&dusun=${encodeURIComponent(dusunFilter)}`;
     
@@ -333,6 +339,17 @@ function displayPendudukList(pendudukList) {
     // Mobile cards
     const mobileCards = document.getElementById('pendudukMobileCards');
     mobileCards.innerHTML = '';
+    
+    // Handle empty state
+    if (!pendudukList || pendudukList.length === 0) {
+        const searchQuery = document.getElementById('searchInput').value;
+        const dusunFilter = document.getElementById('dusunFilter').value;
+        const isFiltering = searchQuery.trim() !== '' || dusunFilter !== '';
+        showEmptyState(isFiltering);
+        return;
+    }
+    
+    hideEmptyState();
     
     pendudukList.forEach(penduduk => {
         // Desktop row
@@ -409,7 +426,7 @@ function displayPendudukList(pendudukList) {
 
 // Load statistics
 function loadStats() {
-    fetch('/api/references/api/stats/')
+    fetch('/pulosarok/references/admin-api/stats/')
         .then(response => {
             if (!response.ok) {
                 throw new Error(`HTTP ${response.status}`);
@@ -511,7 +528,7 @@ function exportData() {
     const searchQuery = document.getElementById('searchInput').value;
     const dusunFilter = document.getElementById('dusunFilter').value;
     
-    let url = '/api/references/api/penduduk/export/';
+    let url = '/pulosarok/references/admin-api/penduduk/export/';
     const params = new URLSearchParams();
     if (searchQuery) params.append('search', searchQuery);
     if (dusunFilter) params.append('dusun', dusunFilter);
@@ -527,7 +544,7 @@ function exportData() {
 function viewDetailModal(id) {
     showLoading(true);
     
-    fetch(`/api/references/admin-api/penduduk/${id}/`, {
+    fetch(`/pulosarok/references/admin-api/penduduk/${id}/`, {
             headers: {
                 'X-CSRFToken': getCookie('csrftoken')
             }
@@ -678,7 +695,7 @@ function deletePenduduk(id) {
     const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value || 
                      document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
     
-    fetch(`/api/references/api/penduduk/${id}/`, {
+    fetch(`/pulosarok/references/admin-api/penduduk/${id}/`, {
         method: 'DELETE',
         headers: {
             'X-CSRFToken': csrfToken,
@@ -747,5 +764,72 @@ function getCookie(name) {
     }
     return cookieValue;
 }
+
+// Empty state functions
+function showEmptyState(isFiltering = false) {
+    const emptyStateEl = document.getElementById('empty-state');
+    
+    if (isFiltering) {
+        emptyStateEl.innerHTML = `
+            <i class="fas fa-search text-4xl text-gray-300 mb-4"></i>
+            <h3 class="text-lg font-medium text-gray-900 mb-2">Tidak ada hasil pencarian</h3>
+            <p class="text-gray-500 mb-4">Coba gunakan kata kunci yang berbeda atau hapus filter pencarian</p>
+            <button onclick="clearSearch()" 
+                    class="inline-flex items-center px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700">
+                <i class="fas fa-times mr-2"></i>Hapus Pencarian
+            </button>
+        `;
+    } else {
+        emptyStateEl.innerHTML = `
+            <i class="fas fa-users text-4xl text-gray-300 mb-4"></i>
+            <h3 class="text-lg font-medium text-gray-900 mb-2">Belum ada data penduduk</h3>
+            <p class="text-gray-500 mb-4">Mulai dengan menambahkan data penduduk pertama</p>
+            <a href="/pulosarok/references/admin/penduduk/add/" 
+               class="inline-flex items-center px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700">
+                <i class="fas fa-plus mr-2"></i>Tambah Penduduk
+            </a>
+        `;
+    }
+    
+    emptyStateEl.classList.remove('hidden');
+    document.querySelector('.mobile-hidden').classList.add('hidden');
+    document.querySelector('.mobile-show').classList.add('hidden');
+}
+
+function hideEmptyState() {
+    document.getElementById('empty-state').classList.add('hidden');
+    document.querySelector('.mobile-hidden').classList.remove('hidden');
+    document.querySelector('.mobile-show').classList.remove('hidden');
+}
+
+// Add click outside to close modal functionality
+function setupModalClickOutside() {
+    const modal = document.getElementById('detailModal');
+    if (modal) {
+        modal.addEventListener('click', function(e) {
+            // Check if click is on the modal backdrop (not on modal content)
+            if (e.target === modal) {
+                closeDetailModal();
+            }
+        });
+    }
+}
+
+// Add ESC key functionality to close modals
+function setupEscKeyHandler() {
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            // Check if detail modal is currently open and close it
+            const detailModal = document.getElementById('detailModal');
+            if (detailModal && detailModal.style.display === 'flex') {
+                closeDetailModal();
+            }
+        }
+    });
+}
+
+// Initialize modal functionality
+setupModalClickOutside();
+setupEscKeyHandler();
 </script>
 {% endblock %}

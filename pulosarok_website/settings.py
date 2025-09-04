@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     "django.contrib.humanize",
     # Debug and Development Tools
     "django_extensions",
+    "django_summernote",
     # Local apps
     "core",
     "public",
@@ -53,7 +54,7 @@ INSTALLED_APPS = [
     "organization",
     "business",
     "posyandu",
-    
+    "events",
     "beneficiaries",
     "documents",
     "news",
@@ -70,6 +71,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "debug_middleware.DebugMiddleware",  # Debug middleware for PUT requests
 ]
 
 ROOT_URLCONF = "pulosarok_website.urls"
@@ -155,6 +157,7 @@ MEDIA_ROOT = BASE_DIR / 'media'
 # Static files
 STATICFILES_DIRS = [
     BASE_DIR / 'static',
+    BASE_DIR / 'user-frontend',
 ]
 
 # Internationalization

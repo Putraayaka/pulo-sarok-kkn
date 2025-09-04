@@ -561,6 +561,11 @@
         try {
             // Load statistics from dashboard_stats_api
             const statsResponse = await fetch('{% url "custom_admin:dashboard_stats_api" %}');
+            
+            if (!statsResponse.ok) {
+                throw new Error(`HTTP error! status: ${statsResponse.status}`);
+            }
+            
             const statsData = await statsResponse.json();
             
             // Update stats cards with null checks
@@ -568,6 +573,9 @@
             document.getElementById('total-dusun').textContent = (statsData.total_dusun || 0).toLocaleString();
             document.getElementById('total-organisasi').textContent = (statsData.total_organisasi || 0).toLocaleString();
             document.getElementById('total-umkm').textContent = (statsData.total_umkm || 0).toLocaleString();
+            
+            // Update average population per dusun
+            document.getElementById('avg-population-dusun').textContent = (statsData.avg_population_per_dusun || 0).toLocaleString();
             
             // Update gender distribution with null checks
             const maleCount = statsData.male_count || 0;
@@ -604,12 +612,23 @@
 
             
         } catch (error) {
-            console.error('Error loading dashboard stats:', error);
+            // Show error message to user
+            document.querySelectorAll('[id$="-penduduk"], [id$="-dusun"], [id$="-organisasi"], [id$="-umkm"]').forEach(el => {
+                if (el.textContent === 'Loading...') {
+                    el.textContent = 'Error';
+                }
+            });
         }
         
         try {
             // Load enhanced statistics from references dashboard_summary_api
-            const summaryResponse = await fetch('{% url "references:dashboard_summary" %}');
+            const summaryResponse = await fetch('/pulosarok/references/api/dashboard-summary/');
+            
+            if (!summaryResponse.ok) {
+                console.warn(`Summary stats failed with status: ${summaryResponse.status}`);
+                return;
+            }
+            
             const summaryData = await summaryResponse.json();
             
             // Update disability chart if it exists
@@ -656,7 +675,7 @@
             }
             
         } catch (error) {
-            console.error('Error loading dashboard summary:', error);
+            // Dashboard summary failed to load
         }
         
         try {
@@ -690,7 +709,7 @@
             }
             
         } catch (error) {
-            console.error('Error loading recent activities:', error);
+            // Recent activities failed to load
             document.getElementById('recent-activities').innerHTML = `
                 <div class="text-center py-8">
                     <i class="fas fa-exclamation-triangle text-red-400 text-3xl mb-2"></i>
@@ -709,7 +728,7 @@
             document.getElementById('total-records').textContent = (systemData.total_records || 0).toLocaleString();
             
         } catch (error) {
-            console.error('Error loading system info:', error);
+            // System info failed to load
         }
     }
     

@@ -21,6 +21,15 @@ def documents_admin(request):
     }
     return render(request, 'admin/modules/documents.html', context)
 
+@login_required
+def documents_view(request):
+    """Documents management view with modern UI"""
+    context = {
+        'page_title': 'Manajemen Dokumen',
+        'page_subtitle': 'Kelola dokumen, template, dan arsip desa'
+    }
+    return render(request, 'admin/modules/documents/documents.html', context)
+
 
 # Document Type API Views
 @login_required

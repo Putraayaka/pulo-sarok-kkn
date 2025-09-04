@@ -2,8 +2,11 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.http import require_http_methods
 from django.core.paginator import Paginator
-from django.db.models import Q, Count, Avg
+from django.db.models import Q, Count, Avg, Sum
 from django.middleware.csrf import get_token
+from django.shortcuts import get_object_or_404
+from django.utils.dateparse import parse_date
+from decimal import Decimal
 from .models import Business, BusinessCategory, Koperasi, BUMG, UKM, Aset, LayananJasa, JenisKoperasi
 import json
 
@@ -98,150 +101,319 @@ def api_koperasi_list(request):
         return JsonResponse({'error': str(e)}, status=500)
 
 
-# BUMG API Endpoints
 @csrf_protect
 @require_http_methods(["GET"])
-def api_bumg_list(request):
-    """API endpoint for BUMG list with pagination"""
+def api_ukm_stats(request):
+    """API endpoint for UKM statistics from all data"""
     try:
-        bumg_list = BUMG.objects.all()
+        # Total UKM
+        total_ukm = UKM.objects.count()
         
-        # Search functionality
-        search = request.GET.get('search')
-        if search:
-            bumg_list = bumg_list.filter(
-                Q(nama__icontains=search) |
-                Q(alamat__icontains=search) |
-                Q(direktur__icontains=search)
-            )
+        # UKM Aktif
+        ukm_aktif = UKM.objects.filter(status='aktif').count()
         
-        # Filter by status
-        status = request.GET.get('status')
-        if status:
-            bumg_list = bumg_list.filter(status=status)
+        # Total Pekerja (jumlah semua karyawan dari semua UKM)
+        total_pekerja = UKM.objects.aggregate(total=Sum('jumlah_karyawan'))['total'] or 0
         
-        # Ordering
-        ordering = request.GET.get('ordering', '-created_at')
-        bumg_list = bumg_list.order_by(ordering)
+        # Total Omzet per Bulan (jumlah semua omzet bulanan dari semua UKM)
+        total_omzet_bulanan = UKM.objects.aggregate(total=Sum('omzet_bulanan'))['total'] or 0
         
-        # Pagination
-        page_size = int(request.GET.get('page_size', 10))
-        page = int(request.GET.get('page', 1))
+        # Statistik tambahan
+        ukm_tidak_aktif = UKM.objects.filter(status='tidak_aktif').count()
+        ukm_pending = UKM.objects.filter(status='pending').count()
         
-        paginator = Paginator(bumg_list, page_size)
-        page_obj = paginator.get_page(page)
-        
-        results = []
-        for bumg in page_obj:
-            results.append({
-                'id': bumg.id,
-                'nama': bumg.nama,
-                'alamat': bumg.alamat,
-                'direktur': bumg.direktur,
-                'komisaris': bumg.komisaris,
-                'nomor_sk': bumg.nomor_sk,
-                'tanggal_sk': bumg.tanggal_sk.isoformat() if bumg.tanggal_sk else None,
-                'modal_dasar': float(bumg.modal_dasar) if bumg.modal_dasar else 0,
-                'modal_disetor': float(bumg.modal_disetor) if bumg.modal_disetor else 0,
-                'bidang_usaha': bumg.bidang_usaha,
-                'telepon': bumg.telepon,
-                'email': bumg.email,
-                'website': bumg.website,
-                'status': bumg.status,
-                'keterangan': bumg.keterangan,
-                'created_at': bumg.created_at.isoformat()
-            })
+        # Statistik berdasarkan skala usaha
+        skala_stats = {
+            'mikro': UKM.objects.filter(skala_usaha='mikro').count(),
+            'kecil': UKM.objects.filter(skala_usaha='kecil').count(),
+            'menengah': UKM.objects.filter(skala_usaha='menengah').count(),
+        }
         
         return JsonResponse({
-            'results': results,
-            'count': paginator.count,
-            'num_pages': paginator.num_pages,
-            'current_page': page,
-            'has_next': page_obj.has_next(),
-            'has_previous': page_obj.has_previous()
+            'total_ukm': total_ukm,
+            'ukm_aktif': ukm_aktif,
+            'ukm_tidak_aktif': ukm_tidak_aktif,
+            'ukm_pending': ukm_pending,
+            'total_pekerja': int(total_pekerja),
+            'total_omzet_bulanan': float(total_omzet_bulanan),
+            'skala_usaha': skala_stats,
+            'persentase_aktif': round((ukm_aktif / total_ukm * 100), 2) if total_ukm > 0 else 0
         })
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
+
+
+# Aset API Endpoints
+@csrf_protect
+def api_bumg_list(request):
+    """API endpoint for BUMG CRUD operations"""
+    if request.method == 'GET':
+        try:
+            bumg_list = BUMG.objects.all().order_by('-created_at')
+            
+            # Search functionality
+            search = request.GET.get('search')
+            if search:
+                bumg_list = bumg_list.filter(
+                    Q(nama__icontains=search) |
+                    Q(alamat__icontains=search) |
+                    Q(direktur__icontains=search)
+                )
+            
+            # Filter by status
+            status = request.GET.get('status')
+            if status:
+                bumg_list = bumg_list.filter(status=status)
+            
+            # Pagination
+            page_size = int(request.GET.get('page_size', 10))
+            page = int(request.GET.get('page', 1))
+            
+            paginator = Paginator(bumg_list, page_size)
+            page_obj = paginator.get_page(page)
+            
+            results = []
+            for bumg in page_obj:
+                results.append({
+                    'id': bumg.id,
+                    'nama': bumg.nama,
+                    'alamat': bumg.alamat,
+                    'direktur': bumg.direktur,
+                    'komisaris': bumg.komisaris,
+                    'nomor_sk': bumg.nomor_sk,
+                    'tanggal_sk': bumg.tanggal_sk.strftime('%Y-%m-%d') if bumg.tanggal_sk else '',
+                    'modal_dasar': float(bumg.modal_dasar) if bumg.modal_dasar else 0,
+                    'modal_disetor': float(bumg.modal_disetor) if bumg.modal_disetor else 0,
+                    'bidang_usaha': bumg.bidang_usaha,
+                    'telepon': bumg.telepon,
+                    'email': bumg.email,
+                    'website': bumg.website,
+                    'status': bumg.status,
+                    'keterangan': bumg.keterangan,
+                })
+            
+            return JsonResponse({
+                'results': results,
+                'count': paginator.count,
+                'num_pages': paginator.num_pages,
+                'current_page': page,
+                'has_next': page_obj.has_next(),
+                'has_previous': page_obj.has_previous(),
+            })
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+    
+    elif request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            bumg = BUMG.objects.create(
+                nama=data['nama'],
+                nomor_sk=data['nomor_sk'],
+                tanggal_sk=parse_date(data['tanggal_sk']),
+                alamat=data['alamat'],
+                direktur=data['direktur'],
+                komisaris=data['komisaris'],
+                modal_dasar=Decimal(str(data.get('modal_dasar', 0))),
+                modal_disetor=Decimal(str(data.get('modal_disetor', 0))),
+                bidang_usaha=data['bidang_usaha'],
+                telepon=data.get('telepon', ''),
+                email=data.get('email', ''),
+                website=data.get('website', ''),
+                status=data.get('status', 'aktif'),
+                keterangan=data.get('keterangan', ''),
+            )
+            return JsonResponse({'success': True, 'id': bumg.id})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+    
+    elif request.method == 'PUT':
+        try:
+            data = json.loads(request.body)
+            bumg_id = data.get('id')
+            bumg = get_object_or_404(BUMG, id=bumg_id)
+            
+            bumg.nama = data['nama']
+            bumg.nomor_sk = data['nomor_sk']
+            bumg.tanggal_sk = parse_date(data['tanggal_sk'])
+            bumg.alamat = data['alamat']
+            bumg.direktur = data['direktur']
+            bumg.komisaris = data['komisaris']
+            bumg.modal_dasar = Decimal(str(data.get('modal_dasar', 0)))
+            bumg.modal_disetor = Decimal(str(data.get('modal_disetor', 0)))
+            bumg.bidang_usaha = data['bidang_usaha']
+            bumg.telepon = data.get('telepon', '')
+            bumg.email = data.get('email', '')
+            bumg.website = data.get('website', '')
+            bumg.status = data.get('status', 'aktif')
+            bumg.keterangan = data.get('keterangan', '')
+            bumg.save()
+            
+            return JsonResponse({'success': True})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+    
+    elif request.method == 'DELETE':
+        try:
+            data = json.loads(request.body)
+            bumg_id = data.get('id')
+            bumg = get_object_or_404(BUMG, id=bumg_id)
+            bumg.delete()
+            return JsonResponse({'success': True})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
 
 
 # UKM API Endpoints
 @csrf_protect
 @require_http_methods(["GET"])
 def api_ukm_list(request):
-    """API endpoint for UKM list with pagination"""
-    try:
-        ukm_list = UKM.objects.all()
+    """API endpoint for UKM list (GET only)"""
+    if request.method == 'GET':
+        try:
+            ukm_list = UKM.objects.all()
         
-        # Search functionality
-        search = request.GET.get('search')
-        if search:
-            ukm_list = ukm_list.filter(
-                Q(nama_usaha__icontains=search) |
-                Q(alamat_usaha__icontains=search) |
-                Q(pemilik__icontains=search)
-            )
-        
-        # Filter by jenis usaha
-        jenis_usaha = request.GET.get('jenis_usaha')
-        if jenis_usaha:
-            ukm_list = ukm_list.filter(jenis_usaha__icontains=jenis_usaha)
-        
-        # Filter by status
-        status = request.GET.get('status')
-        if status:
-            ukm_list = ukm_list.filter(status=status)
-        
-        # Filter by skala usaha
-        skala = request.GET.get('skala')
-        if skala:
-            ukm_list = ukm_list.filter(skala_usaha=skala)
-        
-        # Ordering
-        ordering = request.GET.get('ordering', '-created_at')
-        ukm_list = ukm_list.order_by(ordering)
-        
-        # Pagination
-        page_size = int(request.GET.get('page_size', 10))
-        page = int(request.GET.get('page', 1))
-        
-        paginator = Paginator(ukm_list, page_size)
-        page_obj = paginator.get_page(page)
-        
-        results = []
-        for ukm in page_obj:
-            results.append({
-                'id': ukm.id,
-                'nama_usaha': ukm.nama_usaha,
-                'pemilik': ukm.pemilik,
-                'nik_pemilik': ukm.nik_pemilik,
-                'alamat_usaha': ukm.alamat_usaha,
-                'alamat_pemilik': ukm.alamat_pemilik,
-                'jenis_usaha': ukm.jenis_usaha,
-                'skala_usaha': ukm.skala_usaha,
-                'modal_awal': float(ukm.modal_awal) if ukm.modal_awal else 0,
-                'omzet_bulanan': float(ukm.omzet_bulanan) if ukm.omzet_bulanan else 0,
-                'jumlah_karyawan': ukm.jumlah_karyawan,
-                'tanggal_mulai': ukm.tanggal_mulai.isoformat() if ukm.tanggal_mulai else None,
-                'nomor_izin': ukm.nomor_izin,
-                'telepon': ukm.telepon,
-                'email': ukm.email,
-                'produk_utama': ukm.produk_utama,
-                'target_pasar': ukm.target_pasar,
-                'status': ukm.status,
-                'keterangan': ukm.keterangan,
-                'created_at': ukm.created_at.isoformat()
+            # Search functionality
+            search = request.GET.get('search')
+            if search:
+                ukm_list = ukm_list.filter(
+                    Q(nama_usaha__icontains=search) |
+                    Q(alamat_usaha__icontains=search) |
+                    Q(pemilik__icontains=search)
+                )
+            
+            # Filter by jenis usaha
+            jenis_usaha = request.GET.get('jenis_usaha')
+            if jenis_usaha:
+                ukm_list = ukm_list.filter(jenis_usaha__icontains=jenis_usaha)
+            
+            # Filter by status
+            status = request.GET.get('status')
+            if status:
+                ukm_list = ukm_list.filter(status=status)
+            
+            # Filter by skala usaha
+            skala = request.GET.get('skala')
+            if skala:
+                ukm_list = ukm_list.filter(skala_usaha=skala)
+            
+            # Ordering
+            ordering = request.GET.get('ordering', '-created_at')
+            ukm_list = ukm_list.order_by(ordering)
+            
+            # Pagination
+            page_size = int(request.GET.get('page_size', 10))
+            page = int(request.GET.get('page', 1))
+            
+            paginator = Paginator(ukm_list, page_size)
+            page_obj = paginator.get_page(page)
+            
+            results = []
+            for ukm in page_obj:
+                results.append({
+                    'id': ukm.id,
+                    'nama_usaha': ukm.nama_usaha,
+                    'pemilik': ukm.pemilik,
+                    'nik_pemilik': ukm.nik_pemilik,
+                    'alamat_usaha': ukm.alamat_usaha,
+                    'alamat_pemilik': ukm.alamat_pemilik,
+                    'jenis_usaha': ukm.jenis_usaha,
+                    'skala_usaha': ukm.skala_usaha,
+                    'modal_awal': float(ukm.modal_awal) if ukm.modal_awal else 0,
+                    'omzet_bulanan': float(ukm.omzet_bulanan) if ukm.omzet_bulanan else 0,
+                    'jumlah_karyawan': ukm.jumlah_karyawan,
+                    'tanggal_mulai': ukm.tanggal_mulai.isoformat() if ukm.tanggal_mulai else None,
+                    'nomor_izin': ukm.nomor_izin,
+                    'telepon': ukm.telepon,
+                    'email': ukm.email,
+                    'produk_utama': ukm.produk_utama,
+                    'target_pasar': ukm.target_pasar,
+                    'status': ukm.status,
+                    'keterangan': ukm.keterangan,
+                    'created_at': ukm.created_at.isoformat()
+                })
+            
+            return JsonResponse({
+                'data': results,
+                'count': paginator.count,
+                'total_pages': paginator.num_pages,
+                'page': page,
+                'has_next': page_obj.has_next(),
+                'has_previous': page_obj.has_previous()
             })
-        
-        return JsonResponse({
-            'results': results,
-            'count': paginator.count,
-            'num_pages': paginator.num_pages,
-            'current_page': page,
-            'has_next': page_obj.has_next(),
-            'has_previous': page_obj.has_previous()
-        })
-    except Exception as e:
-        return JsonResponse({'error': str(e)}, status=500)
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+
+
+@csrf_protect
+@require_http_methods(["POST", "PUT", "DELETE"])
+def api_ukm_operations(request):
+    """API endpoint for UKM operations (create, update, delete)"""
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            ukm = UKM.objects.create(
+                nama_usaha=data['nama_usaha'],
+                pemilik=data['pemilik'],
+                nik_pemilik=data['nik_pemilik'],
+                alamat_usaha=data['alamat_usaha'],
+                alamat_pemilik=data['alamat_pemilik'],
+                jenis_usaha=data['jenis_usaha'],
+                skala_usaha=data['skala_usaha'],
+                modal_awal=Decimal(str(data.get('modal_awal', 0))),
+                omzet_bulanan=Decimal(str(data.get('omzet_bulanan', 0))),
+                jumlah_karyawan=data.get('jumlah_karyawan', 1),
+                tanggal_mulai=parse_date(data['tanggal_mulai']),
+                nomor_izin=data.get('nomor_izin', ''),
+                telepon=data['telepon'],
+                email=data.get('email', ''),
+                produk_utama=data['produk_utama'],
+                target_pasar=data['target_pasar'],
+                status=data.get('status', 'aktif'),
+                keterangan=data.get('keterangan', ''),
+            )
+            return JsonResponse({'success': True, 'id': ukm.id})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+    
+    elif request.method == 'PUT':
+        try:
+            data = json.loads(request.body)
+            ukm_id = data.get('id')
+            ukm = get_object_or_404(UKM, id=ukm_id)
+            
+            ukm.nama_usaha = data['nama_usaha']
+            ukm.pemilik = data['pemilik']
+            ukm.nik_pemilik = data['nik_pemilik']
+            ukm.alamat_usaha = data['alamat_usaha']
+            ukm.alamat_pemilik = data['alamat_pemilik']
+            ukm.jenis_usaha = data['jenis_usaha']
+            ukm.skala_usaha = data['skala_usaha']
+            ukm.modal_awal = Decimal(str(data.get('modal_awal', 0)))
+            ukm.omzet_bulanan = Decimal(str(data.get('omzet_bulanan', 0)))
+            ukm.jumlah_karyawan = data.get('jumlah_karyawan', 1)
+            ukm.tanggal_mulai = parse_date(data['tanggal_mulai'])
+            ukm.nomor_izin = data.get('nomor_izin', '')
+            ukm.telepon = data['telepon']
+            ukm.email = data.get('email', '')
+            ukm.produk_utama = data['produk_utama']
+            ukm.target_pasar = data['target_pasar']
+            ukm.status = data.get('status', 'aktif')
+            ukm.keterangan = data.get('keterangan', '')
+            ukm.save()
+            
+            return JsonResponse({'success': True})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+    
+    elif request.method == 'DELETE':
+        try:
+            data = json.loads(request.body)
+            ukm_id = data.get('id')
+            ukm = get_object_or_404(UKM, id=ukm_id)
+            ukm.delete()
+            return JsonResponse({'success': True})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
 
 
 # Aset API Endpoints

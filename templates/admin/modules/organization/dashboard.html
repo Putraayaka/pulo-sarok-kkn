@@ -5,6 +5,7 @@
 {% block page_title %}Dashboard Organisasi{% endblock %}
 
 {% block content %}
+{% csrf_token %}
 <div class="p-4 sm:p-6">
     <!-- Header Section -->
     <div class="mb-6">
@@ -123,7 +124,7 @@
         </div>
 
         <!-- Karang Taruna -->
-        <div class="bg-white overflow-hidden shadow rounded-lg">
+        <div class="bg-white overflow-hidden shadow rounded-lg" style="display: none;">
             <div class="p-5">
                 <div class="flex items-center">
                     <div class="flex-shrink-0">
@@ -197,6 +198,20 @@
         </div>
     </div>
 
+    <!-- Aktivasi Terbaru -->
+    <div class="bg-white shadow rounded-lg mb-8">
+        <div class="px-4 py-5 sm:p-6">
+            <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">
+                <i class="fas fa-toggle-on mr-2 text-green-500"></i>Aktivasi Terbaru
+            </h3>
+            <div class="space-y-4" id="activation-section">
+                <div class="text-center py-4 text-gray-500">
+                    <i class="fas fa-spinner fa-spin mr-2"></i>Memuat data organisasi...
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Recent Activities -->
     <div class="bg-white shadow rounded-lg">
         <div class="px-4 py-5 sm:p-6">
@@ -233,39 +248,53 @@ function updateTotals() {
     document.getElementById('total-active-members').textContent = totalActiveMembers;
 }
 
-// Load recent activities (mock data for now)
+// Load recent activities from API
 function loadRecentActivities() {
-    const activities = [
-        {
-            type: 'perangkat',
-            action: 'Perangkat desa baru ditambahkan',
-            time: '2 jam yang lalu',
-            icon: 'fa-user-plus',
-            color: 'text-blue-600'
-        },
-        {
-            type: 'lembaga',
-            action: 'Lembaga adat diperbarui',
-            time: '5 jam yang lalu',
-            icon: 'fa-edit',
-            color: 'text-purple-600'
-        },
-        {
-            type: 'pkk',
-            action: 'Anggota PKK baru bergabung',
-            time: '1 hari yang lalu',
-            icon: 'fa-user-plus',
-            color: 'text-pink-600'
-        }
-    ];
+    const container = document.getElementById('recent-activities');
     
+    // Show loading state
+    container.innerHTML = `
+        <li class="text-center py-8 text-gray-500">
+            <i class="fas fa-spinner fa-spin mr-2"></i>Memuat aktivitas...
+        </li>
+    `;
+    
+    // Fetch recent activities from API
+    fetch('{% url "organization:api_recent_activities" %}')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success && data.activities) {
+                displayActivities(data.activities);
+            } else {
+                showNoActivities();
+            }
+        })
+        .catch(error => {
+            console.error('Error loading recent activities:', error);
+            showErrorState();
+        });
+}
+
+// Display activities in the UI
+function displayActivities(activities) {
     const container = document.getElementById('recent-activities');
     container.innerHTML = '';
+    
+    if (activities.length === 0) {
+        showNoActivities();
+        return;
+    }
     
     activities.forEach((activity, index) => {
         const isLast = index === activities.length - 1;
         const li = document.createElement('li');
         li.className = isLast ? '' : 'pb-8';
+        
+        // Get icon and color based on organization type
+        const iconInfo = getIconForOrganizationType(activity.organization_type);
+        
+        // Format timestamp
+        const timeAgo = formatTimeAgo(activity.timestamp);
         
         li.innerHTML = `
             <div class="relative">
@@ -273,15 +302,16 @@ function loadRecentActivities() {
                 <div class="relative flex space-x-3">
                     <div>
                         <span class="h-8 w-8 rounded-full bg-gray-100 flex items-center justify-center ring-8 ring-white">
-                            <i class="fas ${activity.icon} ${activity.color}"></i>
+                            <i class="fas ${iconInfo.icon} ${iconInfo.color}"></i>
                         </span>
                     </div>
                     <div class="min-w-0 flex-1 pt-1.5 flex justify-between space-x-4">
                         <div>
-                            <p class="text-sm text-gray-900">${activity.action}</p>
+                            <p class="text-sm text-gray-900">${activity.description}</p>
+                            <p class="text-xs text-gray-500">Status: ${activity.status}</p>
                         </div>
                         <div class="text-right text-sm whitespace-nowrap text-gray-500">
-                            <time>${activity.time}</time>
+                            <time>${timeAgo}</time>
                         </div>
                     </div>
                 </div>
@@ -292,10 +322,224 @@ function loadRecentActivities() {
     });
 }
 
+// Get icon and color for organization type
+function getIconForOrganizationType(orgType) {
+    const iconMap = {
+        'Perangkat Desa': { icon: 'fa-user-tie', color: 'text-blue-600' },
+        'Lembaga Adat': { icon: 'fa-landmark', color: 'text-purple-600' },
+        'Penggerak PKK': { icon: 'fa-users', color: 'text-pink-600' },
+        'Kepemudaan': { icon: 'fa-user-friends', color: 'text-green-600' },
+        'Karang Taruna': { icon: 'fa-seedling', color: 'text-orange-600' }
+    };
+    
+    return iconMap[orgType] || { icon: 'fa-building', color: 'text-gray-600' };
+}
+
+// Format timestamp to relative time
+function formatTimeAgo(timestamp) {
+    const now = new Date();
+    const activityTime = new Date(timestamp);
+    const diffInSeconds = Math.floor((now - activityTime) / 1000);
+    
+    if (diffInSeconds < 60) {
+        return 'Baru saja';
+    } else if (diffInSeconds < 3600) {
+        const minutes = Math.floor(diffInSeconds / 60);
+        return `${minutes} menit yang lalu`;
+    } else if (diffInSeconds < 86400) {
+        const hours = Math.floor(diffInSeconds / 3600);
+        return `${hours} jam yang lalu`;
+    } else {
+        const days = Math.floor(diffInSeconds / 86400);
+        return `${days} hari yang lalu`;
+    }
+}
+
+// Show no activities state
+function showNoActivities() {
+    const container = document.getElementById('recent-activities');
+    container.innerHTML = `
+        <li class="text-center py-8 text-gray-500">
+            <i class="fas fa-inbox mr-2"></i>Belum ada aktivitas terbaru
+        </li>
+    `;
+}
+
+// Show error state
+function showErrorState() {
+    const container = document.getElementById('recent-activities');
+    container.innerHTML = `
+        <li class="text-center py-8 text-red-500">
+            <i class="fas fa-exclamation-triangle mr-2"></i>Gagal memuat aktivitas
+        </li>
+    `;
+}
+
+// Load organizations for activation toggle
+function loadActivationSection() {
+    const container = document.getElementById('activation-section');
+    
+    // Show loading state
+    container.innerHTML = `
+        <div class="text-center py-4 text-gray-500">
+            <i class="fas fa-spinner fa-spin mr-2"></i>Memuat data organisasi...
+        </div>
+    `;
+    
+    // Fetch organizations from all types
+    const orgTypes = [
+        { type: 'perangkat_desa', name: 'Perangkat Desa', endpoint: '{% url "organization:api_perangkat_desa_list" %}' },
+        { type: 'lembaga_adat', name: 'Lembaga Adat', endpoint: '{% url "organization:api_lembaga_adat_list" %}' },
+        { type: 'penggerak_pkk', name: 'Penggerak PKK', endpoint: '{% url "organization:api_penggerak_pkk_list" %}' },
+        { type: 'kepemudaan', name: 'Kepemudaan', endpoint: '{% url "organization:api_kepemudaan_list" %}' },
+        { type: 'karang_taruna', name: 'Karang Taruna', endpoint: '{% url "organization:api_karang_taruna_list" %}' }
+    ];
+    
+    Promise.all(orgTypes.map(orgType => 
+        fetch(orgType.endpoint)
+            .then(response => response.json())
+            .then(data => ({ ...orgType, data: data.data || [] }))
+    ))
+    .then(results => {
+        displayActivationToggles(results);
+    })
+    .catch(error => {
+        console.error('Error loading organizations:', error);
+        container.innerHTML = `
+            <div class="text-center py-4 text-red-500">
+                <i class="fas fa-exclamation-triangle mr-2"></i>Gagal memuat data organisasi
+            </div>
+        `;
+    });
+}
+
+// Display activation toggles
+function displayActivationToggles(orgTypes) {
+    const container = document.getElementById('activation-section');
+    container.innerHTML = '';
+    
+    orgTypes.forEach(orgType => {
+        if (orgType.data && orgType.data.length > 0) {
+            // Show only first 3 organizations per type
+            const orgsToShow = orgType.data.slice(0, 3);
+            
+            orgsToShow.forEach(org => {
+                const toggleDiv = document.createElement('div');
+                toggleDiv.className = 'flex items-center justify-between p-4 border border-gray-200 rounded-lg';
+                
+                const statusColor = org.status === 'aktif' ? 'text-green-600' : 
+                                  org.status === 'non_aktif' ? 'text-red-600' : 'text-yellow-600';
+                
+                toggleDiv.innerHTML = `
+                    <div class="flex items-center space-x-3">
+                        <div class="flex-shrink-0">
+                            <i class="fas ${getIconForOrganizationType(orgType.name).icon} ${getIconForOrganizationType(orgType.name).color}"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium text-gray-900">${org.nama}</p>
+                            <p class="text-xs text-gray-500">${orgType.name}</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-3">
+                        <span class="text-sm font-medium ${statusColor}">${org.status}</span>
+                        <select class="text-sm border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500" 
+                                onchange="toggleOrganizationStatus('${orgType.type}', ${org.id}, this.value)">
+                            <option value="aktif" ${org.status === 'aktif' ? 'selected' : ''}>Aktif</option>
+                            <option value="non_aktif" ${org.status === 'non_aktif' ? 'selected' : ''}>Non Aktif</option>
+                            <option value="dalam_pembinaan" ${org.status === 'dalam_pembinaan' ? 'selected' : ''}>Dalam Pembinaan</option>
+                        </select>
+                    </div>
+                `;
+                
+                container.appendChild(toggleDiv);
+            });
+        }
+    });
+    
+    if (container.children.length === 0) {
+        container.innerHTML = `
+            <div class="text-center py-4 text-gray-500">
+                <i class="fas fa-inbox mr-2"></i>Tidak ada organisasi yang ditemukan
+            </div>
+        `;
+    }
+}
+
+// Toggle organization status
+function toggleOrganizationStatus(orgType, orgId, newStatus) {
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    
+    fetch('{% url "organization:api_toggle_organization_status" %}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrfToken
+        },
+        body: JSON.stringify({
+            organization_type: orgType,
+            organization_id: orgId,
+            status: newStatus
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Show success message
+            showNotification('success', data.message);
+            // Reload activation section and recent activities
+            loadActivationSection();
+            loadRecentActivities();
+            // Update totals
+            updateTotals();
+        } else {
+            showNotification('error', data.error || 'Gagal mengubah status organisasi');
+            // Reload to reset the select value
+            loadActivationSection();
+        }
+    })
+    .catch(error => {
+        console.error('Error toggling status:', error);
+        showNotification('error', 'Terjadi kesalahan saat mengubah status');
+        // Reload to reset the select value
+        loadActivationSection();
+    });
+}
+
+// Show notification
+function showNotification(type, message) {
+    const notification = document.createElement('div');
+    notification.className = `fixed top-4 right-4 z-50 p-4 rounded-md shadow-lg ${
+        type === 'success' ? 'bg-green-100 text-green-800 border border-green-200' : 
+        'bg-red-100 text-red-800 border border-red-200'
+    }`;
+    
+    notification.innerHTML = `
+        <div class="flex items-center">
+            <i class="fas ${
+                type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'
+            } mr-2"></i>
+            <span>${message}</span>
+            <button onclick="this.parentElement.parentElement.remove()" class="ml-4 text-gray-400 hover:text-gray-600">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Auto remove after 5 seconds
+    setTimeout(() => {
+        if (notification.parentElement) {
+            notification.remove();
+        }
+    }, 5000);
+}
+
 // Initialize
 document.addEventListener('DOMContentLoaded', function() {
     updateTotals();
     loadRecentActivities();
+    loadActivationSection();
 });
 </script>
 {% endblock %}

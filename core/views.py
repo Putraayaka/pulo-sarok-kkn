@@ -1010,6 +1010,36 @@ def api_endpoints_list_api(request):
         }, status=500)
 
 
+@login_required
+def api_endpoints_view(request):
+    """View for API endpoints management page"""
+    context = {
+        'page_title': 'Manajemen API Endpoints',
+        'page_subtitle': 'Kelola dan monitor semua endpoint API sistem'
+    }
+    return render(request, 'admin/modules/core/api_endpoints.html', context)
+
+
+@login_required
+def users_view(request):
+    """View for users management page"""
+    context = {
+        'page_title': 'Manajemen Pengguna',
+        'page_subtitle': 'Kelola data pengguna sistem'
+    }
+    return render(request, 'admin/modules/core/users.html', context)
+
+
+@login_required
+def umkm_view(request):
+    """View for UMKM management page"""
+    context = {
+        'page_title': 'Manajemen UMKM',
+        'page_subtitle': 'Kelola data UMKM dan usaha mikro'
+    }
+    return render(request, 'admin/modules/core/umkm.html', context)
+
+
 # Dashboard View
 @login_required
 def dashboard_view(request):

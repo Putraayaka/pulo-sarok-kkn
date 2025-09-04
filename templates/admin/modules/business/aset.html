@@ -201,6 +201,11 @@
                             <input type="date" id="tanggalPerolehan" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                         </div>
                     </div>
+                    
+                    <div class="mt-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Deskripsi</label>
+                        <textarea id="deskripsi" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Deskripsi aset..."></textarea>
+                    </div>
                 </div>
                 
                 <!-- Financial Information -->
@@ -328,6 +333,29 @@ let editingId = null;
 // Load data on page load
 document.addEventListener('DOMContentLoaded', function() {
     loadAsetData();
+    
+    // Add search functionality
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            clearTimeout(this.searchTimeout);
+            this.searchTimeout = setTimeout(() => {
+                loadAsetData(1);
+            }, 500);
+        });
+    }
+    
+    // Add filter change listeners
+    const kategoriFilter = document.getElementById('kategoriFilter');
+    const kondisiFilter = document.getElementById('kondisiFilter');
+    
+    if (kategoriFilter) {
+        kategoriFilter.addEventListener('change', () => loadAsetData(1));
+    }
+    
+    if (kondisiFilter) {
+        kondisiFilter.addEventListener('change', () => loadAsetData(1));
+    }
 });
 
 // Get CSRF token
@@ -417,16 +445,42 @@ function getConditionName(condition) {
 }
 
 // Update statistics
-function updateStatistics() {
-    const totalAset = asetData.length;
-    const asetBaik = asetData.filter(item => item.kondisi === 'baik').length;
-    const asetRusak = asetData.filter(item => item.kondisi === 'rusak_ringan' || item.kondisi === 'rusak_berat').length;
-    const totalNilai = asetData.reduce((sum, item) => sum + (item.nilai_saat_ini || 0), 0);
-    
-    document.getElementById('totalAset').textContent = totalAset;
-    document.getElementById('asetBaik').textContent = asetBaik;
-    document.getElementById('asetRusak').textContent = asetRusak;
-    document.getElementById('totalNilai').textContent = formatCurrency(totalNilai);
+async function updateStatistics() {
+    try {
+        const response = await fetch('/pulosarok/business/api/aset/statistics/');
+        const data = await response.json();
+        
+        if (response.ok) {
+            document.getElementById('totalAset').textContent = data.total_aset || 0;
+            document.getElementById('asetBaik').textContent = data.aset_baik || 0;
+            document.getElementById('asetRusak').textContent = data.perlu_perbaikan || 0;
+            document.getElementById('totalNilai').textContent = formatCurrency(data.total_nilai || 0);
+        } else {
+            console.error('Error fetching aset statistics:', data.error);
+            // Fallback to client-side calculation if API fails
+            const totalAset = asetData.length;
+            const asetBaik = asetData.filter(item => item.kondisi === 'baik').length;
+            const asetRusak = asetData.filter(item => item.kondisi === 'rusak_ringan' || item.kondisi === 'rusak_berat').length;
+            const totalNilai = asetData.reduce((sum, item) => sum + (item.nilai_perolehan || 0), 0);
+            
+            document.getElementById('totalAset').textContent = totalAset;
+            document.getElementById('asetBaik').textContent = asetBaik;
+            document.getElementById('asetRusak').textContent = asetRusak;
+            document.getElementById('totalNilai').textContent = formatCurrency(totalNilai);
+        }
+    } catch (error) {
+        console.error('Error fetching aset statistics:', error);
+        // Fallback to client-side calculation if API fails
+        const totalAset = asetData.length;
+        const asetBaik = asetData.filter(item => item.kondisi === 'baik').length;
+        const asetRusak = asetData.filter(item => item.kondisi === 'rusak_ringan' || item.kondisi === 'rusak_berat').length;
+        const totalNilai = asetData.reduce((sum, item) => sum + (item.nilai_saat_ini || 0), 0);
+        
+        document.getElementById('totalAset').textContent = totalAset;
+        document.getElementById('asetBaik').textContent = asetBaik;
+        document.getElementById('asetRusak').textContent = asetRusak;
+        document.getElementById('totalNilai').textContent = formatCurrency(totalNilai);
+    }
 }
 
 // Display Aset data
@@ -456,7 +510,7 @@ function displayAsetData() {
                             ${getCategoryName(item.kategori || 'lainnya')}
                         </span>
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${formatCurrency(item.nilai_saat_ini || 0)}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${formatCurrency(item.nilai_perolehan || 0)}</td>
                     <td class="px-6 py-4 whitespace-nowrap">
                         <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${kondisiColors[item.kondisi] || 'bg-gray-100 text-gray-800'}">
                             ${getConditionName(item.kondisi || 'baik')}
@@ -502,7 +556,7 @@ function displayAsetData() {
                         <p><span class="font-medium">No:</span> ${rowNumber}</p>
                         <p><span class="font-medium">Kode:</span> ${item.kode_aset || '-'}</p>
                         <p><span class="font-medium">Kategori:</span> ${getCategoryName(item.kategori || 'lainnya')}</p>
-                        <p><span class="font-medium">Nilai:</span> ${formatCurrency(item.nilai_saat_ini || 0)}</p>
+                        <p><span class="font-medium">Nilai:</span> ${formatCurrency(item.nilai_perolehan || 0)}</p>
                         <p><span class="font-medium">Lokasi:</span> ${item.lokasi || '-'}</p>
                     </div>
                     <div class="flex justify-end space-x-2 mt-3">
@@ -537,9 +591,10 @@ function editAset(id) {
         document.getElementById('kodeAset').value = aset.kode_aset;
         document.getElementById('namaAset').value = aset.nama_aset;
         document.getElementById('kategoriAset').value = aset.kategori;
+        document.getElementById('deskripsi').value = aset.deskripsi || '';
         document.getElementById('tanggalPerolehan').value = aset.tanggal_perolehan || '';
         document.getElementById('nilaiPerolehan').value = aset.nilai_perolehan || '';
-        document.getElementById('nilaiSaatIni').value = aset.nilai_saat_ini || '';
+        // document.getElementById('nilaiSaatIni').value = aset.nilai_saat_ini || ''; // Field tidak ada di model
         document.getElementById('sumberDana').value = aset.sumber_dana || '';
         document.getElementById('kondisi').value = aset.kondisi;
         document.getElementById('lokasi').value = aset.lokasi;
@@ -594,20 +649,26 @@ document.getElementById('asetForm').addEventListener('submit', async function(e)
         kode_aset: document.getElementById('kodeAset').value,
         nama_aset: document.getElementById('namaAset').value,
         kategori: document.getElementById('kategoriAset').value,
+        deskripsi: document.getElementById('deskripsi').value,
         tanggal_perolehan: document.getElementById('tanggalPerolehan').value,
         nilai_perolehan: parseInt(document.getElementById('nilaiPerolehan').value) || 0,
-        nilai_saat_ini: parseInt(document.getElementById('nilaiSaatIni').value) || 0,
-        sumber_dana: document.getElementById('sumberDana').value,
+        // nilai_saat_ini: parseInt(document.getElementById('nilaiSaatIni').value) || 0, // Field tidak ada di model
+        // sumber_dana: document.getElementById('sumberDana').value, // Field tidak ada di model
         kondisi: document.getElementById('kondisi').value,
         lokasi: document.getElementById('lokasi').value,
-        merk: document.getElementById('merk').value,
-        model: document.getElementById('model').value,
-        tahun_pembuatan: parseInt(document.getElementById('tahunPembuatan').value) || null,
+        // merk: document.getElementById('merk').value, // Field tidak ada di model
+        // model: document.getElementById('model').value, // Field tidak ada di model
+        // tahun_pembuatan: parseInt(document.getElementById('tahunPembuatan').value) || null, // Field tidak ada di model
         penanggung_jawab: document.getElementById('penanggungJawab').value,
-        status_kepemilikan: document.getElementById('statusKepemilikan').value,
+        // status_kepemilikan: document.getElementById('statusKepemilikan').value, // Field tidak ada di model
         keterangan: document.getElementById('keterangan').value,
-        tanggal_pemeliharaan: document.getElementById('tanggalPemeliharaan').value,
-        biaya_pemeliharaan: parseInt(document.getElementById('biayaPemeliharaan').value) || 0
+        // tanggal_pemeliharaan: document.getElementById('tanggalPemeliharaan').value, // Field tidak ada di model
+        // biaya_pemeliharaan: parseInt(document.getElementById('biayaPemeliharaan').value) || 0, // Field tidak ada di model
+        // Field yang diperlukan model tapi tidak ada di form - menggunakan nilai default
+        masa_manfaat: 10, // Default 10 tahun
+        penyusutan_per_tahun: 0, // Default 0
+        nilai_buku: parseInt(document.getElementById('nilaiPerolehan').value) || 0, // Sama dengan nilai perolehan
+        nomor_sertifikat: '' // Default kosong
     };
     
     try {

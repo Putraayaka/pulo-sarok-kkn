@@ -1517,7 +1517,7 @@ document.getElementById('searchKoperasiInput').addEventListener('keypress', func
  
 // Load UKM data
 function loadUkm(page = 1, search = '') {
-    const url = `/pulosarok/business/api/ukm/?page=${page}&search=${encodeURIComponent(search)}`;
+    const url = `/pulosarok/business/api/ukm/list/?page=${page}&search=${encodeURIComponent(search)}`;
     
     fetch(url, {
         method: 'GET',
@@ -2170,6 +2170,96 @@ document.getElementById('asetForm').addEventListener('submit', function(e) {
     });
 });
 
+// Edit UKM function
+function editUkm(id) {
+    const ukm = ukmData.find(item => item.id === id);
+    if (ukm) {
+        document.getElementById('ukmModalTitle').textContent = 'Edit UKM';
+        document.getElementById('ukmId').value = ukm.id;
+        document.getElementById('ukmName').value = ukm.nama_usaha;
+        document.getElementById('ukmDescription').value = ukm.keterangan || '';
+        document.getElementById('ukmIsActive').checked = ukm.status === 'aktif';
+        document.getElementById('ukmModal').classList.remove('hidden');
+    }
+}
+
+// Delete UKM function
+function deleteUkm(id, name) {
+    if (confirm(`Apakah Anda yakin ingin menghapus UKM "${name}"?`)) {
+        fetch(`/pulosarok/business/api/ukm/operations/`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify({id: id})
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showAlert('UKM berhasil dihapus', 'success');
+                loadUkm(currentUkmPage);
+            } else {
+                showAlert('Error: ' + data.error, 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showAlert('Terjadi kesalahan: ' + error.message, 'error');
+        });
+    }
+}
+
+// Close UKM modal
+function closeUkmModal() {
+    document.getElementById('ukmModal').classList.add('hidden');
+}
+
+// Search UKM function
+function searchUkm() {
+    const searchTerm = document.getElementById('searchUkmInput').value;
+    loadUkm(1, searchTerm);
+}
+
+// Update UKM pagination
+function updateUkmPagination(currentPage, totalPages) {
+    const paginationContainer = document.getElementById('ukmPagination');
+    if (!paginationContainer) return;
+    
+    let paginationHTML = '';
+    
+    // Previous button
+    if (currentPage > 1) {
+        paginationHTML += `<button onclick="loadUkm(${currentPage - 1})" class="px-3 py-2 bg-white border border-gray-300 text-gray-500 hover:bg-gray-50 rounded-l-md">Previous</button>`;
+    }
+    
+    // Page numbers
+    for (let i = 1; i <= totalPages; i++) {
+        if (i === currentPage) {
+            paginationHTML += `<button class="px-3 py-2 bg-orange-600 border border-orange-600 text-white">${i}</button>`;
+        } else {
+            paginationHTML += `<button onclick="loadUkm(${i})" class="px-3 py-2 bg-white border border-gray-300 text-gray-500 hover:bg-gray-50">${i}</button>`;
+        }
+    }
+    
+    // Next button
+    if (currentPage < totalPages) {
+        paginationHTML += `<button onclick="loadUkm(${currentPage + 1})" class="px-3 py-2 bg-white border border-gray-300 text-gray-500 hover:bg-gray-50 rounded-r-md">Next</button>`;
+    }
+    
+    paginationContainer.innerHTML = paginationHTML;
+}
+
+// Open add UKM modal
+function openAddUkmModal() {
+    document.getElementById('ukmModalTitle').textContent = 'Tambah UKM';
+    document.getElementById('ukmId').value = '';
+    document.getElementById('ukmName').value = '';
+    document.getElementById('ukmDescription').value = '';
+    document.getElementById('ukmIsActive').checked = true;
+    document.getElementById('ukmModal').classList.remove('hidden');
+}
+
 // Form submission handlers for UKM
 document.getElementById('ukmForm').addEventListener('submit', function(e) {
     e.preventDefault();
@@ -2177,11 +2267,21 @@ document.getElementById('ukmForm').addEventListener('submit', function(e) {
     const id = document.getElementById('ukmId').value;
     const formData = {
         nama_usaha: document.getElementById('ukmName').value,
-        deskripsi: document.getElementById('ukmDescription').value,
+        pemilik: 'Admin',
+        nik_pemilik: '0000000000000000',
+        alamat_usaha: 'Alamat Usaha',
+        alamat_pemilik: 'Alamat Pemilik',
+        jenis_usaha: 'Umum',
+        skala_usaha: 'mikro',
+        tanggal_mulai: new Date().toISOString().split('T')[0],
+        telepon: '000000000000',
+        produk_utama: document.getElementById('ukmDescription').value || 'Produk Utama',
+        target_pasar: 'Lokal',
+        keterangan: document.getElementById('ukmDescription').value,
         status: document.getElementById('ukmIsActive').checked ? 'aktif' : 'tidak_aktif'
     };
     
-    const url = id ? `/pulosarok/business/api/ukm/` : `/pulosarok/business/api/ukm/`;
+    const url = `/pulosarok/business/api/ukm/operations/`;
     const method = id ? 'PUT' : 'POST';
     
     if (id) {

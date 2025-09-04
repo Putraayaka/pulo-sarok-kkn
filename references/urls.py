@@ -16,12 +16,13 @@ admin_patterns = [
     path('penduduk/edit/<int:pk>/', views.edit_penduduk, name='edit_penduduk'),
     path('disabilitas/', views.disabilitas_admin, name='disabilitas_admin'),
     path('family/', views.family_admin, name='family_admin'),
+    path('test-debug/', views.test_debug_view, name='test_debug'),
 ]
 
 # Admin API patterns (with authentication)
 admin_api_patterns = [
-    # Admin API endpoints for AJAX operations
-    path('penduduk/', views.penduduk_list_api, name='admin_penduduk_list'),
+    # Admin API endpoints for CRUD operations
+    path('penduduk/', views.penduduk_list_api, name='admin_penduduk_list'),  # List penduduk with pagination
     path('penduduk/<int:pk>/', views.penduduk_detail_api, name='admin_penduduk_detail'),
     path('penduduk/create/', views.penduduk_create_api, name='admin_penduduk_create'),
     path('penduduk/count/', views.penduduk_count_api, name='admin_penduduk_count'),
@@ -44,6 +45,9 @@ admin_api_patterns = [
     # Export/Import Admin APIs
     path('export/<str:model_type>/', views.export_data, name='admin_export_data'),
     path('import/<str:model_type>/', views.import_data, name='admin_import_data'),
+    
+    # Stats API
+    path('stats/', views.references_stats_api, name='admin_stats'),
 ]
 
 # API URL patterns
@@ -115,8 +119,9 @@ api_patterns = [
 urlpatterns = [
     # Main admin view
     path('', views.references_admin, name='references_admin'),
+    path('references-view/', views.references_view, name='references_view'),
     
-    # Include admin and API patterns
+    # Include sub-patterns
     path('admin/', include(admin_patterns)),
     path('admin-api/', include(admin_api_patterns)),  # Admin API endpoints
     path('api/', include(api_patterns)),

@@ -16,9 +16,9 @@
                 <button onclick="openUploadModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition duration-200 flex items-center justify-center">
                     <i class="fas fa-upload mr-2"></i>Upload Media
                 </button>
-                <a href="{% url 'news:news_admin' %}" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition duration-200 flex items-center justify-center">
+                <button onclick="history.back()" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition duration-200 flex items-center justify-center">
                     <i class="fas fa-arrow-left mr-2"></i>Kembali
-                </a>
+                </button>
             </div>
         </div>
     </div>
@@ -203,7 +203,7 @@
             </button>
         </div>
         
-            <form method="POST" action="{% url 'news:news_media_upload' %}" enctype="multipart/form-data" id="uploadForm">
+            <form method="POST" action="{% url 'news:news_media_upload_view' %}" enctype="multipart/form-data" id="uploadForm">
             {% csrf_token %}
                 <div class="space-y-4">
                     <div>
@@ -380,13 +380,13 @@ function updateSelection() {
 // Media actions
 function editMedia(mediaId) {
     // Redirect to edit page or open edit modal
-    window.location.href = `/admin/news/media/edit/${mediaId}/`;
+    window.location.href = `{% url 'news:admin_media_update' 0 %}`.replace('0', mediaId);
 }
 
 function deleteMedia(mediaId) {
     // Set the form action to the delete URL
     const deleteForm = document.getElementById('deleteForm');
-    deleteForm.action = `/admin/news/media/delete/${mediaId}/`;
+    deleteForm.action = `{% url 'news:admin_media_delete' 0 %}`.replace('0', mediaId);
     
     // Show the delete confirmation modal
     document.getElementById('deleteModal').classList.remove('hidden');
@@ -406,7 +406,7 @@ function deleteSelected() {
     // Create form and submit
     const form = document.createElement('form');
     form.method = 'POST';
-    form.action = '{% url "news:news_media_bulk_delete" %}';
+    form.action = '{% url "news:admin_media_bulk_delete" %}';
     
     const csrfToken = document.createElement('input');
     csrfToken.type = 'hidden';

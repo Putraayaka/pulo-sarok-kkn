@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Test</title>
+    <script src="config.js"></script>
+    <script src="api.js"></script>
+    <script src="informasi-api.js"></script>
+</head>
+<body>
+    <h1>Debug Test</h1>
+    <div id="test-output"></div>
+    
+    <script>
+        console.log('Debug test started');
+        console.log('Config loaded:', typeof API_BASE_URL !== 'undefined');
+        console.log('API_BASE_URL:', typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : 'undefined');
+        console.log('PUBLIC_API_BASE_URL:', typeof PUBLIC_API_BASE_URL !== 'undefined' ? PUBLIC_API_BASE_URL : 'undefined');
+        console.log('InformasiApiService:', typeof InformasiApiService !== 'undefined');
+        console.log('InformasiPageManager:', typeof InformasiPageManager !== 'undefined');
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('DOM loaded');
+            
+            if (typeof InformasiApiService !== 'undefined') {
+                const apiService = new InformasiApiService();
+                console.log('Testing API call...');
+                
+                apiService.getLatestNews(1, 3)
+                    .then(data => {
+                        console.log('API Success:', data);
+                        document.getElementById('test-output').innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+                    })
+                    .catch(error => {
+                        console.error('API Error:', error);
+                        document.getElementById('test-output').innerHTML = '<p style="color: red;">Error: ' + error.message + '</p>';
+                    });
+            } else {
+                console.error('InformasiApiService not found');
+                document.getElementById('test-output').innerHTML = '<p style="color: red;">InformasiApiService not found</p>';
+            }
+        });
+    </script>
+</body>
+</html>

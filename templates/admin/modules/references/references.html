@@ -1,0 +1,691 @@
+{% extends 'admin/base.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .references-header {
+        background: linear-gradient(135deg, #8e44ad 0%, #3498db 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 10px;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    
+    .references-header h1 {
+        margin: 0;
+        font-size: 2.5rem;
+        font-weight: 700;
+    }
+    
+    .references-header p {
+        margin: 0.5rem 0 0 0;
+        opacity: 0.9;
+        font-size: 1.1rem;
+    }
+    
+    .filter-section {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        margin-bottom: 2rem;
+    }
+    
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .stat-card {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        border-left: 4px solid;
+        transition: transform 0.3s ease;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-5px);
+    }
+    
+    .stat-card.total { border-left-color: #8e44ad; }
+    .stat-card.active { border-left-color: #27ae60; }
+    .stat-card.male { border-left-color: #3498db; }
+    .stat-card.female { border-left-color: #e91e63; }
+    
+    .stat-number {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin: 0;
+    }
+    
+    .stat-label {
+        color: #666;
+        margin: 0.5rem 0 0 0;
+        font-size: 0.9rem;
+    }
+    
+    .references-table {
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        overflow: hidden;
+    }
+    
+    .table-header {
+        background: #f8f9fa;
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid #dee2e6;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .btn-group .btn {
+        margin-left: 0.5rem;
+    }
+    
+    .table {
+        margin: 0;
+    }
+    
+    .table th {
+        background: #f8f9fa;
+        border-top: none;
+        font-weight: 600;
+        color: #495057;
+    }
+    
+    .badge {
+        font-size: 0.75rem;
+        padding: 0.375rem 0.75rem;
+    }
+    
+    .action-buttons .btn {
+        padding: 0.25rem 0.5rem;
+        margin: 0 0.125rem;
+        font-size: 0.75rem;
+    }
+    
+    .modal-header {
+        background: linear-gradient(135deg, #8e44ad 0%, #3498db 100%);
+        color: white;
+    }
+    
+    .form-group label {
+        font-weight: 600;
+        color: #495057;
+    }
+    
+    .loading {
+        text-align: center;
+        padding: 2rem;
+        color: #666;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 3rem;
+        color: #666;
+    }
+    
+    .empty-state i {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+    
+    .avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: #f8f9fa;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        color: #495057;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="references-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1><i class="fas fa-users me-3"></i>{{ page_title }}</h1>
+                <p>{{ page_subtitle }}</p>
+            </div>
+            <button class="btn btn-light btn-lg" onclick="refreshData()">
+                <i class="fas fa-sync-alt"></i> Refresh
+            </button>
+        </div>
+    </div>
+    
+    <!-- Filters -->
+    <div class="filter-section">
+        <div class="row">
+            <div class="col-md-3">
+                <div class="form-group">
+                    <label for="searchInput">Pencarian</label>
+                    <input type="text" class="form-control" id="searchInput" placeholder="Cari nama, NIK, alamat...">
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="form-group">
+                    <label for="genderFilter">Jenis Kelamin</label>
+                    <select class="form-control" id="genderFilter">
+                        <option value="">Semua</option>
+                        <option value="L">Laki-laki</option>
+                        <option value="P">Perempuan</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="form-group">
+                    <label for="statusFilter">Status</label>
+                    <select class="form-control" id="statusFilter">
+                        <option value="">Semua Status</option>
+                        <option value="active">Aktif</option>
+                        <option value="inactive">Tidak Aktif</option>
+                        <option value="moved">Pindah</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="form-group">
+                    <label for="ageFilter">Kelompok Umur</label>
+                    <select class="form-control" id="ageFilter">
+                        <option value="">Semua Umur</option>
+                        <option value="0-17">0-17 tahun</option>
+                        <option value="18-60">18-60 tahun</option>
+                        <option value="60+">60+ tahun</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="form-group">
+                    <label>&nbsp;</label>
+                    <div class="d-flex">
+                        <button class="btn btn-primary me-2" onclick="applyFilters()">
+                            <i class="fas fa-search"></i> Filter
+                        </button>
+                        <button class="btn btn-secondary" onclick="clearFilters()">
+                            <i class="fas fa-times"></i> Reset
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Statistics -->
+    <div class="stats-grid">
+        <div class="stat-card total">
+            <h3 class="stat-number" id="totalResidents">0</h3>
+            <p class="stat-label">Total Penduduk</p>
+        </div>
+        <div class="stat-card active">
+            <h3 class="stat-number" id="activeResidents">0</h3>
+            <p class="stat-label">Penduduk Aktif</p>
+        </div>
+        <div class="stat-card male">
+            <h3 class="stat-number" id="maleResidents">0</h3>
+            <p class="stat-label">Laki-laki</p>
+        </div>
+        <div class="stat-card female">
+            <h3 class="stat-number" id="femaleResidents">0</h3>
+            <p class="stat-label">Perempuan</p>
+        </div>
+    </div>
+    
+    <!-- References Table -->
+    <div class="references-table">
+        <div class="table-header">
+            <h5 class="mb-0"><i class="fas fa-list me-2"></i>Data Penduduk</h5>
+            <div class="btn-group">
+                <button class="btn btn-success" onclick="addResident()">
+                    <i class="fas fa-plus"></i> Tambah Penduduk
+                </button>
+                <button class="btn btn-info" onclick="importData()">
+                    <i class="fas fa-upload"></i> Import
+                </button>
+                <button class="btn btn-warning" onclick="exportData()">
+                    <i class="fas fa-download"></i> Export
+                </button>
+            </div>
+        </div>
+        
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>No</th>
+                        <th>Foto</th>
+                        <th>NIK</th>
+                        <th>Nama Lengkap</th>
+                        <th>Jenis Kelamin</th>
+                        <th>Tanggal Lahir</th>
+                        <th>Alamat</th>
+                        <th>Status</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody id="residentsTableBody">
+                    <tr>
+                        <td colspan="9" class="loading">
+                            <i class="fas fa-spinner fa-spin"></i> Memuat data...
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Add/Edit Resident Modal -->
+<div class="modal fade" id="residentModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="residentModalTitle">
+                    <i class="fas fa-user me-2"></i>Tambah Penduduk
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="residentForm">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label for="residentNIK">NIK *</label>
+                                <input type="text" class="form-control" id="residentNIK" maxlength="16" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label for="residentName">Nama Lengkap *</label>
+                                <input type="text" class="form-control" id="residentName" required>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label for="residentGender">Jenis Kelamin *</label>
+                                <select class="form-control" id="residentGender" required>
+                                    <option value="">Pilih Jenis Kelamin</option>
+                                    <option value="L">Laki-laki</option>
+                                    <option value="P">Perempuan</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label for="residentBirthDate">Tanggal Lahir *</label>
+                                <input type="date" class="form-control" id="residentBirthDate" required>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label for="residentBirthPlace">Tempat Lahir</label>
+                                <input type="text" class="form-control" id="residentBirthPlace">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label for="residentStatus">Status</label>
+                                <select class="form-control" id="residentStatus">
+                                    <option value="active">Aktif</option>
+                                    <option value="inactive">Tidak Aktif</option>
+                                    <option value="moved">Pindah</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group mb-3">
+                        <label for="residentAddress">Alamat Lengkap</label>
+                        <textarea class="form-control" id="residentAddress" rows="3" placeholder="Alamat lengkap..."></textarea>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label for="residentPhone">No. Telepon</label>
+                                <input type="text" class="form-control" id="residentPhone">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label for="residentPhoto">Foto</label>
+                                <input type="file" class="form-control" id="residentPhoto" accept="image/*">
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                <button type="button" class="btn btn-primary" onclick="saveResident()">Simpan</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Resident Detail Modal -->
+<div class="modal fade" id="residentDetailModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-info-circle me-2"></i>Detail Penduduk
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="residentDetailContent">
+                <!-- Detail content will be loaded here -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let currentResidentId = null;
+    
+    // Initialize page
+    $(document).ready(function() {
+        loadResidents();
+        loadStatistics();
+    });
+    
+    // Load residents data
+    function loadResidents() {
+        $('#residentsTableBody').html('<tr><td colspan="9" class="loading"><i class="fas fa-spinner fa-spin"></i> Memuat data...</td></tr>');
+        
+        // Simulate API call
+        setTimeout(() => {
+            const sampleData = [
+                {
+                    id: 1,
+                    nik: '1234567890123456',
+                    name: 'Ahmad Suryadi',
+                    gender: 'L',
+                    birth_date: '1985-05-15',
+                    address: 'Jl. Merdeka No. 123, RT 01/RW 02',
+                    status: 'active',
+                    photo: null
+                },
+                {
+                    id: 2,
+                    nik: '1234567890123457',
+                    name: 'Siti Nurhaliza',
+                    gender: 'P',
+                    birth_date: '1990-08-20',
+                    address: 'Jl. Sudirman No. 45, RT 02/RW 01',
+                    status: 'active',
+                    photo: null
+                },
+                {
+                    id: 3,
+                    nik: '1234567890123458',
+                    name: 'Budi Santoso',
+                    gender: 'L',
+                    birth_date: '1978-12-10',
+                    address: 'Jl. Gatot Subroto No. 67, RT 03/RW 02',
+                    status: 'moved',
+                    photo: null
+                }
+            ];
+            
+            displayResidents(sampleData);
+        }, 1000);
+    }
+    
+    // Display residents in table
+    function displayResidents(residents) {
+        if (residents.length === 0) {
+            $('#residentsTableBody').html(`
+                <tr>
+                    <td colspan="9" class="empty-state">
+                        <i class="fas fa-users"></i>
+                        <p>Tidak ada data penduduk ditemukan</p>
+                    </td>
+                </tr>
+            `);
+            return;
+        }
+        
+        let html = '';
+        residents.forEach((resident, index) => {
+            const statusBadge = getStatusBadge(resident.status);
+            const genderBadge = getGenderBadge(resident.gender);
+            const avatar = getAvatar(resident.name, resident.photo);
+            
+            html += `
+                <tr>
+                    <td>${index + 1}</td>
+                    <td>${avatar}</td>
+                    <td>${resident.nik}</td>
+                    <td>${resident.name}</td>
+                    <td>${genderBadge}</td>
+                    <td>${formatDate(resident.birth_date)}</td>
+                    <td>${resident.address}</td>
+                    <td>${statusBadge}</td>
+                    <td class="action-buttons">
+                        <button class="btn btn-sm btn-info" onclick="viewResident(${resident.id})" title="Lihat">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button class="btn btn-sm btn-warning" onclick="editResident(${resident.id})" title="Edit">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-sm btn-danger" onclick="deleteResident(${resident.id})" title="Hapus">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `;
+        });
+        
+        $('#residentsTableBody').html(html);
+    }
+    
+    // Load statistics
+    function loadStatistics() {
+        // Simulate API calls for statistics
+        $('#totalResidents').text('2,456');
+        $('#activeResidents').text('2,398');
+        $('#maleResidents').text('1,234');
+        $('#femaleResidents').text('1,222');
+    }
+    
+    // Get status badge
+    function getStatusBadge(status) {
+        const badges = {
+            'active': '<span class="badge bg-success">Aktif</span>',
+            'inactive': '<span class="badge bg-secondary">Tidak Aktif</span>',
+            'moved': '<span class="badge bg-warning">Pindah</span>'
+        };
+        return badges[status] || '<span class="badge bg-secondary">Unknown</span>';
+    }
+    
+    // Get gender badge
+    function getGenderBadge(gender) {
+        const badges = {
+            'L': '<span class="badge bg-primary">Laki-laki</span>',
+            'P': '<span class="badge bg-pink">Perempuan</span>'
+        };
+        return badges[gender] || '<span class="badge bg-secondary">Unknown</span>';
+    }
+    
+    // Get avatar
+    function getAvatar(name, photo) {
+        if (photo) {
+            return `<img src="${photo}" class="avatar" alt="${name}">`;
+        } else {
+            const initials = name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+            return `<div class="avatar">${initials}</div>`;
+        }
+    }
+    
+    // Format date
+    function formatDate(dateString) {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('id-ID');
+    }
+    
+    // Add new resident
+    function addResident() {
+        currentResidentId = null;
+        $('#residentModalTitle').html('<i class="fas fa-plus me-2"></i>Tambah Penduduk');
+        $('#residentForm')[0].reset();
+        $('#residentModal').modal('show');
+    }
+    
+    // Edit resident
+    function editResident(id) {
+        currentResidentId = id;
+        $('#residentModalTitle').html('<i class="fas fa-edit me-2"></i>Edit Penduduk');
+        
+        // Load resident data (simulate API call)
+        // In real implementation, fetch data from API
+        
+        $('#residentModal').modal('show');
+    }
+    
+    // View resident detail
+    function viewResident(id) {
+        $('#residentDetailContent').html('<div class="text-center"><i class="fas fa-spinner fa-spin"></i> Memuat detail...</div>');
+        $('#residentDetailModal').modal('show');
+        
+        // Simulate API call
+        setTimeout(() => {
+            const detailHtml = `
+                <div class="row">
+                    <div class="col-md-3 text-center">
+                        <div class="avatar" style="width: 100px; height: 100px; font-size: 2rem; margin: 0 auto 1rem;">AS</div>
+                        <h5>Ahmad Suryadi</h5>
+                    </div>
+                    <div class="col-md-9">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <strong>NIK:</strong><br>
+                                1234567890123456
+                            </div>
+                            <div class="col-md-6">
+                                <strong>Jenis Kelamin:</strong><br>
+                                <span class="badge bg-primary">Laki-laki</span>
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <strong>Tanggal Lahir:</strong><br>
+                                15 Mei 1985
+                            </div>
+                            <div class="col-md-6">
+                                <strong>Status:</strong><br>
+                                <span class="badge bg-success">Aktif</span>
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="row">
+                            <div class="col-12">
+                                <strong>Alamat:</strong><br>
+                                Jl. Merdeka No. 123, RT 01/RW 02
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            $('#residentDetailContent').html(detailHtml);
+        }, 500);
+    }
+    
+    // Save resident
+    function saveResident() {
+        // Validate form
+        if (!$('#residentNIK').val() || !$('#residentName').val() || !$('#residentGender').val() || !$('#residentBirthDate').val()) {
+            alert('Mohon lengkapi field yang wajib diisi!');
+            return;
+        }
+        
+        // Validate NIK length
+        if ($('#residentNIK').val().length !== 16) {
+            alert('NIK harus 16 digit!');
+            return;
+        }
+        
+        // Simulate API call
+        alert(currentResidentId ? 'Data penduduk berhasil diperbarui!' : 'Data penduduk berhasil ditambahkan!');
+        $('#residentModal').modal('hide');
+        loadResidents();
+        loadStatistics();
+    }
+    
+    // Delete resident
+    function deleteResident(id) {
+        if (confirm('Apakah Anda yakin ingin menghapus data penduduk ini?')) {
+            // Simulate API call
+            alert('Data penduduk berhasil dihapus!');
+            loadResidents();
+            loadStatistics();
+        }
+    }
+    
+    // Apply filters
+    function applyFilters() {
+        const search = $('#searchInput').val();
+        const gender = $('#genderFilter').val();
+        const status = $('#statusFilter').val();
+        const age = $('#ageFilter').val();
+        
+        // Simulate filtered data loading
+        loadResidents();
+    }
+    
+    // Clear filters
+    function clearFilters() {
+        $('#searchInput').val('');
+        $('#genderFilter').val('');
+        $('#statusFilter').val('');
+        $('#ageFilter').val('');
+        loadResidents();
+    }
+    
+    // Refresh data
+    function refreshData() {
+        loadResidents();
+        loadStatistics();
+    }
+    
+    // Import data
+    function importData() {
+        alert('Fitur import data akan segera tersedia...');
+        // In real implementation, show import modal or trigger file upload
+    }
+    
+    // Export data
+    function exportData() {
+        alert('Mengekspor data penduduk...');
+        // In real implementation, trigger export functionality
+    }
+</script>
+{% endblock %}

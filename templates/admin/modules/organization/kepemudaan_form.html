@@ -149,6 +149,23 @@
             <form method="post" enctype="multipart/form-data" class="space-y-6" id="kepemudaanForm">
                 {% csrf_token %}
                 
+                <!-- Hidden field for tanggal_terbentuk -->
+                {{ form.tanggal_terbentuk|add_class:"hidden" }}
+                
+                <!-- Display Django messages -->
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="{% if message.tags == 'error' %}bg-red-50 border-red-200 text-red-800{% elif message.tags == 'success' %}bg-green-50 border-green-200 text-green-800{% elif message.tags == 'warning' %}bg-yellow-50 border-yellow-200 text-yellow-800{% else %}bg-blue-50 border-blue-200 text-blue-800{% endif %} border rounded-lg p-4 mb-4">
+                            <div class="flex">
+                                <i class="{% if message.tags == 'error' %}fas fa-exclamation-circle text-red-400{% elif message.tags == 'success' %}fas fa-check-circle text-green-400{% elif message.tags == 'warning' %}fas fa-exclamation-triangle text-yellow-400{% else %}fas fa-info-circle text-blue-400{% endif %} mt-0.5 mr-3"></i>
+                                <div class="flex-1">
+                                    <p class="text-sm font-medium">{{ message }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+                
                 <!-- Display form errors -->
                 {% if form.non_field_errors %}
                     <div class="bg-red-50 border border-red-200 rounded-lg p-4">
@@ -163,6 +180,18 @@
                         </div>
                     </div>
                 {% endif %}
+                
+                <!-- Error message container for JavaScript validation -->
+                <div id="errorContainer" class="bg-red-50 border border-red-200 rounded-lg p-4 hidden">
+                    <div class="flex">
+                        <i class="fas fa-exclamation-circle text-red-400 mt-0.5 mr-3"></i>
+                        <div>
+                            <h3 class="text-sm font-medium text-red-800">Mohon perbaiki kesalahan berikut:</h3>
+                            <ul id="errorList" class="mt-2 text-sm text-red-700 list-disc list-inside">
+                            </ul>
+                        </div>
+                    </div>
+                </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6" style="width: 100%;">
                     <!-- Nama Organisasi -->
@@ -209,17 +238,6 @@
                         {% endif %}
                     </div>
 
-                    <!-- Wakil Ketua -->
-                    <div class="form-field">
-                        <label for="{{ form.wakil_ketua.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2 form-label">
-                            Wakil Ketua
-                        </label>
-                        {{ form.wakil_ketua|add_class:"form-input" }}
-                        {% if form.wakil_ketua.errors %}
-                            <p class="mt-1 text-sm text-red-600 form-error">{{ form.wakil_ketua.errors.0 }}</p>
-                        {% endif %}
-                    </div>
-
                     <!-- Sekretaris -->
                     <div class="form-field">
                         <label for="{{ form.sekretaris.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2 form-label">
@@ -239,17 +257,6 @@
                         {{ form.bendahara|add_class:"form-input" }}
                         {% if form.bendahara.errors %}
                             <p class="mt-1 text-sm text-red-600 form-error">{{ form.bendahara.errors.0 }}</p>
-                        {% endif %}
-                    </div>
-
-                    <!-- Jumlah Anggota -->
-                    <div class="form-field">
-                        <label for="{{ form.jumlah_anggota.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2 form-label">
-                            Jumlah Anggota
-                        </label>
-                        {{ form.jumlah_anggota|add_class:"form-input" }}
-                        {% if form.jumlah_anggota.errors %}
-                            <p class="mt-1 text-sm text-red-600 form-error">{{ form.jumlah_anggota.errors.0 }}</p>
                         {% endif %}
                     </div>
 
@@ -305,6 +312,17 @@
                         {{ form.email|add_class:"form-input" }}
                         {% if form.email.errors %}
                             <p class="mt-1 text-sm text-red-600 form-error">{{ form.email.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+
+                    <!-- Jumlah Anggota Aktif -->
+                    <div class="form-field">
+                        <label for="{{ form.jumlah_anggota_aktif.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2 form-label">
+                            Jumlah Anggota Aktif <span class="text-red-500">*</span>
+                        </label>
+                        {{ form.jumlah_anggota_aktif|add_class:"form-input"|attr:"required:required" }}
+                        {% if form.jumlah_anggota_aktif.errors %}
+                            <p class="mt-1 text-sm text-red-600 form-error">{{ form.jumlah_anggota_aktif.errors.0 }}</p>
                         {% endif %}
                     </div>
 
@@ -379,52 +397,95 @@
                 </div>
                 
                 <script>
+                    function showErrorMessages(errors) {
+                        const errorContainer = document.getElementById('errorContainer');
+                        const errorList = document.getElementById('errorList');
+                        
+                        // Clear previous errors
+                        errorList.innerHTML = '';
+                        
+                        // Add new errors
+                        errors.forEach(error => {
+                            const li = document.createElement('li');
+                            li.textContent = error.message;
+                            errorList.appendChild(li);
+                            
+                            // Highlight the field
+                            if (error.field) {
+                                const field = document.querySelector(`[name="${error.field}"]`);
+                                if (field) {
+                                    field.classList.add('border-red-500');
+                                    field.addEventListener('focus', function() {
+                                        this.classList.remove('border-red-500');
+                                    }, { once: true });
+                                }
+                            }
+                        });
+                        
+                        // Show error container and scroll to it
+                        errorContainer.classList.remove('hidden');
+                        errorContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                    
+                    function hideErrorMessages() {
+                        const errorContainer = document.getElementById('errorContainer');
+                        errorContainer.classList.add('hidden');
+                    }
+                    
                     document.getElementById('kepemudaanForm').addEventListener('submit', function(e) {
-                        // Pastikan nama_organisasi diisi
-                        var namaOrganisasi = document.querySelector('input[name="nama_organisasi"]');
+                        // Sync tanggal_berdiri to tanggal_terbentuk before validation
+                        const tanggalBerdiri = document.querySelector('input[name="tanggal_berdiri"]');
+                        const tanggalTerbentuk = document.querySelector('input[name="tanggal_terbentuk"]');
+                        if (tanggalBerdiri && tanggalTerbentuk) {
+                            tanggalTerbentuk.value = tanggalBerdiri.value;
+                        }
+                        
+                        const errors = [];
+                        
+                        // Validate nama_organisasi
+                        const namaOrganisasi = document.querySelector('input[name="nama_organisasi"]');
                         if (!namaOrganisasi.value.trim()) {
-                            namaOrganisasi.classList.add('border-red-500');
-                            alert('Nama Organisasi harus diisi!');
-                            e.preventDefault();
-                            return false;
+                            errors.push({ field: 'nama_organisasi', message: 'Nama Organisasi harus diisi' });
                         }
                         
-                        // Pastikan jenis_organisasi dipilih
-                        var jenisOrganisasi = document.querySelector('select[name="jenis_organisasi"]');
+                        // Validate jenis_organisasi
+                        const jenisOrganisasi = document.querySelector('select[name="jenis_organisasi"]');
                         if (!jenisOrganisasi.value) {
-                            jenisOrganisasi.classList.add('border-red-500');
-                            alert('Jenis Organisasi harus dipilih!');
-                            e.preventDefault();
-                            return false;
+                            errors.push({ field: 'jenis_organisasi', message: 'Jenis Organisasi harus dipilih' });
                         }
                         
-                        // Pastikan ketua dipilih
-                        var ketua = document.querySelector('select[name="ketua"]');
+                        // Validate ketua
+                        const ketua = document.querySelector('select[name="ketua"]');
                         if (!ketua.value) {
-                            ketua.classList.add('border-red-500');
-                            alert('Ketua harus dipilih!');
-                            e.preventDefault();
-                            return false;
+                            errors.push({ field: 'ketua', message: 'Ketua harus dipilih' });
                         }
                         
-                        // Pastikan status dipilih
-                        var status = document.querySelector('select[name="status"]');
+                        // Validate status
+                        const status = document.querySelector('select[name="status"]');
                         if (!status.value) {
-                            status.classList.add('border-red-500');
-                            alert('Status harus dipilih!');
-                            e.preventDefault();
-                            return false;
+                            errors.push({ field: 'status', message: 'Status harus dipilih' });
                         }
                         
-                        // Pastikan tanggal_berdiri diisi
-                        var tanggalBerdiri = document.querySelector('input[name="tanggal_berdiri"]');
+                        // Validate tanggal_berdiri
                         if (!tanggalBerdiri.value) {
-                            tanggalBerdiri.classList.add('border-red-500');
-                            alert('Tanggal Berdiri harus diisi!');
+                            errors.push({ field: 'tanggal_berdiri', message: 'Tanggal Berdiri harus diisi' });
+                        }
+                        
+                        // Validate jumlah_anggota_aktif
+                        const jumlahAnggota = document.querySelector('input[name="jumlah_anggota_aktif"]');
+                        if (!jumlahAnggota.value || jumlahAnggota.value <= 0) {
+                            errors.push({ field: 'jumlah_anggota_aktif', message: 'Jumlah Anggota Aktif harus diisi dengan angka positif' });
+                        }
+                        
+                        // Show errors if any
+                        if (errors.length > 0) {
                             e.preventDefault();
+                            showErrorMessages(errors);
                             return false;
                         }
                         
+                        // Hide errors if validation passes
+                        hideErrorMessages();
                         return true;
                     });
                 </script>
@@ -434,6 +495,75 @@
 </div>
 
 <script>
+    // Format date for HTML date input
+    function formatDateForInput(dateString) {
+        if (!dateString) return '';
+        
+        // Handle various date formats
+        let date;
+        if (dateString.includes('-')) {
+            // YYYY-MM-DD format
+            date = new Date(dateString);
+        } else if (dateString.includes('/')) {
+            // DD/MM/YYYY or MM/DD/YYYY format
+            const parts = dateString.split('/');
+            if (parts.length === 3) {
+                // Assume DD/MM/YYYY format
+                date = new Date(parts[2], parts[1] - 1, parts[0]);
+            }
+        } else {
+            date = new Date(dateString);
+        }
+        
+        // Check if date is valid
+        if (isNaN(date.getTime())) {
+            return '';
+        }
+        
+        // Format to YYYY-MM-DD for HTML date input
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        
+        return `${year}-${month}-${day}`;
+    }
+    
+    // Initialize date fields for edit mode
+    function initializeDateFields() {
+        {% if object %}
+            // Initialize tanggal_berdiri
+            const tanggalBerdiriField = document.getElementById('{{ form.tanggal_berdiri.id_for_label }}');
+            if (tanggalBerdiriField && '{{ object.tanggal_terbentuk|date:"Y-m-d" }}') {
+                tanggalBerdiriField.value = '{{ object.tanggal_terbentuk|date:"Y-m-d" }}';
+            }
+            
+            // Initialize tanggal_terbentuk hidden field
+            const tanggalTerbentukField = document.querySelector('input[name="tanggal_terbentuk"]');
+            if (tanggalTerbentukField && '{{ object.tanggal_terbentuk|date:"Y-m-d" }}') {
+                tanggalTerbentukField.value = '{{ object.tanggal_terbentuk|date:"Y-m-d" }}';
+            }
+            
+            // Initialize sk_kepengurusan field
+            const skKepengurusanField = document.getElementById('{{ form.sk_kepengurusan.id_for_label }}');
+            if (skKepengurusanField && '{{ object.sk_kepengurusan }}') {
+                skKepengurusanField.value = '{{ object.sk_kepengurusan|escapejs }}';
+            }
+            
+            // Initialize jumlah_anggota_aktif field
+            const jumlahAnggotaField = document.getElementById('{{ form.jumlah_anggota_aktif.id_for_label }}');
+            if (jumlahAnggotaField && '{{ object.jumlah_anggota_aktif }}') {
+                jumlahAnggotaField.value = '{{ object.jumlah_anggota_aktif }}';
+            }
+        {% endif %}
+        
+        // Add event listener to sync tanggal_berdiri to tanggal_terbentuk
+        if (tanggalBerdiriField && tanggalTerbentukField) {
+            tanggalBerdiriField.addEventListener('change', function() {
+                tanggalTerbentukField.value = this.value;
+            });
+        }
+    }
+
     // Mobile responsive adjustments
     function adjustForMobile() {
         if (window.innerWidth < 640) {
@@ -452,6 +582,9 @@
 
     // File input preview for foto_profil
     document.addEventListener('DOMContentLoaded', function() {
+        // Initialize date fields for edit mode
+        initializeDateFields();
+        
         const fileInput = document.getElementById('{{ form.foto_profil.id_for_label }}');
         const previewContainer = document.getElementById('foto-preview');
         const previewImage = document.getElementById('foto-preview-img');

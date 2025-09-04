@@ -65,6 +65,11 @@ urlpatterns = [
     
     # API Endpoints Registry
     path('api-endpoints/', views.api_endpoints_list_api, name='api_endpoints_list'),
+    path('api-endpoints-view/', views.api_endpoints_view, name='api_endpoints_view'),
+    
+    # Users Management View
+    path('users-view/', views.users_view, name='users_view'),
+    path('umkm-view/', views.umkm_view, name='umkm_view'),
     
     # Dashboard Aggregator
     path('dashboard/', views.dashboard_aggregator_api, name='dashboard_aggregator'),

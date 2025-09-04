@@ -24,16 +24,18 @@ urlpatterns = [
     path('profile/', views.admin_profile, name='profile'),
     path('settings/', views.admin_settings, name='settings'),
     
+    # API endpoints for frontend - using existing URL patterns
+    path('tourism/', include('tourism.api_urls')),  # For tourism data at /pulosarok/tourism/destinations/
+    path('business/', include('business.api_urls')),  # For business data at /pulosarok/business/api/businesses/
+    
     # Include API URLs from each app (references sudah di-include di main urls.py)
     path('core/', include('core.urls')),
     # path('references/', include('references.urls')),  # Commented out to avoid conflict
     path('village_profile/', include('village_profile.urls')),
     path('posyandu/', include('posyandu.urls')),
-    # path('organization/', include('organization.urls')),  # Commented out to avoid double routing
     path('news/', include('news.urls')),
     path('letters/', include('letters.urls')),
     path('documents/', include('documents.urls')),
-    path('business/', include('business.urls')),
     path('beneficiaries/', include('beneficiaries.urls')),
     path('organization/', include('organization.urls')),
 ]

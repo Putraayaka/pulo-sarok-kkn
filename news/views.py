@@ -43,11 +43,20 @@ def news_admin(request):
     total_likes = NewsLike.objects.count()
     total_comments = NewsComment.objects.filter(status='approved').count()
     
+    # Debug print
+    print(f"DEBUG - Total news: {total_news}")
+    print(f"DEBUG - Published: {published_news}")
+    print(f"DEBUG - Draft: {draft_news}")
+    print(f"DEBUG - Scheduled: {scheduled_news}")
+    print(f"DEBUG - Comments: {total_comments}")
+    
     # Recent news
     recent_news = News.objects.select_related('category', 'author').order_by('-created_at')[:5]
     
     # Popular news (by views)
-    popular_news = News.objects.filter(status='published').order_by('-views_count')[:5]
+    popular_news = News.objects.filter(status='published').annotate(
+        views_count=Count('view_records')
+    ).order_by('-views_count')[:5]
     
     # Recent comments
     recent_comments = NewsComment.objects.select_related('news').filter(
@@ -146,9 +155,6 @@ def news_create(request):
                 news.author = request.user
                 news.slug = slugify(news.title)
                 
-                # Calculate reading time
-                news.reading_time = news.calculate_reading_time()
-                
                 news.save()
                 form.save_m2m()  # Save many-to-many relationships (tags)
                 
@@ -157,7 +163,7 @@ def news_create(request):
                 image_formset.save()
                 
                 messages.success(request, f'Berita "{news.title}" berhasil dibuat.')
-                return redirect('news:detail', pk=news.pk)
+                return redirect('news:news_view_detail', pk=news.pk)
     else:
         form = NewsForm()
         image_formset = NewsImageFormSet()
@@ -1632,9 +1638,63 @@ def news_dropdown_api(request):
 @login_required
 def news_create_view(request):
     """View for create news template"""
+    print(f"=== DEBUG: news_create_view called with method: {request.method} ===")
+    print(f"User: {request.user}")
+    print(f"User authenticated: {request.user.is_authenticated}")
+    
+    if request.method == 'POST':
+        print("=== DEBUG: POST request received ===")
+        print(f"POST data: {request.POST}")
+        print(f"FILES data: {request.FILES}")
+        
+        form = NewsForm(request.POST, request.FILES)
+        # Skip image formset validation since template doesn't use it
+        # image_formset = NewsImageFormSet(request.POST, request.FILES)
+        
+        print(f"Form is valid: {form.is_valid()}")
+        # print(f"Image formset is valid: {image_formset.is_valid()}")
+        
+        if not form.is_valid():
+            print(f"Form errors: {form.errors}")
+        # if not image_formset.is_valid():
+        #     print(f"Image formset errors: {image_formset.errors}")
+        
+        if form.is_valid():
+            try:
+                with transaction.atomic():
+                    news = form.save(commit=False)
+                    news.author = request.user
+                    news.slug = slugify(news.title)
+                    
+                    print(f"About to save news: {news.title}")
+                    news.save()
+                    print(f"News saved with ID: {news.pk}")
+                    
+                    form.save_m2m()  # Save many-to-many relationships (tags)
+                    print("Many-to-many relationships saved")
+                    
+                    # Skip image formset saving since template doesn't use it
+                    # image_formset.instance = news
+                    # image_formset.save()
+                    # print("Images saved")
+                    
+                    messages.success(request, f'Berita "{news.title}" berhasil dibuat.')
+                    return redirect('news:news_view_detail', pk=news.pk)
+            except Exception as e:
+                print(f"Error saving news: {e}")
+                import traceback
+                print(f"Full traceback: {traceback.format_exc()}")
+                messages.error(request, f'Terjadi kesalahan saat menyimpan berita: {str(e)}')
+    else:
+        form = NewsForm()
+        # image_formset = NewsImageFormSet()
+    
     context = {
         'page_title': 'Tambah Berita',
         'page_subtitle': 'Buat berita baru',
+        'form': form,
+        # 'image_formset': image_formset,
+        'action': 'create',
     }
     return render(request, 'admin/modules/news/create.html', context)
 
@@ -1665,10 +1725,43 @@ def news_view_detail(request, pk):
 
 @login_required
 def news_list_view(request):
-    """View for news list template"""
+    """View for news list template with data"""
+    # Get all news with related data
+    news_list = News.objects.select_related('category', 'author').prefetch_related('tags', 'likes', 'comments').order_by('-created_at')
+    
+    # Get all categories for filter dropdown
+    categories = NewsCategory.objects.all().order_by('name')
+    
+    # Apply filters
+    search = request.GET.get('search')
+    category_id = request.GET.get('category')
+    status = request.GET.get('status')
+    
+    if search:
+        news_list = news_list.filter(
+            Q(title__icontains=search) | 
+            Q(content__icontains=search) |
+            Q(excerpt__icontains=search)
+        )
+    
+    if category_id:
+        news_list = news_list.filter(category_id=category_id)
+    
+    if status:
+        news_list = news_list.filter(status=status)
+    
+    # Pagination
+    paginator = Paginator(news_list, 10)  # Show 10 news per page
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
     context = {
         'page_title': 'Daftar Berita',
         'page_subtitle': 'Kelola semua berita',
+        'news_list': page_obj,
+        'categories': categories,
+        'is_paginated': page_obj.has_other_pages(),
+        'page_obj': page_obj,
     }
     return render(request, 'admin/modules/news/list.html', context)
 
@@ -2167,12 +2260,31 @@ def news_delete_view(request, pk):
 def news_publish_view(request, pk):
     """Publish news"""
     news = get_object_or_404(News, pk=pk)
-    news.status = 'published'
-    news.published_date = timezone.now()
-    news.save()
     
-    messages.success(request, f'Berita "{news.title}" berhasil dipublikasikan.')
-    return redirect('news:admin_view', pk=news.pk)
+    # Check if it's an AJAX request
+    if request.headers.get('Content-Type') == 'application/json':
+        try:
+            news.status = 'published'
+            news.published_date = timezone.now()
+            news.save()
+            
+            return JsonResponse({
+                'success': True,
+                'message': f'Berita "{news.title}" berhasil dipublikasikan.'
+            })
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'message': f'Gagal mempublikasikan berita: {str(e)}'
+            }, status=500)
+    else:
+        # Handle regular form submission
+        news.status = 'published'
+        news.published_date = timezone.now()
+        news.save()
+        
+        messages.success(request, f'Berita "{news.title}" berhasil dipublikasikan.')
+        return redirect('news:admin_view', pk=news.pk)
 
 
 @login_required
@@ -2180,12 +2292,31 @@ def news_publish_view(request, pk):
 def news_unpublish_view(request, pk):
     """Unpublish news"""
     news = get_object_or_404(News, pk=pk)
-    news.status = 'draft'
-    news.published_date = None
-    news.save()
     
-    messages.success(request, f'Berita "{news.title}" berhasil ditarik dari publikasi.')
-    return redirect('news:admin_view', pk=news.pk)
+    # Check if it's an AJAX request
+    if request.headers.get('Content-Type') == 'application/json':
+        try:
+            news.status = 'draft'
+            news.published_date = None
+            news.save()
+            
+            return JsonResponse({
+                'success': True,
+                'message': f'Berita "{news.title}" berhasil ditarik dari publikasi.'
+            })
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'message': f'Gagal menarik publikasi berita: {str(e)}'
+            }, status=500)
+    else:
+        # Handle regular form submission
+        news.status = 'draft'
+        news.published_date = None
+        news.save()
+        
+        messages.success(request, f'Berita "{news.title}" berhasil ditarik dari publikasi.')
+        return redirect('news:admin_view', pk=news.pk)
 
 
 @login_required
@@ -2237,7 +2368,7 @@ def news_media_upload_view(request):
         
         if not files:
             messages.error(request, 'Tidak ada file yang dipilih.')
-            return redirect('news:admin_media')
+            return redirect('news:news_media_view')
         
         uploaded_count = 0
         for file in files:
@@ -2256,7 +2387,7 @@ def news_media_upload_view(request):
         if uploaded_count > 0:
             messages.success(request, f'{uploaded_count} file berhasil diupload.')
         
-        return redirect('news:admin_media')
+        return redirect('news:news_media_view')
     
     context = {
         'page_title': 'Upload Media',
@@ -2289,7 +2420,7 @@ def news_media_update_view(request, pk):
         media.save()
         
         messages.success(request, 'Media berhasil diupdate.')
-        return redirect('news:admin_media')
+        return redirect('news:news_media_view')
     
     context = {
         'media': media,
@@ -2314,7 +2445,7 @@ def news_media_delete_view(request, pk):
     media.delete()
     messages.success(request, 'Media berhasil dihapus.')
     
-    return redirect('news:admin_media')
+    return redirect('news:news_media_view')
 
 
 @login_required
@@ -2325,7 +2456,7 @@ def news_media_bulk_delete_view(request):
     
     if not media_ids:
         messages.error(request, 'Tidak ada media yang dipilih.')
-        return redirect('news:admin_media')
+        return redirect('news:news_media_view')
     
     try:
         media_queryset = NewsImage.objects.filter(id__in=media_ids)
@@ -2345,7 +2476,7 @@ def news_media_bulk_delete_view(request):
     except Exception as e:
         messages.error(request, f'Terjadi kesalahan: {str(e)}')
     
-    return redirect('news:admin_media')
+    return redirect('news:news_media_view')
 
 
 @login_required
@@ -2356,12 +2487,12 @@ def news_media_bulk_download_view(request):
     
     if not media_ids:
         messages.error(request, 'Tidak ada media yang dipilih.')
-        return redirect('news:admin_media')
+        return redirect('news:news_media_view')
     
     # This would typically create a zip file for download
     # For now, just redirect back
     messages.info(request, 'Fitur bulk download akan segera tersedia.')
-    return redirect('news:admin_media')
+    return redirect('news:news_media_view')
 
 
 # Category Management Views (Non-API)
@@ -2607,3 +2738,214 @@ def public_announcement_detail(request, slug):
     }
     
     return render(request, 'public/announcement_detail.html', context)
+
+
+# Public News Views (tanpa autentikasi)
+@csrf_exempt
+@require_http_methods(["GET"])
+def public_news_list(request):
+    """Public API endpoint untuk daftar berita tanpa autentikasi"""
+    try:
+        # Get query parameters
+        search = request.GET.get('search', '')
+        category_id = request.GET.get('category_id', '')
+        limit = int(request.GET.get('limit', 10))
+        page = int(request.GET.get('page', 1))
+        
+        # Base queryset - hanya berita yang published
+        queryset = News.objects.filter(
+            status='published',
+            published_date__lte=timezone.now()
+        ).select_related('category', 'author').prefetch_related('tags')
+        
+        # Apply search filter
+        if search:
+            queryset = queryset.filter(
+                Q(title__icontains=search) |
+                Q(content__icontains=search) |
+                Q(excerpt__icontains=search)
+            )
+        
+        # Apply category filter
+        if category_id:
+            queryset = queryset.filter(category_id=category_id)
+        
+        # Order by priority and published date
+        queryset = queryset.order_by('-is_featured', '-priority', '-published_date')
+        
+        # Pagination
+        paginator = Paginator(queryset, limit)
+        page_obj = paginator.get_page(page)
+        
+        # Serialize data
+        results = []
+        for news in page_obj:
+            results.append({
+                'id': news.id,
+                'title': news.title,
+                'slug': news.slug,
+                'excerpt': news.excerpt,
+                'content': news.content[:200] + '...' if len(news.content) > 200 else news.content,
+                'featured_image': news.featured_image.url if news.featured_image else None,
+                'category': {
+                    'id': news.category.id,
+                    'name': news.category.name,
+                    'color': news.category.color
+                } if news.category else None,
+                'author': news.author.get_full_name() or news.author.username,
+                'published_date': news.published_date.isoformat() if news.published_date else None,
+                'is_featured': news.is_featured,
+                'is_breaking': news.is_breaking,
+                'views_count': news.views_count,
+                'likes_count': news.likes_count,
+                'tags': [{'id': tag.id, 'name': tag.name} for tag in news.tags.all()],
+                'created_at': news.created_at.isoformat(),
+                'updated_at': news.updated_at.isoformat()
+            })
+        
+        data = {
+            'success': True,
+            'results': results,
+            'pagination': {
+                'current_page': page_obj.number,
+                'total_pages': page_obj.paginator.num_pages,
+                'total_items': page_obj.paginator.count,
+                'has_next': page_obj.has_next(),
+                'has_previous': page_obj.has_previous(),
+                'next_page': page_obj.next_page_number() if page_obj.has_next() else None,
+                'previous_page': page_obj.previous_page_number() if page_obj.has_previous() else None
+            }
+        }
+        
+        return JsonResponse(data)
+        
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        }, status=500)
+
+
+@csrf_exempt
+@require_http_methods(["GET"])
+def public_news_detail(request, slug):
+    """Public API endpoint untuk detail berita tanpa autentikasi"""
+    try:
+        news = get_object_or_404(
+            News.objects.select_related('category', 'author').prefetch_related('tags', 'images'),
+            slug=slug,
+            status='published',
+            published_date__lte=timezone.now()
+        )
+        
+        # Increment view count
+        NewsView.objects.create(
+            news=news,
+            ip_address=request.META.get('REMOTE_ADDR', ''),
+            user_agent=request.META.get('HTTP_USER_AGENT', ''),
+            session_key=request.session.session_key or ''
+        )
+        
+        # Update news views count
+        news.views_count = news.view_records.count()
+        news.save(update_fields=['views_count'])
+        
+        data = {
+            'success': True,
+            'result': {
+                'id': news.id,
+                'title': news.title,
+                'slug': news.slug,
+                'excerpt': news.excerpt,
+                'content': news.content,
+                'featured_image': news.featured_image.url if news.featured_image else None,
+                'category': {
+                    'id': news.category.id,
+                    'name': news.category.name,
+                    'color': news.category.color
+                } if news.category else None,
+                'author': news.author.get_full_name() or news.author.username,
+                'published_date': news.published_date.isoformat() if news.published_date else None,
+                'is_featured': news.is_featured,
+                'is_breaking': news.is_breaking,
+                'views_count': news.views_count,
+                'likes_count': news.likes_count,
+                'meta_title': news.meta_title,
+                'meta_description': news.meta_description,
+                'youtube_url': news.youtube_url,
+                'video_file': news.video_file.url if news.video_file else None,
+                'tags': [{'id': tag.id, 'name': tag.name} for tag in news.tags.all()],
+                'images': [{
+                    'id': img.id,
+                    'image': img.image.url if img.image else None,
+                    'caption': img.caption,
+                    'alt_text': img.alt_text,
+                    'is_featured': img.is_featured,
+                    'order': img.order
+                } for img in news.images.all().order_by('order')],
+                'created_at': news.created_at.isoformat(),
+                'updated_at': news.updated_at.isoformat()
+            }
+        }
+        
+        return JsonResponse(data)
+        
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        }, status=500)
+
+
+@csrf_exempt
+@require_http_methods(["GET"])
+def public_featured_news(request):
+    """Public API endpoint untuk berita unggulan tanpa autentikasi"""
+    try:
+        limit = int(request.GET.get('limit', 5))
+        
+        # Get featured news
+        featured_news = News.objects.filter(
+            status='published',
+            published_date__lte=timezone.now(),
+            is_featured=True
+        ).select_related('category', 'author').prefetch_related('tags').order_by('-published_date')[:limit]
+        
+        results = []
+        for news in featured_news:
+            results.append({
+                'id': news.id,
+                'title': news.title,
+                'slug': news.slug,
+                'excerpt': news.excerpt,
+                'content': news.content[:200] + '...' if len(news.content) > 200 else news.content,
+                'featured_image': news.featured_image.url if news.featured_image else None,
+                'category': {
+                    'id': news.category.id,
+                    'name': news.category.name,
+                    'color': news.category.color
+                } if news.category else None,
+                'author': news.author.get_full_name() or news.author.username,
+                'published_date': news.published_date.isoformat() if news.published_date else None,
+                'is_featured': news.is_featured,
+                'is_breaking': news.is_breaking,
+                'views_count': news.views_count,
+                'likes_count': news.likes_count,
+                'tags': [{'id': tag.id, 'name': tag.name} for tag in news.tags.all()],
+                'created_at': news.created_at.isoformat(),
+                'updated_at': news.updated_at.isoformat()
+            })
+        
+        data = {
+            'success': True,
+            'results': results,
+            'count': len(results)
+        }
+        
+        return JsonResponse(data)
+        
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        }, status=500)

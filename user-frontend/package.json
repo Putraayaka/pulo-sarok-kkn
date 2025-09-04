@@ -4,6 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "dev": "python -m http.server 3000",
+    "start": "python -m http.server 3000",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],

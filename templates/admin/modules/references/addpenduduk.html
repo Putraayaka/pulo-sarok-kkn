@@ -460,7 +460,7 @@
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         // Load dusun options
-        fetch('/pulosarok/references/api/dusun/list/')
+        fetch('/pulosarok/references/admin-api/dusun/')
             .then(response => response.json())
             .then(data => {
                 const dusunSelect = document.getElementById('dusun');
@@ -478,7 +478,7 @@
             .catch(error => console.error('Error loading dusun data:', error));
 
         // Load family heads
-        fetch('/pulosarok/references/api/penduduk/list/?is_family_head=true')
+        fetch('/pulosarok/references/admin-api/penduduk/?is_family_head=true')
             .then(response => response.json())
             .then(data => {
                 const familyHeadSelect = document.getElementById('family_head');
@@ -502,7 +502,7 @@
             lorongSelect.innerHTML = '<option value="">Pilih Lorong</option>';
             
             if (dusunId) {
-                fetch(`/pulosarok/references/api/lorong/list/?dusun_id=${dusunId}`)
+                fetch(`/pulosarok/references/admin-api/lorong/?dusun_id=${dusunId}`)
                     .then(response => response.json())
                     .then(data => {
                         if (data.results) {
@@ -536,10 +536,9 @@
                 }
             });
             
-            // Log the data being sent for debugging
-            console.log('Sending data:', formObject);
+
             
-            fetch('/pulosarok/references/api/penduduk/create/', {
+            fetch('/pulosarok/references/admin-api/penduduk/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -564,9 +563,50 @@
                     errorMessages.innerHTML = '';
                     
                     if (data.errors) {
+                        // Field name mapping to Indonesian labels
+                        const fieldLabels = {
+                            'nik': 'NIK',
+                            'name': 'Nama Lengkap',
+                            'gender': 'Jenis Kelamin',
+                            'birth_place': 'Tempat Lahir',
+                            'birth_date': 'Tanggal Lahir',
+                            'religion': 'Agama',
+                            'education': 'Pendidikan',
+                            'occupation': 'Pekerjaan',
+                            'marital_status': 'Status Perkawinan',
+                            'kk_number': 'Nomor Kartu Keluarga',
+                            'family_head': 'Kepala Keluarga',
+                            'relationship_to_head': 'Hubungan dengan Kepala Keluarga',
+                            'blood_type': 'Golongan Darah',
+                            'height': 'Tinggi Badan',
+                            'weight': 'Berat Badan',
+                            'phone_number': 'Nomor Telepon',
+                            'mobile_number': 'Nomor HP',
+                            'email': 'Email',
+                            'dusun': 'Dusun',
+                            'lorong': 'Lorong',
+                            'rt_number': 'Nomor RT',
+                            'rw_number': 'Nomor RW',
+                            'house_number': 'Nomor Rumah',
+                            'address': 'Alamat Lengkap',
+                            'postal_code': 'Kode Pos',
+                            'citizenship': 'Kewarganegaraan',
+                            'passport_number': 'Nomor Paspor',
+                            'passport_expiry': 'Berlaku Hingga',
+                            'emergency_contact': 'Kontak Darurat',
+                            'emergency_phone': 'Telepon Darurat',
+                            'emergency_relationship': 'Hubungan dengan Kontak Darurat',
+                            'is_active': 'Status Aktif',
+                            'is_alive': 'Status Hidup',
+                            'death_date': 'Tanggal Meninggal',
+                            'death_place': 'Tempat Meninggal'
+                        };
+                        
                         Object.entries(data.errors).forEach(([field, errors]) => {
                             const errorItem = document.createElement('p');
-                            errorItem.textContent = `${field}: ${errors.join(', ')}`;
+                            const fieldLabel = fieldLabels[field] || field;
+                            errorItem.innerHTML = `<strong>${fieldLabel}:</strong> ${errors.join(', ')}`;
+                            errorItem.className = 'text-red-600 mb-2';
                             errorMessages.appendChild(errorItem);
                             
                             // Highlight error field
@@ -592,7 +632,13 @@
             })
             .catch(error => {
                 console.error('Error submitting form:', error);
-                showNotification('Terjadi kesalahan saat menyimpan data. Silakan coba lagi.', 'error');
+                if (error.name === 'TypeError' && error.message.includes('fetch')) {
+                    showNotification('Tidak dapat terhubung ke server. Periksa koneksi internet Anda.', 'error');
+                } else if (error.message.includes('timeout')) {
+                    showNotification('Permintaan timeout. Server membutuhkan waktu terlalu lama untuk merespons.', 'error');
+                } else {
+                    showNotification('Terjadi kesalahan saat menyimpan data penduduk. Silakan periksa data dan coba lagi.', 'error');
+                }
             });
         });
         

@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Console Output</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .log { background: #f0f0f0; padding: 10px; margin: 5px 0; border-radius: 4px; }
+        .error { background: #ffebee; color: #c62828; }
+        .info { background: #e3f2fd; color: #1565c0; }
+    </style>
+</head>
+<body>
+    <h1>Debug Console Output</h1>
+    <div id="output"></div>
+    
+    <script>
+        // Override console.log to display on page
+        const originalLog = console.log;
+        const originalError = console.error;
+        const output = document.getElementById('output');
+        
+        function addToOutput(message, type = 'info') {
+            const div = document.createElement('div');
+            div.className = `log ${type}`;
+            div.textContent = new Date().toLocaleTimeString() + ': ' + message;
+            output.appendChild(div);
+            output.scrollTop = output.scrollHeight;
+        }
+        
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            addToOutput(args.join(' '), 'info');
+        };
+        
+        console.error = function(...args) {
+            originalError.apply(console, args);
+            addToOutput(args.join(' '), 'error');
+        };
+        
+        // Test the APIs
+        console.log('Starting API tests...');
+        
+        // Test penduduk API
+        fetch('/pulosarok/references/admin-api/penduduk/1/')
+            .then(response => {
+                console.log('Penduduk API response status:', response.status);
+                return response.json();
+            })
+            .then(data => {
+                console.log('Penduduk data received:', JSON.stringify(data, null, 2));
+            })
+            .catch(error => {
+                console.error('Error loading penduduk data:', error);
+            });
+            
+        // Test dusun API
+        fetch('/pulosarok/references/admin-api/dusun/')
+            .then(response => {
+                console.log('Dusun API response status:', response.status);
+                return response.json();
+            })
+            .then(data => {
+                console.log('Dusun data received:', JSON.stringify(data, null, 2));
+            })
+            .catch(error => {
+                console.error('Error loading dusun data:', error);
+            });
+            
+        // Test family head API
+        fetch('/pulosarok/references/admin-api/penduduk/?is_family_head=true')
+            .then(response => {
+                console.log('Family head API response status:', response.status);
+                return response.json();
+            })
+            .then(data => {
+                console.log('Family head data received:', JSON.stringify(data, null, 2));
+            })
+            .catch(error => {
+                console.error('Error loading family head data:', error);
+            });
+    </script>
+</body>
+</html>

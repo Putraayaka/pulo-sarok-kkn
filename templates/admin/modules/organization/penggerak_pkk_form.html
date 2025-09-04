@@ -208,6 +208,28 @@
                         {% endif %}
                     </div>
 
+                    <!-- Tanggal Bergabung -->
+                    <div class="form-field">
+                        <label for="{{ form.tanggal_bergabung.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2 form-label">
+                            Tanggal Bergabung
+                        </label>
+                        <div class="form-input-container">{{ form.tanggal_bergabung|add_class:"form-input" }}</div>
+                        {% if form.tanggal_bergabung.errors %}
+                            <p class="mt-1 text-sm text-red-600 form-error">{{ form.tanggal_bergabung.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+
+                    <!-- Tanggal Keluar -->
+                    <div class="form-field">
+                        <label for="{{ form.tanggal_keluar.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2 form-label">
+                            Tanggal Keluar
+                        </label>
+                        <div class="form-input-container">{{ form.tanggal_keluar|add_class:"form-input" }}</div>
+                        {% if form.tanggal_keluar.errors %}
+                            <p class="mt-1 text-sm text-red-600 form-error">{{ form.tanggal_keluar.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+
                     <!-- Kontak WhatsApp -->
                     <div class="form-field">
                         <label for="{{ form.kontak_whatsapp.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2 form-label">
@@ -341,8 +363,82 @@
         }
     });
 
+    // Date field formatting function
+    function formatDateForInput(dateString) {
+        if (!dateString) return '';
+        
+        // Handle various date formats
+        let date;
+        
+        // Try parsing different formats
+        if (dateString.includes('/')) {
+            // Handle DD/MM/YYYY or MM/DD/YYYY format
+            const parts = dateString.split('/');
+            if (parts.length === 3) {
+                // Assume DD/MM/YYYY format (common in Indonesia)
+                date = new Date(parts[2], parts[1] - 1, parts[0]);
+            }
+        } else if (dateString.includes('-')) {
+            // Handle YYYY-MM-DD format
+            date = new Date(dateString);
+        } else {
+            // Try direct parsing
+            date = new Date(dateString);
+        }
+        
+        // Check if date is valid
+        if (isNaN(date.getTime())) {
+            return '';
+        }
+        
+        // Format to YYYY-MM-DD for HTML date input
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        
+        return `${year}-${month}-${day}`;
+    }
+    
+    // Initialize date fields for edit mode
+    function initializeDateFields() {
+        {% if object %}
+            // Initialize tanggal_mulai_tugas
+            const tanggalMulaiTugasField = document.getElementById('{{ form.tanggal_mulai_tugas.id_for_label }}');
+            if (tanggalMulaiTugasField && '{{ object.tanggal_mulai_tugas|date:"Y-m-d" }}') {
+                tanggalMulaiTugasField.value = '{{ object.tanggal_mulai_tugas|date:"Y-m-d" }}';
+            }
+            
+            // Initialize tanggal_selesai_tugas
+            const tanggalSelesaiTugasField = document.getElementById('{{ form.tanggal_selesai_tugas.id_for_label }}');
+            if (tanggalSelesaiTugasField && '{{ object.tanggal_selesai_tugas|date:"Y-m-d" }}') {
+                tanggalSelesaiTugasField.value = '{{ object.tanggal_selesai_tugas|date:"Y-m-d" }}';
+            }
+            
+            // Initialize email field
+            const emailField = document.getElementById('{{ form.email.id_for_label }}');
+            if (emailField && '{{ object.email }}') {
+                emailField.value = '{{ object.email }}';
+            }
+            
+            // Initialize sk_pengangkatan field
+            const skPengangkatanField = document.getElementById('{{ form.sk_pengangkatan.id_for_label }}');
+            if (skPengangkatanField && '{{ object.sk_pengangkatan }}') {
+                skPengangkatanField.value = '{{ object.sk_pengangkatan }}';
+            }
+            
+            // Initialize deskripsi_tugas field
+            const deskripsiTugasField = document.getElementById('{{ form.deskripsi_tugas.id_for_label }}');
+            if (deskripsiTugasField && '{{ object.deskripsi_tugas }}') {
+                deskripsiTugasField.value = '{{ object.deskripsi_tugas|escapejs }}';
+            }
+        {% endif %}
+    }
+
     // Form validation
     document.addEventListener('DOMContentLoaded', function() {
+        // Initialize date fields when editing
+        initializeDateFields();
+        
         const form = document.querySelector('form');
         
         form.addEventListener('submit', function(event) {

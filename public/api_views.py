@@ -9,9 +9,10 @@ from datetime import datetime, timedelta
 # Import models from other apps
 from references.models import Penduduk, Dusun, DisabilitasType, DisabilitasData
 from news.models import News, NewsCategory
-from village_profile.models import VillageHistory, VillageHistoryPhoto
+from village_profile.models import VillageHistory, VillageHistoryPhoto, VillageVision
 from core.models import CustomUser, UserProfile, UMKMBusiness, WebsiteSettings
 from business.models import Business
+from letters.models import LetterSettings
 
 
 def api_stats(request):
@@ -128,20 +129,27 @@ def api_village_profile(request):
             # Return map data if needed
             return JsonResponse({'message': 'Map data not implemented yet'})
         
-        # Get village profile data
+        # Get village profile data from available models
+        village_vision = VillageVision.objects.filter(is_active=True).first()
+        if village_vision:
+            vision_text = village_vision.vision_text
+            mission_text = village_vision.mission_text
+        else:
+            vision_text = 'Visi desa belum tersedia'
+            mission_text = 'Misi desa belum tersedia'
+        
+        # Get history from VillageHistory
         try:
-            visi_profile = VillageProfile.objects.filter(profile_type='visi').first()
-            misi_profile = VillageProfile.objects.filter(profile_type='misi').first()
-            sejarah_profile = VillageProfile.objects.filter(profile_type='sejarah').first()
-            geografis_profile = VillageProfile.objects.filter(profile_type='geografis').first()
+            history = VillageHistory.objects.filter(is_active=True, is_featured=True).first()
+            sejarah_text = history.content if history else ''
         except:
-            visi_profile = misi_profile = sejarah_profile = geografis_profile = None
+            sejarah_text = ''
         
         data = {
-            'visi': visi_profile.content if visi_profile else '',
-            'misi': misi_profile.content if misi_profile else '',
-            'sejarah': sejarah_profile.content if sejarah_profile else '',
-            'geografis': geografis_profile.content if geografis_profile else ''
+            'vision': vision_text,
+            'mission': mission_text,
+            'sejarah': sejarah_text,
+            'geografis': ''
         }
         
         return JsonResponse(data)
@@ -208,21 +216,32 @@ def api_dusun(request):
 def api_contact(request):
     """API untuk kontak"""
     try:
-        contact = Contact.objects.first()
-        if contact:
+        # Try to get contact info from LetterSettings first
+        letter_settings = LetterSettings.objects.first()
+        if letter_settings:
             data = {
-                'phone': contact.phone,
-                'email': contact.email,
-                'address': contact.address,
-                'website': contact.website if hasattr(contact, 'website') else None
+                'phone': letter_settings.village_phone or '',
+                'email': letter_settings.village_email or '',
+                'address': letter_settings.village_address or '',
+                'website': letter_settings.village_website or ''
             }
         else:
-            data = {
-                'phone': '',
-                'email': '',
-                'address': '',
-                'website': ''
-            }
+            # Fallback to WebsiteSettings
+            website_settings = WebsiteSettings.objects.first()
+            if website_settings:
+                data = {
+                    'phone': website_settings.contact_phone or '',
+                    'email': website_settings.contact_email or '',
+                    'address': website_settings.contact_address or '',
+                    'website': ''
+                }
+            else:
+                data = {
+                    'phone': '',
+                    'email': '',
+                    'address': '',
+                    'website': ''
+                }
         return JsonResponse(data)
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
