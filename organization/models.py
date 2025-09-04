@@ -3,6 +3,51 @@ from django.contrib.auth.models import User
 from references.models import Penduduk
 
 
+# Base Organization model that other models can reference
+class Organization(models.Model):
+    ORGANIZATION_TYPE_CHOICES = [
+        ('perangkat_desa', 'Perangkat Desa'),
+        ('lembaga_adat', 'Lembaga Adat'),
+        ('pkk', 'Tim Penggerak PKK'),
+        ('kepemudaan', 'Organisasi Kepemudaan'),
+        ('karang_taruna', 'Karang Taruna'),
+        ('bpd', 'Badan Permusyawaratan Desa'),
+        ('lpm', 'Lembaga Pemberdayaan Masyarakat'),
+        ('lainnya', 'Lainnya'),
+    ]
+    
+    STATUS_CHOICES = [
+        ('aktif', 'Aktif'),
+        ('non_aktif', 'Non Aktif'),
+        ('dalam_pembinaan', 'Dalam Pembinaan'),
+    ]
+    
+    name = models.CharField(max_length=200, verbose_name="Nama Organisasi")
+    organization_type = models.CharField(max_length=50, choices=ORGANIZATION_TYPE_CHOICES, verbose_name="Jenis Organisasi")
+    description = models.TextField(blank=True, verbose_name="Deskripsi")
+    established_date = models.DateField(verbose_name="Tanggal Terbentuk")
+    address = models.TextField(blank=True, verbose_name="Alamat Sekretariat")
+    phone = models.CharField(max_length=20, blank=True, verbose_name="Nomor Telepon")
+    email = models.EmailField(blank=True, verbose_name="Email")
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='aktif', verbose_name="Status")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        verbose_name = "Organisasi"
+        verbose_name_plural = "Data Organisasi"
+        ordering = ['name']
+        indexes = [
+            models.Index(fields=['name']),
+            models.Index(fields=['organization_type']),
+            models.Index(fields=['status']),
+            models.Index(fields=['organization_type', 'status']),
+        ]
+    
+    def __str__(self):
+        return self.name
+
+
 # Model untuk Data Perangkat Desa
 class PerangkatDesa(models.Model):
     JABATAN_CHOICES = [
@@ -193,6 +238,7 @@ class Kepemudaan(models.Model):
     kegiatan_rutin = models.TextField(blank=True)
     prestasi = models.TextField(blank=True)
     alamat_sekretariat = models.TextField(blank=True)
+    sk_kepengurusan = models.CharField(max_length=100, blank=True, help_text="Nomor SK Kepengurusan")
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='aktif')
     kontak_phone = models.CharField(max_length=20, blank=True)
     email = models.EmailField(blank=True)

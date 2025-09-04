@@ -10,6 +10,8 @@ from django.middleware.csrf import get_token
 from django.utils.decorators import method_decorator
 from django.core.exceptions import ValidationError
 from django.db import transaction
+from django.utils import timezone
+from datetime import timedelta
 import json
 import logging
 from django.db import IntegrityError
@@ -477,9 +479,10 @@ def lembaga_adat_delete(request, pk):
 @login_required
 def lembaga_adat_detail(request, pk):
     """Detail view untuk lembaga adat"""
-    lembaga = get_object_or_404(LembagaAdat, pk=pk)
+    lembaga = get_object_or_404(LembagaAdat.objects.select_related('ketua', 'sekretaris', 'bendahara'), pk=pk)
     context = {
         'object': lembaga,
+        'lembaga': lembaga,
         'title': f'Detail Lembaga Adat - {lembaga.nama_lembaga}'
     }
     return render(request, 'admin/modules/organization/lembaga_adat_detail.html', context)
@@ -544,7 +547,14 @@ def penggerak_pkk_add(request):
             messages.success(request, f'Data penggerak PKK {pkk.penduduk.name} berhasil ditambahkan.')
             return redirect('organization:penggerak_pkk_list')
         else:
-            messages.error(request, 'Terjadi kesalahan. Silakan periksa form kembali.')
+            # Display specific form errors
+            for field, errors in form.errors.items():
+                for error in errors:
+                    if field == '__all__':
+                        messages.error(request, error)
+                    else:
+                        field_label = form.fields[field].label or field.replace('_', ' ').title()
+                        messages.error(request, f'{field_label}: {error}')
     else:
         form = PenggerakPKKForm()
     
@@ -602,7 +612,7 @@ def penggerak_pkk_delete(request, pk):
 @login_required
 def penggerak_pkk_detail(request, pk):
     """Detail view untuk penggerak PKK"""
-    pkk = get_object_or_404(PenggerakPKK, pk=pk)
+    pkk = get_object_or_404(PenggerakPKK.objects.select_related('penduduk'), pk=pk)
     context = {
         'object': pkk,
         'title': f'Detail Penggerak PKK - {pkk.penduduk.name}'
@@ -665,11 +675,37 @@ def kepemudaan_add(request):
     if request.method == 'POST':
         form = KepemudaanForm(request.POST, request.FILES)
         if form.is_valid():
-            kepemudaan = form.save()
-            messages.success(request, f'Data kepemudaan {kepemudaan.nama_organisasi} berhasil ditambahkan.')
-            return redirect('organization:kepemudaan_list')
+            try:
+                kepemudaan = form.save()
+                messages.success(request, f'Data kepemudaan {kepemudaan.nama_organisasi} berhasil ditambahkan.')
+                return redirect('organization:kepemudaan_list')
+            except IntegrityError as e:
+                messages.error(request, 'Terjadi kesalahan: Data dengan nama organisasi yang sama sudah ada.')
+            except ValidationError as e:
+                if hasattr(e, 'message_dict'):
+                    for field, errors in e.message_dict.items():
+                        for error in errors:
+                            field_label = form.fields.get(field, {}).label or field.replace('_', ' ').title()
+                            messages.error(request, f'{field_label}: {error}')
+                else:
+                    messages.error(request, f'Validasi gagal: {str(e)}')
+            except Exception as e:
+                messages.error(request, f'Terjadi kesalahan tidak terduga: {str(e)}')
         else:
-            messages.error(request, 'Terjadi kesalahan. Silakan periksa form kembali.')
+            # Display specific form errors with better formatting
+            error_messages = []
+            for field, errors in form.errors.items():
+                for error in errors:
+                    if field == '__all__':
+                        error_messages.append(f'Error umum: {error}')
+                    else:
+                        field_label = form.fields.get(field, {}).label or field.replace('_', ' ').title()
+                        error_messages.append(f'{field_label}: {error}')
+            
+            if error_messages:
+                messages.error(request, 'Mohon perbaiki kesalahan berikut:')
+                for msg in error_messages:
+                    messages.error(request, msg)
     else:
         form = KepemudaanForm()
     
@@ -689,11 +725,37 @@ def kepemudaan_edit(request, pk):
     if request.method == 'POST':
         form = KepemudaanForm(request.POST, request.FILES, instance=kepemudaan)
         if form.is_valid():
-            kepemudaan = form.save()
-            messages.success(request, f'Data kepemudaan {kepemudaan.nama_organisasi} berhasil diperbarui.')
-            return redirect('organization:kepemudaan_list')
+            try:
+                kepemudaan = form.save()
+                messages.success(request, f'Data kepemudaan {kepemudaan.nama_organisasi} berhasil diperbarui.')
+                return redirect('organization:kepemudaan_list')
+            except IntegrityError as e:
+                messages.error(request, 'Terjadi kesalahan: Data dengan nama organisasi yang sama sudah ada.')
+            except ValidationError as e:
+                if hasattr(e, 'message_dict'):
+                    for field, errors in e.message_dict.items():
+                        for error in errors:
+                            field_label = form.fields.get(field, {}).label or field.replace('_', ' ').title()
+                            messages.error(request, f'{field_label}: {error}')
+                else:
+                    messages.error(request, f'Validasi gagal: {str(e)}')
+            except Exception as e:
+                messages.error(request, f'Terjadi kesalahan tidak terduga: {str(e)}')
         else:
-            messages.error(request, 'Terjadi kesalahan. Silakan periksa form kembali.')
+            # Display specific form errors with better formatting
+            error_messages = []
+            for field, errors in form.errors.items():
+                for error in errors:
+                    if field == '__all__':
+                        error_messages.append(f'Error umum: {error}')
+                    else:
+                        field_label = form.fields.get(field, {}).label or field.replace('_', ' ').title()
+                        error_messages.append(f'{field_label}: {error}')
+            
+            if error_messages:
+                messages.error(request, 'Mohon perbaiki kesalahan berikut:')
+                for msg in error_messages:
+                    messages.error(request, msg)
     else:
         form = KepemudaanForm(instance=kepemudaan)
     
@@ -727,7 +789,7 @@ def kepemudaan_delete(request, pk):
 @login_required
 def kepemudaan_detail(request, pk):
     """Detail view untuk kepemudaan"""
-    kepemudaan = get_object_or_404(Kepemudaan, pk=pk)
+    kepemudaan = get_object_or_404(Kepemudaan.objects.select_related('ketua', 'sekretaris', 'bendahara'), pk=pk)
     context = {
         'object': kepemudaan,
         'title': f'Detail Kepemudaan - {kepemudaan.nama_organisasi}'
@@ -1638,30 +1700,65 @@ def api_kepemudaan_create(request):
         
         form = KepemudaanForm(data)
         if form.is_valid():
-            kepemudaan = form.save()
-            return JsonResponse({
-                'success': True,
-                'message': 'Data kepemudaan berhasil ditambahkan',
-                'data': {
-                    'id': kepemudaan.id,
-                    'nama_organisasi': kepemudaan.nama_organisasi
-                }
-            })
+            try:
+                kepemudaan = form.save()
+                return JsonResponse({
+                    'success': True,
+                    'message': 'Data kepemudaan berhasil ditambahkan',
+                    'data': {
+                        'id': kepemudaan.id,
+                        'nama_organisasi': kepemudaan.nama_organisasi
+                    }
+                })
+            except IntegrityError:
+                return JsonResponse({
+                    'success': False,
+                    'message': 'Data dengan nama organisasi yang sama sudah ada',
+                    'errors': {'nama_organisasi': ['Nama organisasi sudah digunakan']}
+                }, status=400)
+            except ValidationError as e:
+                error_dict = {}
+                if hasattr(e, 'message_dict'):
+                    error_dict = e.message_dict
+                else:
+                    error_dict = {'__all__': [str(e)]}
+                return JsonResponse({
+                    'success': False,
+                    'message': 'Validasi data gagal',
+                    'errors': error_dict
+                }, status=400)
         else:
+            # Format form errors for better display
+            formatted_errors = {}
+            error_messages = []
+            
+            for field, errors in form.errors.items():
+                formatted_errors[field] = errors
+                for error in errors:
+                    if field == '__all__':
+                        error_messages.append(f'Error umum: {error}')
+                    else:
+                        field_label = form.fields.get(field, {}).label or field.replace('_', ' ').title()
+                        error_messages.append(f'{field_label}: {error}')
+            
             return JsonResponse({
                 'success': False,
-                'errors': form.errors
+                'message': 'Mohon perbaiki kesalahan pada form',
+                'errors': formatted_errors,
+                'error_list': error_messages
             }, status=400)
     except json.JSONDecodeError:
-        return handle_api_error(json.JSONDecodeError("Invalid JSON data"), "updating kepemudaan", logger)
-    except ObjectDoesNotExist:
-        return handle_api_error(ObjectDoesNotExist("Kepemudaan not found"), "updating kepemudaan", logger)
-    except ValidationError as e:
-        return handle_api_error(e, "updating kepemudaan", logger)
-    except IntegrityError as e:
-        return handle_api_error(e, "updating kepemudaan", logger)
+        return JsonResponse({
+            'success': False,
+            'message': 'Format data JSON tidak valid',
+            'errors': {'__all__': ['Data yang dikirim tidak dalam format JSON yang benar']}
+        }, status=400)
     except Exception as e:
-        return handle_api_error(e, "updating kepemudaan", logger)
+        return JsonResponse({
+            'success': False,
+            'message': f'Terjadi kesalahan tidak terduga: {str(e)}',
+            'errors': {'__all__': [str(e)]}
+        }, status=500)
 
 
 @csrf_protect
@@ -1901,3 +1998,132 @@ def api_karang_taruna_delete(request, pk):
         })
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+@ensure_csrf_cookie
+@require_http_methods(["GET"])
+def api_recent_activities(request):
+    """Get recent organization activities for dashboard"""
+    try:
+        # Get activities from the last 30 days
+        thirty_days_ago = timezone.now() - timedelta(days=30)
+        
+        activities = []
+        
+        # Get recent organizations from all types
+        models_info = [
+            (PerangkatDesa, 'Perangkat Desa'),
+            (LembagaAdat, 'Lembaga Adat'),
+            (PenggerakPKK, 'Penggerak PKK'),
+            (Kepemudaan, 'Kepemudaan'),
+            (KarangTaruna, 'Karang Taruna')
+        ]
+        
+        for model, org_type in models_info:
+            recent_orgs = model.objects.filter(
+                created_at__gte=thirty_days_ago
+            ).order_by('-created_at')[:5]
+            
+            for org in recent_orgs:
+                activities.append({
+                    'id': org.id,
+                    'type': 'create',
+                    'organization_type': org_type,
+                    'organization_name': org.nama,
+                    'description': f'Organisasi {org_type} "{org.nama}" telah didaftarkan',
+                    'timestamp': org.created_at.isoformat(),
+                    'status': org.status
+                })
+        
+        # Sort all activities by timestamp (newest first)
+        activities.sort(key=lambda x: x['timestamp'], reverse=True)
+        
+        # Return only the 10 most recent activities
+        recent_activities = activities[:10]
+        
+        return JsonResponse({
+            'success': True,
+            'activities': recent_activities,
+            'total': len(recent_activities)
+        })
+        
+    except Exception as e:
+        logger.error(f"Error fetching recent activities: {str(e)}", exc_info=True)
+        return JsonResponse({
+             'success': False,
+             'error': 'Gagal mengambil aktivitas terbaru'
+         }, status=500)
+
+@csrf_protect
+@require_http_methods(["POST"])
+def api_toggle_organization_status(request):
+    """Toggle organization status between aktif and non_aktif"""
+    try:
+        data = json.loads(request.body)
+        org_type = data.get('organization_type')
+        org_id = data.get('organization_id')
+        new_status = data.get('status')
+        
+        if not all([org_type, org_id, new_status]):
+            return JsonResponse({
+                'success': False,
+                'error': 'Parameter tidak lengkap'
+            }, status=400)
+        
+        # Validate status
+        if new_status not in ['aktif', 'non_aktif', 'dalam_pembinaan']:
+            return JsonResponse({
+                'success': False,
+                'error': 'Status tidak valid'
+            }, status=400)
+        
+        # Get the appropriate model
+        model_map = {
+            'perangkat_desa': PerangkatDesa,
+            'lembaga_adat': LembagaAdat,
+            'penggerak_pkk': PenggerakPKK,
+            'kepemudaan': Kepemudaan,
+            'karang_taruna': KarangTaruna
+        }
+        
+        model = model_map.get(org_type)
+        if not model:
+            return JsonResponse({
+                'success': False,
+                'error': 'Tipe organisasi tidak valid'
+            }, status=400)
+        
+        # Update organization status
+        try:
+            organization = model.objects.get(id=org_id)
+            old_status = organization.status
+            organization.status = new_status
+            organization.save()
+            
+            return JsonResponse({
+                'success': True,
+                'message': f'Status organisasi berhasil diubah dari {old_status} ke {new_status}',
+                'data': {
+                    'id': organization.id,
+                    'name': organization.nama,
+                    'old_status': old_status,
+                    'new_status': new_status
+                }
+            })
+            
+        except model.DoesNotExist:
+            return JsonResponse({
+                'success': False,
+                'error': 'Organisasi tidak ditemukan'
+            }, status=404)
+            
+    except json.JSONDecodeError:
+        return JsonResponse({
+            'success': False,
+            'error': 'Format JSON tidak valid'
+        }, status=400)
+    except Exception as e:
+        logger.error(f"Error toggling organization status: {str(e)}", exc_info=True)
+        return JsonResponse({
+            'success': False,
+            'error': 'Gagal mengubah status organisasi'
+        }, status=500)

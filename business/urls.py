@@ -10,6 +10,7 @@ urlpatterns = [
     path('csrf-token/', views.get_csrf_token, name='csrf_token'),
     # Business module view
     path('', views.business_module_view, name='business_admin'),
+    path('business-view/', views.business_view, name='business_view'),
     
     # Submenu views
     path('koperasi/', views.koperasi_view, name='koperasi'),
@@ -44,9 +45,11 @@ urlpatterns = [
     # New Business Module APIs
     path('api/koperasi/', views.koperasi_api, name='koperasi_api'),
     path('api/bumg/', views.bumg_api, name='bumg_api'),
-    path('api/ukm/', views.ukm_api, name='ukm_api'),
+    path('api/ukm/admin/', views.ukm_api, name='ukm_api'),
     path('api/aset/', views.aset_api, name='aset_api'),
+    path('api/aset/<int:aset_id>/', views.aset_detail_api, name='aset_detail_api'),
     path('api/jasa/', views.jasa_api, name='jasa_api'),
+    path('api/jasa/<int:jasa_id>/', views.jasa_detail_api, name='jasa_detail_api'),
     
     # Category Management APIs
     path('category/', views.category_view, name='category'),

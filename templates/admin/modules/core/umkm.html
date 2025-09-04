@@ -1,0 +1,796 @@
+{% extends 'admin/base.html' %}
+{% load static %}
+
+{% block title %}Manajemen UMKM{% endblock %}
+
+{% block extra_css %}
+<style>
+    .umkm-card {
+        transition: all 0.3s ease;
+        border: 1px solid #e5e7eb;
+    }
+    .umkm-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+    .status-badge {
+        font-size: 0.75rem;
+        padding: 0.25rem 0.5rem;
+        border-radius: 9999px;
+    }
+    .filter-section {
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        color: white;
+    }
+    .business-logo {
+        width: 50px;
+        height: 50px;
+        object-fit: cover;
+        border-radius: 8px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4">
+    <!-- Header Section -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0 text-gray-800">Manajemen UMKM</h1>
+            <p class="mb-0 text-muted">Kelola data Usaha Mikro, Kecil, dan Menengah</p>
+        </div>
+        <button class="btn btn-success" onclick="showAddUMKMModal()">
+            <i class="fas fa-plus me-2"></i>Tambah UMKM
+        </button>
+    </div>
+
+    <!-- Filter Section -->
+    <div class="card mb-4">
+        <div class="card-header filter-section">
+            <h6 class="m-0 font-weight-bold text-white">
+                <i class="fas fa-filter me-2"></i>Filter & Pencarian
+            </h6>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-3">
+                    <label class="form-label">Pencarian</label>
+                    <input type="text" class="form-control" id="searchInput" placeholder="Cari nama bisnis, pemilik, atau deskripsi...">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Status</label>
+                    <select class="form-select" id="statusFilter">
+                        <option value="">Semua Status</option>
+                        <option value="active">Aktif</option>
+                        <option value="inactive">Tidak Aktif</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Jenis Bisnis</label>
+                    <select class="form-select" id="businessTypeFilter">
+                        <option value="">Semua Jenis</option>
+                        <!-- Options will be loaded by JavaScript -->
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Tanggal Dibuat</label>
+                    <input type="date" class="form-control" id="dateFilter">
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button class="btn btn-outline-success me-2" onclick="applyFilters()">
+                        <i class="fas fa-search"></i>
+                    </button>
+                    <button class="btn btn-outline-secondary" onclick="resetFilters()">
+                        <i class="fas fa-undo"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Total UMKM
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="totalUMKM">-</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-store fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                UMKM Aktif
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="activeUMKM">-</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-check-circle fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                Jenis Bisnis
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="businessTypes">-</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-tags fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                UMKM Baru (Bulan Ini)
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="recentUMKM">-</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-plus-circle fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- UMKM Table -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 d-flex justify-content-between align-items-center">
+            <h6 class="m-0 font-weight-bold text-success">
+                <i class="fas fa-table me-2"></i>Daftar UMKM
+            </h6>
+            <div>
+                <button class="btn btn-sm btn-outline-success" onclick="refreshData()">
+                    <i class="fas fa-sync-alt"></i> Refresh
+                </button>
+                <button class="btn btn-sm btn-outline-primary" onclick="exportData()">
+                    <i class="fas fa-download"></i> Export
+                </button>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered" id="umkmTable">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Logo</th>
+                            <th>Nama Bisnis</th>
+                            <th>Pemilik</th>
+                            <th>Jenis Bisnis</th>
+                            <th>Kontak</th>
+                            <th>Status</th>
+                            <th>Dibuat</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="umkmTableBody">
+                        <tr>
+                            <td colspan="9" class="text-center py-4">
+                                <div class="spinner-border text-success" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                                <p class="mt-2 mb-0">Memuat data UMKM...</p>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Pagination -->
+            <nav aria-label="Page navigation" class="mt-3">
+                <ul class="pagination justify-content-center" id="pagination">
+                    <!-- Pagination will be generated by JavaScript -->
+                </ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+<!-- Add/Edit UMKM Modal -->
+<div class="modal fade" id="umkmModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="umkmModalTitle">Tambah UMKM</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="umkmForm">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Nama Bisnis *</label>
+                                <input type="text" class="form-control" id="businessName" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Nama Pemilik *</label>
+                                <input type="text" class="form-control" id="ownerName" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Jenis Bisnis *</label>
+                                <select class="form-select" id="businessType" required>
+                                    <option value="">Pilih Jenis Bisnis</option>
+                                    <!-- Options will be loaded by JavaScript -->
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Nomor Telepon</label>
+                                <input type="tel" class="form-control" id="phoneNumber">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Deskripsi</label>
+                        <textarea class="form-control" id="description" rows="3"></textarea>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Email</label>
+                                <input type="email" class="form-control" id="email">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Website</label>
+                                <input type="url" class="form-control" id="website">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Alamat</label>
+                        <textarea class="form-control" id="address" rows="2"></textarea>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Tahun Berdiri</label>
+                                <input type="number" class="form-control" id="establishedYear" min="1900" max="2024">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Jumlah Karyawan</label>
+                                <input type="number" class="form-control" id="employeeCount" min="0">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="isActive">
+                            <label class="form-check-label" for="isActive">
+                                Aktif
+                            </label>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                <button type="button" class="btn btn-success" onclick="saveUMKM()">Simpan</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- UMKM Detail Modal -->
+<div class="modal fade" id="umkmDetailModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Detail UMKM</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="umkmDetailContent">
+                <!-- Content will be loaded by JavaScript -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let currentPage = 1;
+let currentFilters = {};
+let editingUMKMId = null;
+let businessTypes = [];
+
+// Initialize page
+document.addEventListener('DOMContentLoaded', function() {
+    loadUMKM();
+    loadStats();
+    loadBusinessTypes();
+});
+
+// Load UMKM data
+function loadUMKM(page = 1) {
+    currentPage = page;
+    
+    const params = new URLSearchParams({
+        page: page,
+        ...currentFilters
+    });
+    
+    fetch(`/core/umkm/?${params}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                renderUMKMTable(data.data.results);
+                renderPagination(data.data.pagination);
+            } else {
+                showAlert('error', 'Gagal memuat data UMKM');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showAlert('error', 'Terjadi kesalahan saat memuat data');
+        });
+}
+
+// Load statistics
+function loadStats() {
+    fetch('/core/stats/')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                document.getElementById('totalUMKM').textContent = data.data.total_umkm;
+                document.getElementById('activeUMKM').textContent = data.data.active_umkm;
+                // Calculate business types count and recent UMKM from UMKM data
+                loadUMKMStats();
+            }
+        })
+        .catch(error => console.error('Error loading stats:', error));
+}
+
+// Load additional UMKM statistics
+function loadUMKMStats() {
+    fetch('/core/umkm/')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const umkmList = data.data.results;
+                const uniqueBusinessTypes = new Set(umkmList.map(umkm => umkm.business_type));
+                document.getElementById('businessTypes').textContent = uniqueBusinessTypes.size;
+                
+                const currentMonth = new Date().getMonth();
+                const currentYear = new Date().getFullYear();
+                const recentUMKM = umkmList.filter(umkm => {
+                    const createdDate = new Date(umkm.created_at);
+                    return createdDate.getMonth() === currentMonth && createdDate.getFullYear() === currentYear;
+                });
+                document.getElementById('recentUMKM').textContent = recentUMKM.length;
+            }
+        })
+        .catch(error => console.error('Error loading UMKM stats:', error));
+}
+
+// Load business types
+function loadBusinessTypes() {
+    fetch('/core/business-types/')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                businessTypes = data.data;
+                populateBusinessTypeSelects();
+            }
+        })
+        .catch(error => console.error('Error loading business types:', error));
+}
+
+// Populate business type select elements
+function populateBusinessTypeSelects() {
+    const selects = ['businessTypeFilter', 'businessType'];
+    
+    selects.forEach(selectId => {
+        const select = document.getElementById(selectId);
+        if (select) {
+            // Keep the first option (placeholder)
+            const firstOption = select.querySelector('option');
+            select.innerHTML = '';
+            select.appendChild(firstOption);
+            
+            businessTypes.forEach(type => {
+                const option = document.createElement('option');
+                option.value = type.name;
+                option.textContent = type.name;
+                select.appendChild(option);
+            });
+        }
+    });
+}
+
+// Render UMKM table
+function renderUMKMTable(umkmList) {
+    const tbody = document.getElementById('umkmTableBody');
+    
+    if (umkmList.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="9" class="text-center py-4">
+                    <i class="fas fa-store fa-3x text-muted mb-3"></i>
+                    <p class="text-muted">Tidak ada data UMKM</p>
+                </td>
+            </tr>
+        `;
+        return;
+    }
+    
+    tbody.innerHTML = umkmList.map(umkm => `
+        <tr>
+            <td>${umkm.id}</td>
+            <td>
+                <img src="${umkm.logo || '/static/img/default-business.png'}" 
+                     class="business-logo" alt="Logo">
+            </td>
+            <td>
+                <strong>${umkm.business_name}</strong>
+                ${umkm.description ? `<br><small class="text-muted">${umkm.description.substring(0, 50)}${umkm.description.length > 50 ? '...' : ''}</small>` : ''}
+            </td>
+            <td>${umkm.owner_name}</td>
+            <td>
+                <span class="badge bg-info">${umkm.business_type}</span>
+            </td>
+            <td>
+                ${umkm.phone_number ? `<i class="fas fa-phone"></i> ${umkm.phone_number}<br>` : ''}
+                ${umkm.email ? `<i class="fas fa-envelope"></i> ${umkm.email}` : ''}
+            </td>
+            <td>
+                <span class="badge ${umkm.is_active ? 'bg-success' : 'bg-danger'}">
+                    ${umkm.is_active ? 'Aktif' : 'Tidak Aktif'}
+                </span>
+            </td>
+            <td>${formatDate(umkm.created_at)}</td>
+            <td>
+                <div class="btn-group" role="group">
+                    <button class="btn btn-sm btn-outline-info" onclick="showUMKMDetail(${umkm.id})" title="Detail">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-warning" onclick="editUMKM(${umkm.id})" title="Edit">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger" onclick="deleteUMKM(${umkm.id})" title="Hapus">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </td>
+        </tr>
+    `).join('');
+}
+
+// Show add UMKM modal
+function showAddUMKMModal() {
+    editingUMKMId = null;
+    document.getElementById('umkmModalTitle').textContent = 'Tambah UMKM';
+    document.getElementById('umkmForm').reset();
+    document.getElementById('isActive').checked = true;
+    new bootstrap.Modal(document.getElementById('umkmModal')).show();
+}
+
+// Edit UMKM
+function editUMKM(umkmId) {
+    editingUMKMId = umkmId;
+    
+    fetch(`/core/umkm/${umkmId}/`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const umkm = data.data;
+                document.getElementById('umkmModalTitle').textContent = 'Edit UMKM';
+                document.getElementById('businessName').value = umkm.business_name;
+                document.getElementById('ownerName').value = umkm.owner_name;
+                document.getElementById('businessType').value = umkm.business_type;
+                document.getElementById('phoneNumber').value = umkm.phone_number || '';
+                document.getElementById('description').value = umkm.description || '';
+                document.getElementById('email').value = umkm.email || '';
+                document.getElementById('website').value = umkm.website || '';
+                document.getElementById('address').value = umkm.address || '';
+                document.getElementById('establishedYear').value = umkm.established_year || '';
+                document.getElementById('employeeCount').value = umkm.employee_count || '';
+                document.getElementById('isActive').checked = umkm.is_active;
+                
+                new bootstrap.Modal(document.getElementById('umkmModal')).show();
+            } else {
+                showAlert('error', 'Gagal memuat data UMKM');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showAlert('error', 'Terjadi kesalahan saat memuat data');
+        });
+}
+
+// Save UMKM
+function saveUMKM() {
+    const form = document.getElementById('umkmForm');
+    if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
+    }
+    
+    const umkmData = {
+        business_name: document.getElementById('businessName').value,
+        owner_name: document.getElementById('ownerName').value,
+        business_type: document.getElementById('businessType').value,
+        phone_number: document.getElementById('phoneNumber').value,
+        description: document.getElementById('description').value,
+        email: document.getElementById('email').value,
+        website: document.getElementById('website').value,
+        address: document.getElementById('address').value,
+        established_year: document.getElementById('establishedYear').value || null,
+        employee_count: document.getElementById('employeeCount').value || null,
+        is_active: document.getElementById('isActive').checked
+    };
+    
+    const url = editingUMKMId ? `/core/umkm/${editingUMKMId}/update/` : '/core/umkm/create/';
+    const method = editingUMKMId ? 'PUT' : 'POST';
+    
+    fetch(url, {
+        method: method,
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify(umkmData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showAlert('success', editingUMKMId ? 'UMKM berhasil diperbarui' : 'UMKM berhasil ditambahkan');
+            bootstrap.Modal.getInstance(document.getElementById('umkmModal')).hide();
+            loadUMKM(currentPage);
+            loadStats();
+        } else {
+            showAlert('error', data.message || 'Gagal menyimpan data UMKM');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showAlert('error', 'Terjadi kesalahan saat menyimpan data');
+    });
+}
+
+// Delete UMKM
+function deleteUMKM(umkmId) {
+    if (confirm('Apakah Anda yakin ingin menghapus UMKM ini?')) {
+        fetch(`/core/umkm/${umkmId}/delete/`, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showAlert('success', 'UMKM berhasil dihapus');
+                loadUMKM(currentPage);
+                loadStats();
+            } else {
+                showAlert('error', data.message || 'Gagal menghapus UMKM');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showAlert('error', 'Terjadi kesalahan saat menghapus data');
+        });
+    }
+}
+
+// Show UMKM detail
+function showUMKMDetail(umkmId) {
+    fetch(`/core/umkm/${umkmId}/`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const umkm = data.data;
+                document.getElementById('umkmDetailContent').innerHTML = `
+                    <div class="row">
+                        <div class="col-md-4 text-center">
+                            <img src="${umkm.logo || '/static/img/default-business.png'}" 
+                                 class="img-fluid rounded mb-3" style="max-width: 200px;" alt="Logo">
+                            <h5>${umkm.business_name}</h5>
+                            <p class="text-muted">${umkm.business_type}</p>
+                        </div>
+                        <div class="col-md-8">
+                            <table class="table table-borderless">
+                                <tr><td><strong>Pemilik:</strong></td><td>${umkm.owner_name}</td></tr>
+                                <tr><td><strong>Deskripsi:</strong></td><td>${umkm.description || '-'}</td></tr>
+                                <tr><td><strong>Telepon:</strong></td><td>${umkm.phone_number || '-'}</td></tr>
+                                <tr><td><strong>Email:</strong></td><td>${umkm.email || '-'}</td></tr>
+                                <tr><td><strong>Website:</strong></td><td>
+                                    ${umkm.website ? `<a href="${umkm.website}" target="_blank">${umkm.website}</a>` : '-'}
+                                </td></tr>
+                                <tr><td><strong>Alamat:</strong></td><td>${umkm.address || '-'}</td></tr>
+                                <tr><td><strong>Tahun Berdiri:</strong></td><td>${umkm.established_year || '-'}</td></tr>
+                                <tr><td><strong>Jumlah Karyawan:</strong></td><td>${umkm.employee_count || '-'}</td></tr>
+                                <tr><td><strong>Status:</strong></td><td>
+                                    <span class="badge ${umkm.is_active ? 'bg-success' : 'bg-danger'}">
+                                        ${umkm.is_active ? 'Aktif' : 'Tidak Aktif'}
+                                    </span>
+                                </td></tr>
+                                <tr><td><strong>Dibuat:</strong></td><td>${formatDate(umkm.created_at)}</td></tr>
+                                <tr><td><strong>Diperbarui:</strong></td><td>${formatDate(umkm.updated_at)}</td></tr>
+                            </table>
+                        </div>
+                    </div>
+                `;
+                new bootstrap.Modal(document.getElementById('umkmDetailModal')).show();
+            } else {
+                showAlert('error', 'Gagal memuat detail UMKM');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showAlert('error', 'Terjadi kesalahan saat memuat data');
+        });
+}
+
+// Apply filters
+function applyFilters() {
+    currentFilters = {
+        search: document.getElementById('searchInput').value,
+        status: document.getElementById('statusFilter').value,
+        business_type: document.getElementById('businessTypeFilter').value,
+        date: document.getElementById('dateFilter').value
+    };
+    
+    loadUMKM(1);
+}
+
+// Reset filters
+function resetFilters() {
+    document.getElementById('searchInput').value = '';
+    document.getElementById('statusFilter').value = '';
+    document.getElementById('businessTypeFilter').value = '';
+    document.getElementById('dateFilter').value = '';
+    
+    currentFilters = {};
+    loadUMKM(1);
+}
+
+// Refresh data
+function refreshData() {
+    loadUMKM(currentPage);
+    loadStats();
+    loadBusinessTypes();
+}
+
+// Export data
+function exportData() {
+    const params = new URLSearchParams(currentFilters);
+    window.open(`/core/umkm/export/?${params}`, '_blank');
+}
+
+// Render pagination
+function renderPagination(pagination) {
+    const paginationEl = document.getElementById('pagination');
+    
+    if (pagination.total_pages <= 1) {
+        paginationEl.innerHTML = '';
+        return;
+    }
+    
+    let html = '';
+    
+    // Previous button
+    html += `
+        <li class="page-item ${pagination.current_page === 1 ? 'disabled' : ''}">
+            <a class="page-link" href="#" onclick="loadUMKM(${pagination.current_page - 1})">
+                <i class="fas fa-chevron-left"></i>
+            </a>
+        </li>
+    `;
+    
+    // Page numbers
+    for (let i = 1; i <= pagination.total_pages; i++) {
+        if (i === 1 || i === pagination.total_pages || (i >= pagination.current_page - 2 && i <= pagination.current_page + 2)) {
+            html += `
+                <li class="page-item ${i === pagination.current_page ? 'active' : ''}">
+                    <a class="page-link" href="#" onclick="loadUMKM(${i})">${i}</a>
+                </li>
+            `;
+        } else if (i === pagination.current_page - 3 || i === pagination.current_page + 3) {
+            html += '<li class="page-item disabled"><span class="page-link">...</span></li>';
+        }
+    }
+    
+    // Next button
+    html += `
+        <li class="page-item ${pagination.current_page === pagination.total_pages ? 'disabled' : ''}">
+            <a class="page-link" href="#" onclick="loadUMKM(${pagination.current_page + 1})">
+                <i class="fas fa-chevron-right"></i>
+            </a>
+        </li>
+    `;
+    
+    paginationEl.innerHTML = html;
+}
+
+// Utility functions
+function formatDate(dateString) {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('id-ID', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+}
+
+function showAlert(type, message) {
+    const alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
+    const alertHtml = `
+        <div class="alert ${alertClass} alert-dismissible fade show" role="alert">
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    `;
+    
+    const container = document.querySelector('.container-fluid');
+    container.insertAdjacentHTML('afterbegin', alertHtml);
+    
+    // Auto dismiss after 5 seconds
+    setTimeout(() => {
+        const alert = container.querySelector('.alert');
+        if (alert) {
+            bootstrap.Alert.getOrCreateInstance(alert).close();
+        }
+    }, 5000);
+}
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+</script>
+{% endblock %}

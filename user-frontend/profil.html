@@ -80,109 +80,77 @@
             <div class="mb-10">
                 <h3 class="text-xl font-semibold mb-6 text-blue-800 text-center">Struktur Pemerintahan</h3>
                 
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <!-- Keuchik -->
-                    <div class="bg-white p-5 rounded-lg shadow-sm text-center">
-                        <div class="w-24 h-24 rounded-full bg-gray-200 mx-auto mb-3 overflow-hidden">
-                            <img src="asset/person-placeholder.svg" alt="Keuchik" class="w-full h-full object-cover">
+                <!-- Loading Animation -->
+                <div id="officials-loading" class="animate-pulse">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="bg-white p-5 rounded-lg shadow-sm text-center">
+                            <div class="w-24 h-24 rounded-full bg-gray-200 mx-auto mb-3"></div>
+                            <div class="h-4 bg-gray-200 rounded mb-2"></div>
+                            <div class="h-3 bg-gray-200 rounded w-3/4 mx-auto"></div>
                         </div>
-                        <h4 class="text-lg font-semibold text-gray-800">Teuku Abdullah</h4>
-                        <p class="text-blue-600 font-medium">Keuchik</p>
-                    </div>
-                    
-                    <!-- Sekretaris -->
-                    <div class="bg-white p-5 rounded-lg shadow-sm text-center">
-                        <div class="w-24 h-24 rounded-full bg-gray-200 mx-auto mb-3 overflow-hidden">
-                            <img src="asset/person-placeholder.svg" alt="Sekretaris" class="w-full h-full object-cover">
+                        <div class="bg-white p-5 rounded-lg shadow-sm text-center">
+                            <div class="w-24 h-24 rounded-full bg-gray-200 mx-auto mb-3"></div>
+                            <div class="h-4 bg-gray-200 rounded mb-2"></div>
+                            <div class="h-3 bg-gray-200 rounded w-3/4 mx-auto"></div>
                         </div>
-                        <h4 class="text-lg font-semibold text-gray-800">Cut Meutia</h4>
-                        <p class="text-blue-600 font-medium">Sekretaris</p>
-                    </div>
-                    
-                    <!-- Bendahara -->
-                    <div class="bg-white p-5 rounded-lg shadow-sm text-center">
-                        <div class="w-24 h-24 rounded-full bg-gray-200 mx-auto mb-3 overflow-hidden">
-                            <img src="asset/person-placeholder.svg" alt="Bendahara" class="w-full h-full object-cover">
+                        <div class="bg-white p-5 rounded-lg shadow-sm text-center">
+                            <div class="w-24 h-24 rounded-full bg-gray-200 mx-auto mb-3"></div>
+                            <div class="h-4 bg-gray-200 rounded mb-2"></div>
+                            <div class="h-3 bg-gray-200 rounded w-3/4 mx-auto"></div>
                         </div>
-                        <h4 class="text-lg font-semibold text-gray-800">Muhammad Hasan</h4>
-                        <p class="text-blue-600 font-medium">Bendahara</p>
                     </div>
                 </div>
+                
+                <!-- Dynamic Content Container -->
+                <div id="officials-container" class="hidden"></div>
             </div>
             
             <!-- Data Kampung -->
             <div class="bg-gray-50 p-6 rounded-lg">
                 <h3 class="text-xl font-semibold mb-4 text-blue-800">Data Kampung</h3>
                 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <h4 class="text-lg font-semibold mb-3 text-gray-800">Informasi Umum</h4>
-                        <ul class="space-y-2">
-                            <li class="flex">
-                                <span class="font-medium w-40">Luas Wilayah</span>
-                                <span>: 5,2 km²</span>
-                            </li>
-                            <li class="flex">
-                                <span class="font-medium w-40">Jumlah Penduduk</span>
-                                <span>: 1.250 jiwa</span>
-                            </li>
-                            <li class="flex">
-                                <span class="font-medium w-40">Jumlah KK</span>
-                                <span>: 320 KK</span>
-                            </li>
-                            <li class="flex">
-                                <span class="font-medium w-40">Batas Utara</span>
-                                <span>: Kampung Teluk Ambun</span>
-                            </li>
-                            <li class="flex">
-                                <span class="font-medium w-40">Batas Selatan</span>
-                                <span>: Laut Singkil</span>
-                            </li>
-                            <li class="flex">
-                                <span class="font-medium w-40">Batas Timur</span>
-                                <span>: Kampung Pasar</span>
-                            </li>
-                            <li class="flex">
-                                <span class="font-medium w-40">Batas Barat</span>
-                                <span>: Sungai Singkil</span>
-                            </li>
-                        </ul>
-                    </div>
-                    
-                    <div>
-                        <h4 class="text-lg font-semibold mb-3 text-gray-800">Fasilitas</h4>
-                        <ul class="space-y-2">
-                            <li class="flex">
-                                <span class="font-medium w-40">Sekolah</span>
-                                <span>: 2 unit (SD dan SMP)</span>
-                            </li>
-                            <li class="flex">
-                                <span class="font-medium w-40">Masjid</span>
-                                <span>: 1 unit</span>
-                            </li>
-                            <li class="flex">
-                                <span class="font-medium w-40">Meunasah</span>
-                                <span>: 3 unit</span>
-                            </li>
-                            <li class="flex">
-                                <span class="font-medium w-40">Puskesmas</span>
-                                <span>: 1 unit</span>
-                            </li>
-                            <li class="flex">
-                                <span class="font-medium w-40">Kantor Keuchik</span>
-                                <span>: 1 unit</span>
-                            </li>
-                            <li class="flex">
-                                <span class="font-medium w-40">Pasar</span>
-                                <span>: 1 unit</span>
-                            </li>
-                            <li class="flex">
-                                <span class="font-medium w-40">Lapangan</span>
-                                <span>: 1 unit</span>
-                            </li>
-                        </ul>
+                <!-- Loading Animation -->
+                <div id="village-data-loading" class="animate-pulse">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <div class="h-5 bg-gray-200 rounded mb-3 w-1/3"></div>
+                            <div class="space-y-2">
+                                <div class="flex">
+                                    <div class="h-4 bg-gray-200 rounded w-32"></div>
+                                    <div class="h-4 bg-gray-200 rounded w-20 ml-2"></div>
+                                </div>
+                                <div class="flex">
+                                    <div class="h-4 bg-gray-200 rounded w-32"></div>
+                                    <div class="h-4 bg-gray-200 rounded w-20 ml-2"></div>
+                                </div>
+                                <div class="flex">
+                                    <div class="h-4 bg-gray-200 rounded w-32"></div>
+                                    <div class="h-4 bg-gray-200 rounded w-20 ml-2"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="h-5 bg-gray-200 rounded mb-3 w-1/3"></div>
+                            <div class="space-y-2">
+                                <div class="flex">
+                                    <div class="h-4 bg-gray-200 rounded w-32"></div>
+                                    <div class="h-4 bg-gray-200 rounded w-20 ml-2"></div>
+                                </div>
+                                <div class="flex">
+                                    <div class="h-4 bg-gray-200 rounded w-32"></div>
+                                    <div class="h-4 bg-gray-200 rounded w-20 ml-2"></div>
+                                </div>
+                                <div class="flex">
+                                    <div class="h-4 bg-gray-200 rounded w-32"></div>
+                                    <div class="h-4 bg-gray-200 rounded w-20 ml-2"></div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
+                
+                <!-- Dynamic Content Container -->
+                <div id="village-data-container" class="hidden"></div>
             </div>
         </div>
     </section>
@@ -196,5 +164,13 @@
     </footer>
 
     <script src="script.js"></script>
+    <script src="config.js"></script>
+    <script src="profil-api.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const profilPageManager = new ProfilPageManager();
+            profilPageManager.init();
+        });
+    </script>
 </body>
 </html>

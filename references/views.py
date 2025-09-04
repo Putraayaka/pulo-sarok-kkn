@@ -91,6 +91,13 @@ def api_population(request):
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
 
+
+@login_required
+@user_passes_test(lambda u: u.is_staff)
+def test_debug_view(request):
+    """Test debug view to serve the debug test page"""
+    return render(request, 'admin/modules/references/test_debug.html')
+
 @csrf_exempt
 @require_http_methods(["GET"])
 def api_population_stats(request):
@@ -189,7 +196,7 @@ def api_dusun(request):
                 'name': dusun.name,
                 'code': dusun.code,
                 'description': dusun.description,
-                'population_count': dusun.penduduk_set.filter(is_active=True).count(),
+                'population_count': dusun.population_count,
                 'is_active': dusun.is_active,
             })
         
@@ -298,7 +305,7 @@ def public_lorong_list_api(request):
         if dusun_id:
             queryset = queryset.filter(dusun_id=dusun_id)
             
-        queryset = queryset.order_by('name')
+        queryset = queryset.order_by('-created_at')
         
         # Apply pagination if needed
         if per_page > 0:
@@ -625,10 +632,53 @@ def references_admin(request):
     }
     return render(request, 'admin/modules/references/index.html', context)
 
+@login_required
+@user_passes_test(is_admin)
+def references_view(request):
+    """References management view with modern UI"""
+    context = {
+        'page_title': 'Manajemen Data Penduduk',
+        'page_subtitle': 'Kelola data penduduk dan kependudukan desa'
+    }
+    return render(request, 'admin/modules/references/references.html', context)
+
 # Penduduk Views
 @csrf_exempt
+@require_http_methods(["GET", "POST"])
 def penduduk_list_api(request):
-    """API endpoint for penduduk list with pagination and search"""
+    """API endpoint for penduduk list with pagination and search, and creating new penduduk"""
+    if request.method == 'POST':
+        # Handle POST request for creating new penduduk
+        try:
+            data = json.loads(request.body)
+            
+            # Use form validation instead of manual validation
+            form = PendudukForm(data)
+            
+            if form.is_valid():
+                penduduk = form.save()
+                return JsonResponse({
+                    'success': True,
+                    'message': 'Data penduduk berhasil ditambahkan',
+                    'data': {
+                        'id': penduduk.id,
+                        'name': penduduk.name,
+                        'nik': penduduk.nik,
+                        'age': penduduk.age,
+                        'dusun_name': penduduk.dusun.name if penduduk.dusun else None
+                    }
+                })
+            else:
+                return JsonResponse({
+                    'success': False,
+                    'errors': form.errors
+                }, status=400)
+        except json.JSONDecodeError:
+            return JsonResponse({'success': False, 'error': 'Invalid JSON data'}, status=400)
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)}, status=500)
+    
+    # Handle GET request for listing penduduk
     try:
         # Handle page parameter safely
         page_param = request.GET.get('page', '1')
@@ -689,7 +739,7 @@ def penduduk_list_api(request):
         
         return JsonResponse(data)
     except Exception as e:
-        print(f"ERROR in penduduk_detail_api: {str(e)}")
+        print(f"ERROR in penduduk_list_api: {str(e)}")
         print(traceback.format_exc())
         return JsonResponse({'error': str(e)}, status=500)
 
@@ -971,13 +1021,16 @@ def penduduk_detail_api(request, pk):
                 'education_display': education_display,
                 'occupation': penduduk.occupation,
                 'address': penduduk.address,
-                'rt': penduduk.rt_number,
-                'rw': penduduk.rw_number,
+                'rt_number': penduduk.rt_number,
+                'rw_number': penduduk.rw_number,
+                'house_number': penduduk.house_number,
                 'postal_code': penduduk.postal_code,
-                'phone': penduduk.phone_number,
-                'mobile_phone': penduduk.mobile_number,
+                'phone_number': penduduk.phone_number,
+                'mobile_number': penduduk.mobile_number,
                 'email': penduduk.email,
                 'emergency_contact': penduduk.emergency_contact,
+                'emergency_phone': penduduk.emergency_phone,
+                'emergency_relationship': penduduk.emergency_relationship,
                 'blood_type': penduduk.blood_type,
                 'blood_type_display': blood_type_display,
                 'height': penduduk.height,
@@ -986,8 +1039,9 @@ def penduduk_detail_api(request, pk):
                 'citizenship': penduduk.citizenship,
                 'citizenship_display': citizenship_display,
                 'passport_number': penduduk.passport_number,
+                'passport_expiry': penduduk.passport_expiry.strftime('%Y-%m-%d') if penduduk.passport_expiry else '',
                 'family_head': penduduk.family_head.id if penduduk.family_head else None,
-                'family_position': penduduk.relationship_to_head,
+                'relationship_to_head': penduduk.relationship_to_head,
                 'family_members': family_members
             }
             return JsonResponse(data)
@@ -1114,7 +1168,7 @@ def penduduk_search_api(request):
                 queryset = queryset.filter(birth_date__year__gte=birth_year_min)
         
         # Order by name
-        queryset = queryset.order_by('name')
+        queryset = queryset.order_by('-created_at')
         
         # Pagination
         paginator = Paginator(queryset, per_page)
@@ -1234,7 +1288,7 @@ def dusun_list_api(request):
         if search:
             queryset = queryset.filter(name__icontains=search)
         
-        queryset = queryset.order_by('name')
+        queryset = queryset.order_by('-id')
         
         paginator = Paginator(queryset, per_page)
         page_obj = paginator.get_page(page)
@@ -1247,7 +1301,7 @@ def dusun_list_api(request):
                     'code': d.code,
                     'population_count': d.population_count,
                     'area_size': float(d.area_size) if d.area_size else 0,
-                    'total_residents': d.residents.count(),
+                    'total_residents': d.residents.filter(is_active=True, is_alive=True).count(),
                     'is_active': d.is_active
                 } for d in page_obj
             ],
@@ -1265,9 +1319,15 @@ def dusun_list_api(request):
         return JsonResponse({'error': str(e)}, status=500)
 
 @csrf_exempt
+@login_required
+@user_passes_test(is_admin)
 @require_http_methods(["POST"])
 def dusun_create_api(request):
     """API endpoint for creating dusun"""
+    print(f"DEBUG - dusun_create_api called! Method: {request.method}")
+    print(f"DEBUG - Content-Type: {request.content_type}")
+    print(f"DEBUG - Request body: {request.body}")
+    print(f"DEBUG - Request POST: {request.POST}")
     try:
         # Handle both JSON and FormData
         if request.content_type == 'application/json':
@@ -1276,19 +1336,25 @@ def dusun_create_api(request):
             # Handle FormData from HTML form
             data = request.POST.dict()
             
+        print(f"DEBUG - Received data: {data}")
+        print(f"DEBUG - population_count in data: {data.get('population_count')}")
+        
         form = DusunForm(data)
         
         if form.is_valid():
             dusun = form.save()
+            print(f"DEBUG - Saved dusun population_count: {dusun.population_count}")
             return JsonResponse({
                 'success': True,
                 'message': 'Data dusun berhasil ditambahkan',
                 'data': {
                     'id': dusun.id,
-                    'name': dusun.name
+                    'name': dusun.name,
+                    'population_count': dusun.population_count
                 }
             })
         else:
+            print(f"DEBUG - Form errors: {form.errors}")
             return JsonResponse({
                 'success': False,
                 'errors': form.errors
@@ -1299,15 +1365,27 @@ def dusun_create_api(request):
             'message': 'Invalid JSON data'
         }, status=400)
     except Exception as e:
+        print(f"DEBUG - Exception: {str(e)}")
         return JsonResponse({
             'success': False,
             'message': str(e)
         }, status=500)
 
 @csrf_exempt
+@login_required
+@user_passes_test(is_admin)
 @require_http_methods(["GET", "PUT", "DELETE"])
 def dusun_detail_api(request, pk):
     """API endpoint for dusun detail, update, and delete"""
+    print(f"\n=== DUSUN_DETAIL_API DEBUG START ===")
+    print(f"DEBUG - dusun_detail_api called! Method: {request.method}, PK: {pk}")
+    print(f"DEBUG - Content-Type: {request.content_type}")
+    print(f"DEBUG - Request path: {request.path}")
+    print(f"DEBUG - Request META: {dict(request.META)}")
+    if request.method == 'PUT':
+        print(f"DEBUG - Request body: {request.body}")
+        print(f"DEBUG - Request headers: {dict(request.headers)}")
+    print(f"=== DUSUN_DETAIL_API DEBUG END ===\n")
     try:
         dusun = get_object_or_404(Dusun, pk=pk)
         
@@ -1325,15 +1403,22 @@ def dusun_detail_api(request, pk):
         
         elif request.method == 'PUT':
             data = json.loads(request.body)
+            
+            print(f"DEBUG - PUT data: {data}")
+            print(f"DEBUG - PUT population_count in data: {data.get('population_count')}")
+            print(f"DEBUG - Current dusun population_count: {dusun.population_count}")
+            
             form = DusunForm(data, instance=dusun)
             
             if form.is_valid():
                 dusun = form.save()
+                print(f"DEBUG - Updated dusun population_count: {dusun.population_count}")
                 return JsonResponse({
                     'success': True,
                     'message': 'Data dusun berhasil diperbarui'
                 })
             else:
+                print(f"DEBUG - PUT Form errors: {form.errors}")
                 return JsonResponse({
                     'success': False,
                     'errors': form.errors
@@ -1374,7 +1459,7 @@ def lorong_list_api(request):
         if dusun_id:
             queryset = queryset.filter(dusun_id=dusun_id)
         
-        queryset = queryset.select_related('dusun').order_by('dusun__name', 'name')
+        queryset = queryset.select_related('dusun').order_by('-created_at')
         
         paginator = Paginator(queryset, per_page)
         page_obj = paginator.get_page(page)
@@ -1874,8 +1959,8 @@ def dashboard_summary_api(request):
         
         if total_penduduk > 0:
             # Demographics calculations
-            male_count = Penduduk.objects.filter(jenis_kelamin='L', is_active=True).count()
-            female_count = Penduduk.objects.filter(jenis_kelamin='P', is_active=True).count()
+            male_count = Penduduk.objects.filter(gender='L', is_active=True).count()
+            female_count = Penduduk.objects.filter(gender='P', is_active=True).count()
             
             stats['male_percentage'] = round((male_count / total_penduduk) * 100, 1)
             stats['female_percentage'] = round((female_count / total_penduduk) * 100, 1)
@@ -1884,8 +1969,8 @@ def dashboard_summary_api(request):
             today = date.today()
             ages = []
             for p in Penduduk.objects.filter(is_active=True):
-                if p.tanggal_lahir:
-                    age = today.year - p.tanggal_lahir.year - ((today.month, today.day) < (p.tanggal_lahir.month, p.tanggal_lahir.day))
+                if p.birth_date:
+                    age = today.year - p.birth_date.year - ((today.month, today.day) < (p.birth_date.month, p.birth_date.day))
                     ages.append(age)
             stats['average_age'] = round(sum(ages) / len(ages), 1) if ages else 0
             
@@ -1936,7 +2021,7 @@ def family_list_api(request):
         per_page = int(request.GET.get('per_page', 10))
         search = request.GET.get('search', '').strip()
         
-        families = Family.objects.filter(is_active=True)
+        families = Family.objects.filter(is_active=True).order_by('-created_at')
         
         if search:
             families = families.filter(

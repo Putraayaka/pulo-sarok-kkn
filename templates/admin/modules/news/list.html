@@ -487,7 +487,7 @@ function closeNewsModal() {
 }
 
 function viewNews(id) {
-    fetch(`{% url 'news:news_detail_api' 0 %}`.replace('0', id))
+    fetch(`{% url 'news:news_detail' 0 %}`.replace('0', id))
         .then(response => response.json())
         .then(data => {
             const content = `
@@ -529,12 +529,12 @@ function editNews(id) {
 }
 
 function loadNewsData(id) {
-    fetch(`{% url 'news:news_detail_api' 0 %}`.replace('0', id))
+    fetch(`{% url 'news:news_detail' 0 %}`.replace('0', id))
         .then(response => response.json())
         .then(data => {
             const form = document.getElementById('newsForm');
             form.querySelector('[name="title"]').value = data.title;
-            form.querySelector('[name="category"]').value = data.category;
+            form.querySelector('[name="category"]').value = data.category_id;
             form.querySelector('[name="content"]').value = data.content;
             form.querySelector('[name="excerpt"]').value = data.excerpt || '';
             form.querySelector('[name="status"]').value = data.status;
@@ -557,7 +557,7 @@ function saveNews() {
     const form = document.getElementById('newsForm');
     const formData = new FormData(form);
     
-    const url = editingId ? `{% url 'news:news_update_api' 0 %}`.replace('0', editingId) : `{% url 'news:news_create_api' %}`;
+    const url = editingId ? `{% url 'news:news_update' 0 %}`.replace('0', editingId) : `{% url 'news:news_create' %}`;
     const method = 'POST';
     
     fetch(url, {
@@ -618,24 +618,30 @@ function closeDeleteModal() {
 function confirmDelete() {
     if (!deleteId) return;
     
-    fetch(`{% url 'news:news_delete_api' 0 %}`.replace('0', deleteId), {
+    fetch(`/pulosarok/news/api/news/${deleteId}/delete/`, {
          method: 'DELETE',
          headers: {
-             'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+             'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+             'Content-Type': 'application/json'
         }
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
     .then(data => {
         if (data.success) {
             closeDeleteModal();
             location.reload();
         } else {
-            alert('Gagal menghapus berita');
+            alert('Gagal menghapus berita: ' + (data.message || 'Unknown error'));
         }
     })
     .catch(error => {
         console.error('Error:', error);
-        alert('Gagal menghapus berita');
+        alert('Gagal menghapus berita: ' + error.message);
     });
 }
 </script>

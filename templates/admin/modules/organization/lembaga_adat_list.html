@@ -448,6 +448,8 @@
         
         document.querySelectorAll('.edit-lembaga').forEach(btn => {
             btn.addEventListener('click', () => {
+                // Store current page in localStorage before navigating to edit
+                localStorage.setItem('lembagaAdatCurrentPage', currentPage);
                 window.location.href = `/pulosarok/organization/lembaga-adat/${btn.dataset.id}/edit/`;
             });
         });
@@ -757,7 +759,10 @@
 
     // Event listeners
     document.addEventListener('DOMContentLoaded', function() {
-        loadLembagaAdat();
+        // Check for page parameter in URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const initialPage = parseInt(urlParams.get('page')) || 1;
+        loadLembagaAdat(initialPage);
         
         // Search and filter events
         document.getElementById('search').addEventListener('input', () => loadLembagaAdat(1));
@@ -780,6 +785,28 @@
         document.getElementById('cancel-delete').addEventListener('click', () => {
             document.getElementById('delete-modal').classList.add('hidden');
         });
+        
+        // Setup ESC key functionality
+        setupEscKeyHandler();
     });
+    
+    // Add ESC key functionality to close modals
+    function setupEscKeyHandler() {
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                // Check if detail modal is currently open and close it
+                const detailModal = document.getElementById('detail-modal');
+                if (detailModal && !detailModal.classList.contains('hidden')) {
+                    detailModal.classList.add('hidden');
+                }
+                
+                // Check if delete modal is currently open and close it
+                const deleteModal = document.getElementById('delete-modal');
+                if (deleteModal && !deleteModal.classList.contains('hidden')) {
+                    deleteModal.classList.add('hidden');
+                }
+            }
+        });
+    }
 </script>
 {% endblock %}

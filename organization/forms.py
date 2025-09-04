@@ -3,6 +3,22 @@ from .models import PerangkatDesa, LembagaAdat, PenggerakPKK, Kepemudaan, Karang
 from references.models import Penduduk
 
 class PerangkatDesaForm(forms.ModelForm):
+    tanggal_mulai_tugas = forms.DateField(
+        input_formats=['%Y-%m-%d'],
+        widget=forms.DateInput(attrs={
+            'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500', 
+            'type': 'date'
+        }, format='%Y-%m-%d')
+    )
+    tanggal_selesai_tugas = forms.DateField(
+        required=False,
+        input_formats=['%Y-%m-%d'],
+        widget=forms.DateInput(attrs={
+            'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500', 
+            'type': 'date'
+        }, format='%Y-%m-%d')
+    )
+    
     class Meta:
         model = PerangkatDesa
         fields = ['penduduk', 'jabatan', 'nip', 'sk_pengangkatan', 'tanggal_mulai_tugas', 
@@ -13,8 +29,6 @@ class PerangkatDesaForm(forms.ModelForm):
             'jabatan': forms.Select(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500'}),
             'nip': forms.TextInput(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500', 'placeholder': 'NIP'}),
             'sk_pengangkatan': forms.TextInput(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500', 'placeholder': 'Nomor SK Pengangkatan'}),
-            'tanggal_mulai_tugas': forms.DateInput(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500', 'type': 'date'}),
-            'tanggal_selesai_tugas': forms.DateInput(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500', 'type': 'date'}),
             'status': forms.Select(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500'}),
             'gaji_pokok': forms.NumberInput(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500', 'placeholder': 'Gaji Pokok'}),
             'tunjangan': forms.NumberInput(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500', 'placeholder': 'Tunjangan'}),
@@ -101,23 +115,11 @@ class PenggerakPKKForm(forms.ModelForm):
 
 class KepemudaanForm(forms.ModelForm):
     # Tambahkan field yang tidak ada di model tapi ada di template
-    wakil_ketua = forms.ModelChoiceField(
-        queryset=Penduduk.objects.all(),
-        required=False,
-        widget=forms.Select(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500'})
-    )
-    jumlah_anggota = forms.IntegerField(
-        required=False,
-        widget=forms.NumberInput(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500', 'placeholder': 'Jumlah Anggota'})
-    )
     tanggal_berdiri = forms.DateField(
-        required=False,
+        required=True,
         widget=forms.DateInput(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500', 'type': 'date'})
     )
-    sk_kepengurusan = forms.CharField(
-        required=False,
-        widget=forms.TextInput(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500', 'placeholder': 'SK Kepengurusan'})
-    )
+
     lokasi_sekretariat = forms.CharField(
         required=False,
         widget=forms.Textarea(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500', 'rows': 3, 'placeholder': 'Lokasi Sekretariat'})
@@ -145,7 +147,7 @@ class KepemudaanForm(forms.ModelForm):
         model = Kepemudaan
         fields = ['nama_organisasi', 'jenis_organisasi', 'ketua', 'sekretaris', 'bendahara', 
                  'tanggal_terbentuk', 'jumlah_anggota_aktif', 'rentang_usia', 
-                 'kegiatan_rutin', 'prestasi', 'alamat_sekretariat', 'status', 
+                 'kegiatan_rutin', 'prestasi', 'alamat_sekretariat', 'sk_kepengurusan', 'status', 
                  'kontak_phone', 'email', 'foto_kegiatan', 'deskripsi', 'media_sosial', 'visi_misi']
         widgets = {
             'nama_organisasi': forms.TextInput(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500', 'placeholder': 'Nama Organisasi'}),
@@ -159,6 +161,7 @@ class KepemudaanForm(forms.ModelForm):
             'kegiatan_rutin': forms.Textarea(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500', 'rows': 3, 'placeholder': 'Kegiatan Rutin'}),
             'prestasi': forms.Textarea(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500', 'rows': 3, 'placeholder': 'Prestasi'}),
             'alamat_sekretariat': forms.Textarea(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500', 'rows': 3, 'placeholder': 'Alamat Sekretariat'}),
+            'sk_kepengurusan': forms.TextInput(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500', 'placeholder': 'SK Kepengurusan'}),
             'status': forms.Select(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500'}),
             'kontak_phone': forms.TextInput(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500', 'placeholder': 'Nomor Telepon'}),
             'email': forms.EmailInput(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500', 'placeholder': 'Email'}),
@@ -173,25 +176,48 @@ class KepemudaanForm(forms.ModelForm):
         self.fields['jenis_organisasi'].required = True
         self.fields['ketua'].required = True
         self.fields['status'].required = True
-        self.fields['tanggal_berdiri'].required = True
+        # tanggal_berdiri sudah diset sebagai required di definisi field
+        self.fields['tanggal_terbentuk'].required = False  # Will be filled from tanggal_berdiri
+        self.fields['jumlah_anggota_aktif'].required = True
         
         # Jika instance sudah ada, isi field tambahan dengan data yang sesuai
         if self.instance and self.instance.pk:
             # Memetakan field dari model ke field form
             self.fields['tanggal_berdiri'].initial = self.instance.tanggal_terbentuk
-            self.fields['jumlah_anggota'].initial = self.instance.jumlah_anggota_aktif
             self.fields['lokasi_sekretariat'].initial = self.instance.alamat_sekretariat
             self.fields['kontak'].initial = self.instance.kontak_phone
             self.fields['foto_profil'].initial = self.instance.foto_kegiatan
+            # Pastikan sk_kepengurusan juga dipopulasi saat edit
+            if hasattr(self.instance, 'sk_kepengurusan') and self.instance.sk_kepengurusan:
+                self.fields['sk_kepengurusan'].initial = self.instance.sk_kepengurusan
             
+    def clean(self):
+        cleaned_data = super().clean()
+        
+        # Validate required fields
+        tanggal_berdiri = cleaned_data.get('tanggal_berdiri')
+        if not tanggal_berdiri:
+            self.add_error('tanggal_berdiri', 'Tanggal berdiri wajib diisi.')
+        
+        # Validate that tanggal_berdiri is not in the future
+        if tanggal_berdiri:
+            from datetime import date
+            if tanggal_berdiri > date.today():
+                self.add_error('tanggal_berdiri', 'Tanggal berdiri tidak boleh di masa depan.')
+        
+        # Sync tanggal_berdiri to tanggal_terbentuk
+        if tanggal_berdiri:
+            cleaned_data['tanggal_terbentuk'] = tanggal_berdiri
+        
+        return cleaned_data
+    
     def save(self, commit=True):
         instance = super().save(commit=False)
         # Menyimpan data dari field tambahan ke field model yang sesuai
         # tanggal_berdiri wajib diisi dan disimpan ke tanggal_terbentuk
-        instance.tanggal_terbentuk = self.cleaned_data.get('tanggal_berdiri')
+        if self.cleaned_data.get('tanggal_berdiri'):
+            instance.tanggal_terbentuk = self.cleaned_data.get('tanggal_berdiri')
         
-        if self.cleaned_data.get('jumlah_anggota'):
-            instance.jumlah_anggota_aktif = self.cleaned_data.get('jumlah_anggota')
         if self.cleaned_data.get('lokasi_sekretariat'):
             instance.alamat_sekretariat = self.cleaned_data.get('lokasi_sekretariat')
         if self.cleaned_data.get('kontak'):

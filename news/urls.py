@@ -4,7 +4,7 @@ from . import views
 app_name = 'news'
 
 urlpatterns = [
-    # News module view
+    # News module view - redirect to dashboard
     path('', views.news_admin, name='news_admin'),
     
     # News template views
@@ -12,11 +12,8 @@ urlpatterns = [
     path('edit/<int:pk>/', views.news_edit_view, name='news_edit_view'),
     path('view/<int:pk>/', views.news_view_detail, name='news_view_detail'),
     path('list/', views.news_list_view, name='news_list_view'),
-    path('category/', views.news_category_view, name='news_category_view'),
-    path('category/create/', views.news_category_create_view, name='news_category_create_view'),
-    path('media/', views.news_media_view, name='news_media_view'),
     
-    # Admin-specific URLs (non-API)
+    # Admin-specific URLs (non-API) - Updated to match dashboard structure
     path('admin/', views.news_admin, name='admin_index'),
     path('admin/view/<int:pk>/', views.news_view_detail, name='admin_view'),
     path('admin/edit/<int:pk>/', views.news_edit_view, name='admin_edit'),
@@ -26,68 +23,73 @@ urlpatterns = [
     path('admin/unpublish/<int:pk>/', views.news_unpublish_view, name='admin_unpublish'),
     path('admin/bulk-action/', views.news_bulk_action_view, name='admin_bulk_action'),
     
-    # Media management URLs (non-API)
-    path('admin/media/', views.news_media_view, name='admin_media'),
-    path('admin/media/upload/', views.news_media_upload_view, name='admin_media_upload'),
-    path('admin/media/<int:pk>/', views.news_media_detail_view, name='admin_media_detail'),
-    path('admin/media/<int:pk>/update/', views.news_media_update_view, name='admin_media_update'),
-    path('admin/media/<int:pk>/delete/', views.news_media_delete_view, name='admin_media_delete'),
-    path('admin/media/bulk-delete/', views.news_media_bulk_delete_view, name='admin_media_bulk_delete'),
-    path('admin/media/bulk-download/', views.news_media_bulk_download_view, name='admin_media_bulk_download'),
+    # Media management URLs (non-API) - Updated to match dashboard structure
+    path('media/', views.news_media_view, name='news_media_view'),
+    path('media/upload/', views.news_media_upload_view, name='news_media_upload_view'),
+    path('media/<int:pk>/', views.news_media_detail_view, name='admin_media_detail'),
+    path('media/<int:pk>/update/', views.news_media_update_view, name='admin_media_update'),
+    path('media/<int:pk>/delete/', views.news_media_delete_view, name='admin_media_delete'),
+    path('media/bulk-delete/', views.news_media_bulk_delete_view, name='admin_media_bulk_delete'),
+    path('media/bulk-download/', views.news_media_bulk_download_view, name='admin_media_bulk_download'),
     
-    # Category management URLs (non-API)
-    path('admin/categories/', views.news_category_view, name='admin_categories'),
-    path('admin/categories/create/', views.news_category_create_view, name='admin_category_create'),
-    path('admin/categories/<int:pk>/', views.news_category_detail_view, name='admin_category_detail'),
-    path('admin/categories/<int:pk>/update/', views.news_category_update_view, name='admin_category_update'),
-    path('admin/categories/<int:pk>/delete/', views.news_category_delete_view, name='admin_category_delete'),
+    # Category management URLs (non-API) - Updated to match dashboard structure
+    path('categories/', views.news_category_view, name='news_category_view'),
+    path('categories/create/', views.news_category_create_view, name='admin_category_create'),
+    path('categories/<int:pk>/', views.news_category_detail_view, name='admin_category_detail'),
+    path('categories/<int:pk>/update/', views.news_category_update_view, name='admin_category_update'),
+    path('categories/<int:pk>/delete/', views.news_category_delete_view, name='admin_category_delete'),
     
-    # Announcement management URLs (admin)
-    path('admin/announcements/', views.announcement_list, name='announcement_list'),
-    path('admin/announcement/create/', views.announcement_create, name='announcement_create'),
-    path('admin/announcement/<int:pk>/', views.announcement_detail, name='announcement_detail'),
-    path('admin/announcement/<int:pk>/edit/', views.announcement_edit, name='announcement_edit'),
-    path('admin/announcement/<int:pk>/delete/', views.announcement_delete, name='announcement_delete'),
+    # Announcement management URLs (admin) - Updated to match dashboard structure
+    path('announcements/', views.announcement_list, name='announcement_list'),
+    path('announcement/create/', views.announcement_create, name='announcement_create'),
+    path('announcement/<int:pk>/', views.announcement_detail, name='announcement_detail'),
+    path('announcement/<int:pk>/edit/', views.announcement_edit, name='announcement_edit'),
+    path('announcement/<int:pk>/delete/', views.announcement_delete, name='announcement_delete'),
     
     # Public announcement URLs
     path('public/announcements/', views.public_announcement_list, name='public_announcement_list'),
     path('public/announcement/<slug:slug>/', views.public_announcement_detail, name='public_announcement_detail'),
     
+    # Public news URLs (tanpa autentikasi)
+    path('public/news/', views.public_news_list, name='public_news_list'),
+    path('public/news/<slug:slug>/', views.public_news_detail, name='public_news_detail'),
+    path('public/news/featured/', views.public_featured_news, name='public_featured_news'),
+    
     # NewsCategory APIs
-    path('categories/', views.news_category_list_api, name='newscategory_list'),
-    path('categories/<int:pk>/', views.news_category_detail_api, name='newscategory_detail'),
-    path('categories/create/', views.news_category_create_api, name='newscategory_create'),
-    path('categories/<int:pk>/update/', views.news_category_update_api, name='newscategory_update'),
-    path('categories/<int:pk>/delete/', views.news_category_delete_api, name='newscategory_delete'),
-    path('categories/statistics/', views.news_category_statistics_api, name='news_category_statistics'),
+    path('api/categories/', views.news_category_list_api, name='newscategory_list'),
+    path('api/categories/<int:pk>/', views.news_category_detail_api, name='newscategory_detail'),
+    path('api/categories/create/', views.news_category_create_api, name='newscategory_create'),
+    path('api/categories/<int:pk>/update/', views.news_category_update_api, name='newscategory_update'),
+    path('api/categories/<int:pk>/delete/', views.news_category_delete_api, name='newscategory_delete'),
+    path('api/categories/statistics/', views.news_category_statistics_api, name='news_category_statistics'),
     
     # NewsTag APIs
-    path('tags/', views.news_tag_list_api, name='newstag_list'),
-    path('tags/search/', views.news_tag_search_api, name='newstag_search'),
-    path('tags/create/', views.news_tag_create_api, name='newstag_create'),
-    path('tags/<int:pk>/delete/', views.news_tag_delete_api, name='newstag_delete'),
+    path('api/tags/', views.news_tag_list_api, name='newstag_list'),
+    path('api/tags/search/', views.news_tag_search_api, name='newstag_search'),
+    path('api/tags/create/', views.news_tag_create_api, name='newstag_create'),
+    path('api/tags/<int:pk>/delete/', views.news_tag_delete_api, name='newstag_delete'),
     
     # News APIs
-    path('news/', views.news_list_api, name='news_list'),
-    path('news/<int:pk>/', views.news_detail_api, name='news_detail'),
-    path('news/create/', views.news_create_api, name='news_create'),
-    path('news/<int:pk>/update/', views.news_update_api, name='news_update'),
-    path('news/<int:pk>/delete/', views.news_delete_api, name='news_delete'),
-    path('news/<int:pk>/duplicate/', views.news_duplicate_api, name='news_duplicate_api'),
-    path('news/bulk-action/', views.news_bulk_action_api, name='news_bulk_action'),
+    path('api/news/', views.news_list_api, name='news_list'),
+    path('api/news/<int:pk>/', views.news_detail_api, name='news_detail'),
+    path('api/news/create/', views.news_create_api, name='news_create'),
+    path('api/news/<int:pk>/update/', views.news_update_api, name='news_update'),
+    path('api/news/<int:pk>/delete/', views.news_delete_api, name='news_delete'),
+    path('api/news/<int:pk>/duplicate/', views.news_duplicate_api, name='news_duplicate_api'),
+    path('api/news/bulk-action/', views.news_bulk_action_api, name='news_bulk_action'),
     
     # NewsComment APIs
-    path('comments/', views.news_comment_list_api, name='newscomment_list'),
-    path('comments/<int:pk>/update-status/', views.news_comment_update_status_api, name='newscomment_update_status'),
-    path('comments/<int:pk>/delete/', views.news_comment_delete_api, name='newscomment_delete'),
+    path('api/comments/', views.news_comment_list_api, name='newscomment_list'),
+    path('api/comments/<int:pk>/update-status/', views.news_comment_update_status_api, name='newscomment_update_status'),
+    path('api/comments/<int:pk>/delete/', views.news_comment_delete_api, name='newscomment_delete'),
     
     # Dropdown APIs
-    path('categories/dropdown/', views.news_categories_dropdown_api, name='news_categories_dropdown'),
-    path('tags/dropdown/', views.news_tags_dropdown_api, name='news_tags_dropdown'),
-    path('news/dropdown/', views.news_dropdown_api, name='news_dropdown'),
+    path('api/categories/dropdown/', views.news_categories_dropdown_api, name='news_categories_dropdown'),
+    path('api/tags/dropdown/', views.news_tags_dropdown_api, name='news_tags_dropdown'),
+    path('api/news/dropdown/', views.news_dropdown_api, name='news_dropdown'),
     
     # Statistics API
-    path('statistics/', views.news_statistics_api, name='news_statistics'),
+    path('api/statistics/', views.news_statistics_api, name='news_statistics'),
     
     # Media APIs
     path('api/media/', views.news_media_list_api, name='news_media_list_api'),

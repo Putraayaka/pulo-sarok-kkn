@@ -354,8 +354,8 @@ class TourismPackage(models.Model):
         return f"{self.title} - {self.tourism_location.title}"
 
 class TourismGallery(models.Model):
-    package = models.ForeignKey(TourismPackage, on_delete=models.CASCADE, related_name='gallery', verbose_name="Paket Wisata")
-    image = models.ImageField(upload_to='tourism/packages/gallery/', verbose_name="Gambar")
+    package = models.ForeignKey(TourismPackage, on_delete=models.CASCADE, related_name='gallery', null=True, blank=True, verbose_name="Paket Wisata")
+    image = models.ImageField(upload_to='tourism/packages/gallery/', null=True, blank=True, verbose_name="Gambar")
     title = models.CharField(max_length=100, blank=True, null=True, verbose_name="Judul Gambar")
     description = models.TextField(blank=True, null=True, verbose_name="Deskripsi Gambar")
     order = models.PositiveIntegerField(default=0, verbose_name="Urutan")

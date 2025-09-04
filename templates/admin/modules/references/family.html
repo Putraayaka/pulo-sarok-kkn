@@ -14,10 +14,6 @@
         </div>
         
         <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 w-full sm:w-auto">
-            <button onclick="exportData()" 
-                    class="flex-1 sm:flex-none px-3 py-2 bg-green-600 text-white text-sm rounded-md hover:bg-green-700">
-                <i class="fas fa-download mr-1"></i>Export
-            </button>
             <button onclick="openCreateModal()" 
                     class="w-full sm:w-auto px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700">
                 <i class="fas fa-plus mr-2"></i>Tambah Keluarga
@@ -73,6 +69,17 @@
                 </tbody>
             </table>
         </div>
+    </div>
+
+    <!-- Empty State -->
+    <div id="empty-state" class="hidden p-8 text-center">
+        <i class="fas fa-home text-4xl text-gray-300 mb-4"></i>
+        <h3 class="text-lg font-medium text-gray-900 mb-2">Belum ada data keluarga</h3>
+        <p class="text-gray-500 mb-4">Mulai dengan menambahkan data keluarga pertama</p>
+        <button onclick="openCreateModal()" 
+                class="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700">
+            <i class="fas fa-plus mr-2"></i>Tambah Keluarga
+        </button>
     </div>
 
     <!-- Pagination -->
@@ -280,6 +287,14 @@ function loadData() {
 function renderData(data) {
     const tbody = document.getElementById('table-body');
     tbody.innerHTML = '';
+    
+    if (data.length === 0) {
+        const search = document.getElementById('search').value;
+        showEmptyState(search.trim() !== '');
+        return;
+    }
+    
+    hideEmptyState();
     
     data.forEach(family => {
         const row = `
@@ -529,6 +544,42 @@ function debounce(func, wait) {
     };
 }
 
+function showEmptyState(isSearching = false) {
+    const emptyStateEl = document.getElementById('empty-state');
+    
+    if (isSearching) {
+        emptyStateEl.innerHTML = `
+            <i class="fas fa-search text-4xl text-gray-300 mb-4"></i>
+            <h3 class="text-lg font-medium text-gray-900 mb-2">Tidak ada hasil pencarian</h3>
+            <p class="text-gray-500 mb-4">Coba gunakan kata kunci yang berbeda atau hapus filter pencarian</p>
+            <button onclick="clearSearch()" 
+                    class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700">
+                <i class="fas fa-times mr-2"></i>Hapus Pencarian
+            </button>
+        `;
+    } else {
+        emptyStateEl.innerHTML = `
+            <i class="fas fa-home text-4xl text-gray-300 mb-4"></i>
+            <h3 class="text-lg font-medium text-gray-900 mb-2">Belum ada data keluarga</h3>
+            <p class="text-gray-500 mb-4">Mulai dengan menambahkan data keluarga pertama</p>
+            <button onclick="openCreateModal()" 
+                    class="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700">
+                <i class="fas fa-plus mr-2"></i>Tambah Keluarga
+            </button>
+        `;
+    }
+    
+    emptyStateEl.classList.remove('hidden');
+    document.querySelector('.table-compact').classList.add('hidden');
+    document.getElementById('pagination').classList.add('hidden');
+}
+
+function hideEmptyState() {
+    document.getElementById('empty-state').classList.add('hidden');
+    document.querySelector('.table-compact').classList.remove('hidden');
+    document.getElementById('pagination').classList.remove('hidden');
+}
+
 function getCookie(name) {
     let cookieValue = null;
     if (document.cookie && document.cookie !== '') {
@@ -557,5 +608,35 @@ function showToast(message, type) {
         toast.remove();
     }, 3000);
 }
+
+// Add click outside to close modal functionality
+function setupModalClickOutside() {
+    const modal = document.getElementById('crud-modal');
+    if (modal) {
+        modal.addEventListener('click', function(e) {
+            // Check if click is on the modal backdrop (not on modal content)
+            if (e.target === modal) {
+                closeModal();
+            }
+        });
+    }
+}
+
+// Add ESC key functionality to close modals
+function setupEscKeyHandler() {
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            // Check if crud modal is currently open and close it
+            const crudModal = document.getElementById('crud-modal');
+            if (crudModal && !crudModal.classList.contains('hidden')) {
+                closeModal();
+            }
+        }
+    });
+}
+
+// Initialize modal functionality
+setupModalClickOutside();
+setupEscKeyHandler();
 </script>
 {% endblock %}

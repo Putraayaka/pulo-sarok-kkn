@@ -123,10 +123,21 @@ class VillageHistoryPhoto(models.Model):
         return f"Foto: {self.history.title} - {self.caption or 'Tanpa keterangan'}"
 
 
-# VillageMap model removed
+class VillageVision(models.Model):
+    """Model untuk Visi dan Misi Desa"""
+    title = models.CharField(max_length=200, verbose_name="Judul")
+    vision_text = models.TextField(verbose_name="Visi")
+    mission_text = models.TextField(verbose_name="Misi")
+    description = models.TextField(blank=True, null=True, verbose_name="Deskripsi")
+    is_active = models.BooleanField(default=True, verbose_name="Aktif")
+    effective_date = models.DateField(verbose_name="Tanggal Berlaku")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Dibuat")
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="Diperbarui")
 
+    class Meta:
+        verbose_name = "Visi Misi Desa"
+        verbose_name_plural = "Visi Misi Desa"
+        ordering = ['-effective_date']
 
-# VillageGeography model removed
-
-
-# GoogleMapsEmblem model removed
+    def __str__(self):
+        return self.title

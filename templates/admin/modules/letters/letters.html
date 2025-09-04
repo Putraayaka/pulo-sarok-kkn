@@ -1,0 +1,543 @@
+{% extends 'admin/base.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block extra_css %}
+<link href="{% static 'admin/css/modules.css' %}" rel="stylesheet">
+<style>
+    .stats-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        border-radius: 15px;
+        color: white;
+        transition: transform 0.3s ease;
+    }
+    .stats-card:hover {
+        transform: translateY(-5px);
+    }
+    .stats-card .card-body {
+        padding: 1.5rem;
+    }
+    .stats-icon {
+        font-size: 2.5rem;
+        opacity: 0.8;
+    }
+    .filter-card {
+        border: none;
+        box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        border-radius: 15px;
+    }
+    .table-card {
+        border: none;
+        box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        border-radius: 15px;
+        overflow: hidden;
+    }
+    .btn-action {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.875rem;
+        border-radius: 6px;
+    }
+    .status-badge {
+        font-size: 0.75rem;
+        padding: 0.25rem 0.5rem;
+        border-radius: 12px;
+    }
+    .page-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2rem 0;
+        margin-bottom: 2rem;
+        border-radius: 0 0 20px 20px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="page-header">
+    <div class="container-fluid">
+        <div class="row align-items-center">
+            <div class="col">
+                <h1 class="h3 mb-0">{{ page_title }}</h1>
+                <p class="mb-0 opacity-75">{{ page_subtitle }}</p>
+            </div>
+            <div class="col-auto">
+                <button class="btn btn-light" onclick="refreshData()">
+                    <i class="fas fa-sync-alt me-2"></i>Refresh
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container-fluid">
+    <!-- Filters -->
+    <div class="card filter-card mb-4">
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label">Pencarian</label>
+                    <input type="text" class="form-control" id="searchInput" placeholder="Cari nomor surat, penerima...">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Status</label>
+                    <select class="form-select" id="statusFilter">
+                        <option value="">Semua Status</option>
+                        <option value="draft">Draft</option>
+                        <option value="sent">Terkirim</option>
+                        <option value="received">Diterima</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Jenis Surat</label>
+                    <select class="form-select" id="typeFilter">
+                        <option value="">Semua Jenis</option>
+                        <option value="masuk">Surat Masuk</option>
+                        <option value="keluar">Surat Keluar</option>
+                        <option value="undangan">Undangan</option>
+                        <option value="pemberitahuan">Pemberitahuan</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Tanggal</label>
+                    <input type="date" class="form-control" id="dateFilter">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">&nbsp;</label>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-primary" onclick="applyFilters()">
+                            <i class="fas fa-filter me-2"></i>Filter
+                        </button>
+                        <button class="btn btn-outline-secondary" onclick="clearFilters()">
+                            <i class="fas fa-times me-2"></i>Reset
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card stats-card">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <h5 class="card-title mb-1">Total Surat</h5>
+                            <h2 class="mb-0" id="totalLetters">-</h2>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-envelope stats-icon"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card stats-card">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <h5 class="card-title mb-1">Surat Masuk</h5>
+                            <h2 class="mb-0" id="incomingLetters">-</h2>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-inbox stats-icon"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card stats-card">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <h5 class="card-title mb-1">Surat Keluar</h5>
+                            <h2 class="mb-0" id="outgoingLetters">-</h2>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-paper-plane stats-icon"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card stats-card">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <h5 class="card-title mb-1">Template</h5>
+                            <h2 class="mb-0" id="letterTemplates">-</h2>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-file-alt stats-icon"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Letters Table -->
+    <div class="card table-card">
+        <div class="card-header bg-white border-0 py-3">
+            <div class="row align-items-center">
+                <div class="col">
+                    <h5 class="mb-0">Daftar Surat</h5>
+                </div>
+                <div class="col-auto">
+                    <div class="btn-group">
+                        <button class="btn btn-success btn-sm" onclick="addLetter()">
+                            <i class="fas fa-plus me-2"></i>Buat Surat
+                        </button>
+                        <button class="btn btn-outline-primary btn-sm" onclick="exportData()">
+                            <i class="fas fa-download me-2"></i>Export
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>No. Surat</th>
+                            <th>Perihal</th>
+                            <th>Pengirim/Penerima</th>
+                            <th>Jenis</th>
+                            <th>Tanggal</th>
+                            <th>Status</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="lettersTableBody">
+                        <tr>
+                            <td colspan="7" class="text-center py-4">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                                <p class="mt-2 mb-0">Memuat data...</p>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="card-footer bg-white border-0">
+            <nav aria-label="Letters pagination">
+                <ul class="pagination justify-content-center mb-0" id="pagination">
+                    <!-- Pagination will be generated by JavaScript -->
+                </ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+<!-- Add/Edit Letter Modal -->
+<div class="modal fade" id="letterModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="letterModalTitle">Buat Surat Baru</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="letterForm">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Nomor Surat *</label>
+                            <input type="text" class="form-control" id="letterNumber" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Jenis Surat *</label>
+                            <select class="form-select" id="letterType" required>
+                                <option value="">Pilih Jenis</option>
+                                <option value="masuk">Surat Masuk</option>
+                                <option value="keluar">Surat Keluar</option>
+                                <option value="undangan">Undangan</option>
+                                <option value="pemberitahuan">Pemberitahuan</option>
+                            </select>
+                        </div>
+                        <div class="col-12 mb-3">
+                            <label class="form-label">Perihal *</label>
+                            <input type="text" class="form-control" id="subject" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Pengirim/Penerima *</label>
+                            <input type="text" class="form-control" id="recipient" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Tanggal Surat *</label>
+                            <input type="date" class="form-control" id="letterDate" required>
+                        </div>
+                        <div class="col-12 mb-3">
+                            <label class="form-label">Isi Surat</label>
+                            <textarea class="form-control" id="content" rows="6"></textarea>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Status</label>
+                            <select class="form-select" id="status">
+                                <option value="draft">Draft</option>
+                                <option value="sent">Terkirim</option>
+                                <option value="received">Diterima</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Lampiran</label>
+                            <input type="file" class="form-control" id="attachment">
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                <button type="button" class="btn btn-primary" onclick="saveLetter()">Simpan</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Letter Detail Modal -->
+<div class="modal fade" id="letterDetailModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Detail Surat</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="letterDetailContent">
+                <!-- Detail content will be loaded here -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                <button type="button" class="btn btn-primary" onclick="printLetter()">Cetak</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let currentPage = 1;
+let currentFilters = {};
+
+// Initialize page
+$(document).ready(function() {
+    loadStatistics();
+    loadLettersData();
+});
+
+// Load statistics
+function loadStatistics() {
+    // Mock data - replace with actual API calls
+    $('#totalLetters').text('156');
+    $('#incomingLetters').text('89');
+    $('#outgoingLetters').text('67');
+    $('#letterTemplates').text('12');
+}
+
+// Load letters data
+function loadLettersData(page = 1) {
+    currentPage = page;
+    
+    // Mock data - replace with actual API call
+    const mockData = [
+        {
+            id: 1,
+            number: '001/DS/2024',
+            subject: 'Undangan Rapat Desa',
+            recipient: 'Seluruh Warga Desa',
+            type: 'undangan',
+            date: '2024-01-15',
+            status: 'sent'
+        },
+        {
+            id: 2,
+            number: '002/DS/2024',
+            subject: 'Pemberitahuan Kegiatan Gotong Royong',
+            recipient: 'RT 01-05',
+            type: 'pemberitahuan',
+            date: '2024-01-10',
+            status: 'sent'
+        }
+    ];
+    
+    renderLettersTable(mockData);
+}
+
+// Render letters table
+function renderLettersTable(data) {
+    const tbody = $('#lettersTableBody');
+    tbody.empty();
+    
+    if (data.length === 0) {
+        tbody.append(`
+            <tr>
+                <td colspan="7" class="text-center py-4">
+                    <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                    <p class="text-muted">Tidak ada data surat</p>
+                </td>
+            </tr>
+        `);
+        return;
+    }
+    
+    data.forEach(letter => {
+        const statusClass = letter.status === 'sent' ? 'success' : 
+                           letter.status === 'received' ? 'info' : 'warning';
+        const statusText = letter.status === 'sent' ? 'Terkirim' : 
+                          letter.status === 'received' ? 'Diterima' : 'Draft';
+        const typeText = letter.type === 'masuk' ? 'Surat Masuk' :
+                        letter.type === 'keluar' ? 'Surat Keluar' :
+                        letter.type === 'undangan' ? 'Undangan' : 'Pemberitahuan';
+        
+        tbody.append(`
+            <tr>
+                <td><strong>${letter.number}</strong></td>
+                <td>${letter.subject}</td>
+                <td>${letter.recipient}</td>
+                <td>${typeText}</td>
+                <td>${new Date(letter.date).toLocaleDateString('id-ID')}</td>
+                <td><span class="badge bg-${statusClass} status-badge">${statusText}</span></td>
+                <td>
+                    <div class="btn-group">
+                        <button class="btn btn-outline-primary btn-action" onclick="viewLetter(${letter.id})" title="Lihat Detail">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button class="btn btn-outline-warning btn-action" onclick="editLetter(${letter.id})" title="Edit">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-outline-success btn-action" onclick="printLetter(${letter.id})" title="Cetak">
+                            <i class="fas fa-print"></i>
+                        </button>
+                        <button class="btn btn-outline-danger btn-action" onclick="deleteLetter(${letter.id})" title="Hapus">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+        `);
+    });
+}
+
+// Filter functions
+function applyFilters() {
+    currentFilters = {
+        search: $('#searchInput').val(),
+        status: $('#statusFilter').val(),
+        type: $('#typeFilter').val(),
+        date: $('#dateFilter').val()
+    };
+    loadLettersData(1);
+}
+
+function clearFilters() {
+    $('#searchInput').val('');
+    $('#statusFilter').val('');
+    $('#typeFilter').val('');
+    $('#dateFilter').val('');
+    currentFilters = {};
+    loadLettersData(1);
+}
+
+// Letter management functions
+function addLetter() {
+    $('#letterModalTitle').text('Buat Surat Baru');
+    $('#letterForm')[0].reset();
+    $('#letterModal').modal('show');
+}
+
+function editLetter(id) {
+    $('#letterModalTitle').text('Edit Surat');
+    // Load letter data and populate form
+    $('#letterModal').modal('show');
+}
+
+function viewLetter(id) {
+    // Load and display letter details
+    $('#letterDetailContent').html(`
+        <div class="text-center py-4">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-2 mb-0">Memuat detail...</p>
+        </div>
+    `);
+    $('#letterDetailModal').modal('show');
+    
+    // Mock detail loading
+    setTimeout(() => {
+        $('#letterDetailContent').html(`
+            <div class="row">
+                <div class="col-md-6">
+                    <h6>Informasi Surat</h6>
+                    <table class="table table-borderless">
+                        <tr><td><strong>Nomor:</strong></td><td>001/DS/2024</td></tr>
+                        <tr><td><strong>Perihal:</strong></td><td>Undangan Rapat Desa</td></tr>
+                        <tr><td><strong>Jenis:</strong></td><td>Undangan</td></tr>
+                        <tr><td><strong>Tanggal:</strong></td><td>15 Januari 2024</td></tr>
+                    </table>
+                </div>
+                <div class="col-md-6">
+                    <h6>Detail Lainnya</h6>
+                    <table class="table table-borderless">
+                        <tr><td><strong>Penerima:</strong></td><td>Seluruh Warga Desa</td></tr>
+                        <tr><td><strong>Status:</strong></td><td><span class="badge bg-success">Terkirim</span></td></tr>
+                        <tr><td><strong>Dibuat:</strong></td><td>15 Januari 2024</td></tr>
+                    </table>
+                </div>
+                <div class="col-12">
+                    <h6>Isi Surat</h6>
+                    <div class="border p-3 rounded">
+                        <p>Dengan hormat,</p>
+                        <p>Bersama ini kami mengundang Bapak/Ibu untuk menghadiri rapat desa yang akan dilaksanakan pada:</p>
+                        <ul>
+                            <li>Hari/Tanggal: Minggu, 21 Januari 2024</li>
+                            <li>Waktu: 09.00 WIB</li>
+                            <li>Tempat: Balai Desa</li>
+                        </ul>
+                        <p>Demikian undangan ini kami sampaikan. Atas perhatian dan kehadirannya kami ucapkan terima kasih.</p>
+                    </div>
+                </div>
+            </div>
+        `);
+    }, 1000);
+}
+
+function deleteLetter(id) {
+    if (confirm('Apakah Anda yakin ingin menghapus surat ini?')) {
+        // Delete letter logic
+        loadLettersData(currentPage);
+    }
+}
+
+function saveLetter() {
+    // Save letter logic
+    $('#letterModal').modal('hide');
+    loadLettersData(currentPage);
+}
+
+function printLetter(id) {
+    // Print letter logic
+    window.print();
+}
+
+// Utility functions
+function refreshData() {
+    loadStatistics();
+    loadLettersData(currentPage);
+}
+
+function exportData() {
+    // Export functionality
+    alert('Fitur export akan segera tersedia');
+}
+</script>
+{% endblock %}

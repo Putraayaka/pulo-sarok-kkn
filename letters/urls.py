@@ -8,6 +8,7 @@ urlpatterns = [
     path('', include('letters.api_urls')),
     # Admin views
     path('', views.letters_admin, name='admin'),
+    path('letters-view/', views.letters_view, name='letters_view'),
     path('dashboard/', views.letter_dashboard, name='dashboard'),
     path('', views.letter_list, name='list'),
     path('create/', views.letter_create, name='create'),

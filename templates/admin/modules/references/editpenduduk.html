@@ -461,11 +461,18 @@
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const pendudukId = document.getElementById('penduduk_id').value;
+        console.log('Loading penduduk data for ID:', pendudukId);
+        
+
         
         // Load penduduk data
-        fetch(`/pulosarok/references/api/penduduk/${pendudukId}/`)
-            .then(response => response.json())
+        fetch(`/pulosarok/references/admin-api/penduduk/${pendudukId}/`)
+            .then(response => {
+                console.log('Penduduk API response status:', response.status);
+                return response.json();
+            })
             .then(data => {
+                console.log('Penduduk data loaded:', data);
                 // Populate form fields with existing data
                 document.getElementById('nik').value = data.nik || '';
                 document.getElementById('name').value = data.name || '';
@@ -502,7 +509,7 @@
                 }
                 
                 // Load dusun and set selected value
-                loadDusunAndSetValue(data.dusun);
+                loadDusunAndSetValue(data.dusun, data.lorong);
                 
                 // Set family head if available
                 if (data.family_head) {
@@ -513,14 +520,23 @@
             })
             .catch(error => {
                 console.error('Error loading penduduk data:', error);
-                showNotification('Terjadi kesalahan saat memuat data penduduk.', 'error');
+                if (error.name === 'TypeError' && error.message.includes('fetch')) {
+                    showNotification('Tidak dapat terhubung ke server untuk memuat data penduduk. Periksa koneksi internet Anda.', 'error');
+                } else {
+                    showNotification('Gagal memuat data penduduk. Data mungkin tidak ditemukan atau terjadi kesalahan server.', 'error');
+                }
             });
         
         // Function to load dusun options and set selected value
-        function loadDusunAndSetValue(selectedDusunId) {
-            fetch('/pulosarok/references/api/dusun/list/')
-                .then(response => response.json())
+        function loadDusunAndSetValue(selectedDusunId, selectedLorongId) {
+            console.log('Loading dusun data, selected dusun:', selectedDusunId, 'selected lorong:', selectedLorongId);
+            fetch('/pulosarok/references/admin-api/dusun/')
+                .then(response => {
+                    console.log('Dusun API response status:', response.status);
+                    return response.json();
+                })
                 .then(data => {
+                    console.log('Dusun data received:', data);
                     const dusunSelect = document.getElementById('dusun');
                     dusunSelect.innerHTML = '<option value="">Pilih Dusun</option>';
                     
@@ -535,19 +551,21 @@
                         // Set selected dusun if available
                         if (selectedDusunId) {
                             dusunSelect.value = selectedDusunId;
-                            // Load lorong options for this dusun
-                            loadLorongForDusun(selectedDusunId);
+                            // Load lorong options for this dusun and set selected lorong
+                            loadLorongForDusun(selectedDusunId, selectedLorongId);
                         }
                     } else {
                         console.error('Dusun data format is incorrect:', data);
                     }
                 })
-                .catch(error => console.error('Error loading dusun data:', error));
+                .catch(error => {
+                    console.error('Error loading dusun data:', error);
+                });
         }
         
         // Function to load lorong options for a specific dusun and set selected value
         function loadLorongForDusun(dusunId, selectedLorongId) {
-            fetch(`/pulosarok/references/api/lorong/list/?dusun=${dusunId}`)
+            fetch(`/pulosarok/references/admin-api/lorong/?dusun=${dusunId}`)
                 .then(response => response.json())
                 .then(data => {
                     const lorongSelect = document.getElementById('lorong');
@@ -569,14 +587,21 @@
                         console.error('Lorong data format is incorrect:', data);
                     }
                 })
-                .catch(error => console.error('Error loading lorong data:', error));
+                .catch(error => {
+                    console.error('Error loading lorong data:', error);
+                });
         }
         
         // Function to load family heads and set selected value
         function loadFamilyHeadsAndSetValue(selectedFamilyHeadId) {
-            fetch('/pulosarok/references/api/penduduk/list/?is_family_head=true')
-                .then(response => response.json())
+            console.log('Loading family heads, selected:', selectedFamilyHeadId);
+            fetch('/pulosarok/references/admin-api/penduduk/?is_family_head=true')
+                .then(response => {
+                    console.log('Family heads API response status:', response.status);
+                    return response.json();
+                })
                 .then(data => {
+                    console.log('Family heads data received:', data);
                     const familyHeadSelect = document.getElementById('family_head');
                     familyHeadSelect.innerHTML = '<option value="">Pilih Kepala Keluarga</option>';
                     
@@ -594,12 +619,14 @@
                         familyHeadSelect.value = selectedFamilyHeadId;
                     }
                 })
-                .catch(error => console.error('Error loading family head data:', error));
+                .catch(error => {
+                    console.error('Error loading family heads data:', error);
+                });
         }
         
         // Function to load family heads without setting a value
         function loadFamilyHeads() {
-            fetch('/pulosarok/references/api/penduduk/list/?is_family_head=true')
+            fetch('/pulosarok/references/admin-api/penduduk/?is_family_head=true')
                 .then(response => response.json())
                 .then(data => {
                     const familyHeadSelect = document.getElementById('family_head');
@@ -614,7 +641,9 @@
                         });
                     }
                 })
-                .catch(error => console.error('Error loading family head data:', error));
+                .catch(error => {
+                    console.error('Error loading family head data:', error);
+                });
         }
         
         // Handle dusun change to update lorong options
@@ -651,7 +680,7 @@
             // Log the data being sent for debugging
             console.log('Sending data:', formObject);
             
-            fetch(`/pulosarok/references/api/public-penduduk-update/${pendudukId}/`, {
+            fetch(`/pulosarok/references/admin-api/penduduk/${pendudukId}/`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -676,9 +705,50 @@
                     errorMessages.innerHTML = '';
                     
                     if (data.errors) {
+                        // Field name mapping to Indonesian labels
+                        const fieldLabels = {
+                            'nik': 'NIK',
+                            'name': 'Nama Lengkap',
+                            'gender': 'Jenis Kelamin',
+                            'birth_place': 'Tempat Lahir',
+                            'birth_date': 'Tanggal Lahir',
+                            'religion': 'Agama',
+                            'education': 'Pendidikan',
+                            'occupation': 'Pekerjaan',
+                            'marital_status': 'Status Perkawinan',
+                            'kk_number': 'Nomor Kartu Keluarga',
+                            'family_head': 'Kepala Keluarga',
+                            'relationship_to_head': 'Hubungan dengan Kepala Keluarga',
+                            'blood_type': 'Golongan Darah',
+                            'height': 'Tinggi Badan',
+                            'weight': 'Berat Badan',
+                            'phone_number': 'Nomor Telepon',
+                            'mobile_number': 'Nomor HP',
+                            'email': 'Email',
+                            'dusun': 'Dusun',
+                            'lorong': 'Lorong',
+                            'rt_number': 'Nomor RT',
+                            'rw_number': 'Nomor RW',
+                            'house_number': 'Nomor Rumah',
+                            'address': 'Alamat Lengkap',
+                            'postal_code': 'Kode Pos',
+                            'citizenship': 'Kewarganegaraan',
+                            'passport_number': 'Nomor Paspor',
+                            'passport_expiry': 'Berlaku Hingga',
+                            'emergency_contact': 'Kontak Darurat',
+                            'emergency_phone': 'Telepon Darurat',
+                            'emergency_relationship': 'Hubungan dengan Kontak Darurat',
+                            'is_active': 'Status Aktif',
+                            'is_alive': 'Status Hidup',
+                            'death_date': 'Tanggal Meninggal',
+                            'death_place': 'Tempat Meninggal'
+                        };
+                        
                         Object.entries(data.errors).forEach(([field, errors]) => {
                             const errorItem = document.createElement('p');
-                            errorItem.textContent = `${field}: ${errors.join(', ')}`;
+                            const fieldLabel = fieldLabels[field] || field;
+                            errorItem.innerHTML = `<strong>${fieldLabel}:</strong> ${errors.join(', ')}`;
+                            errorItem.className = 'text-red-600 mb-2';
                             errorMessages.appendChild(errorItem);
                             
                             // Highlight error field
@@ -704,7 +774,13 @@
             })
             .catch(error => {
                 console.error('Error submitting form:', error);
-                showNotification('Terjadi kesalahan saat menyimpan data. Silakan coba lagi.', 'error');
+                if (error.name === 'TypeError' && error.message.includes('fetch')) {
+                    showNotification('Tidak dapat terhubung ke server. Periksa koneksi internet Anda.', 'error');
+                } else if (error.message.includes('timeout')) {
+                    showNotification('Permintaan timeout. Server membutuhkan waktu terlalu lama untuk merespons.', 'error');
+                } else {
+                    showNotification('Terjadi kesalahan saat memperbarui data penduduk. Silakan periksa data dan coba lagi.', 'error');
+                }
             });
         });
         

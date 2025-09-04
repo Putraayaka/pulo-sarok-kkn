@@ -206,8 +206,28 @@
                         </select>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Harga (Rp) *</label>
-                        <input type="number" id="hargaMin" required min="0" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Pengalaman (tahun)</label>
+                        <input type="number" id="pengalaman" min="0" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Harga Min (Rp)</label>
+                        <input type="number" id="hargaMin" min="0" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Harga Max (Rp)</label>
+                        <input type="number" id="hargaMax" min="0" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Satuan Harga</label>
+                        <select id="satuanHarga" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+                            <option value="per_proyek">Per Proyek</option>
+                            <option value="per_jam">Per Jam</option>
+                            <option value="per_hari">Per Hari</option>
+                            <option value="per_bulan">Per Bulan</option>
+                        </select>
                     </div>
                 </div>
                 
@@ -222,11 +242,18 @@
                     </div>
                 </div>
                 
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Waktu Layanan</label>
                         <input type="text" id="waktuLayanan" placeholder="Senin-Jumat 08:00-17:00" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
                     </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Area Layanan</label>
+                        <input type="text" id="areaLayanan" placeholder="Desa Pulo Sarok dan sekitarnya" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Rating (1-5)</label>
                         <select id="rating" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
@@ -237,6 +264,10 @@
                             <option value="4">4</option>
                             <option value="5">5</option>
                         </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Website</label>
+                        <input type="url" id="website" placeholder="https://" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Status *</label>
@@ -297,7 +328,7 @@ async function loadJasaData(page = 1) {
         const kategoriFilter = document.getElementById('kategoriFilter').value;
         const statusFilter = document.getElementById('statusFilter').value;
         
-        let url = `/pulosarok/business/api/jasa/?page=${page}&page_size=${recordsPerPage}`;
+        let url = `/pulosarok/business/api/jasa/?page=${page}`;
         
         if (searchTerm) {
             url += `&search=${encodeURIComponent(searchTerm)}`;
@@ -320,15 +351,16 @@ async function loadJasaData(page = 1) {
         });
         const data = await response.json();
         
-        if (response.ok && data.results) {
-            jasaData = data.results;
+        if (response.ok && (data.success || data.results)) {
+            jasaData = data.data || data.results || [];
             currentPage = data.current_page || page;
-            totalRecords = data.count || 0;
+            totalRecords = data.total || data.count || 0;
             displayJasaData();
-            updatePagination(data.num_pages || 1, currentPage);
+            updatePagination(data.total_pages || data.num_pages || 1, currentPage);
             updateStatistics();
         } else {
             console.error('Error loading Jasa data:', data.message || 'Unknown error');
+            console.error('Full response:', data);
         }
     } catch (error) {
         console.error('Error fetching Jasa data:', error);
@@ -478,25 +510,22 @@ function editJasa(id) {
     if (jasa) {
         document.getElementById('modalTitle').textContent = 'Edit Layanan Jasa';
         document.getElementById('jasaId').value = jasa.id;
-        document.getElementById('namaLayanan').value = jasa.nama;
-        document.getElementById('kategoriJasa').value = jasa.kategori;
-        document.getElementById('deskripsiLayanan').value = jasa.deskripsi;
-        document.getElementById('namaPenyedia').value = jasa.penyedia;
-        document.getElementById('teleponPenyedia').value = jasa.telepon;
-        document.getElementById('emailPenyedia').value = jasa.email || '';
+        document.getElementById('namaLayanan').value = jasa.nama || '';
+        document.getElementById('namaPenyedia').value = jasa.penyedia || '';
+        document.getElementById('alamatPenyedia').value = jasa.alamat || '';
+        document.getElementById('kategoriJasa').value = jasa.kategori || '';
         document.getElementById('pengalaman').value = jasa.pengalaman || '';
-        document.getElementById('alamatPenyedia').value = jasa.alamat;
         document.getElementById('hargaMin').value = jasa.harga_min || '';
         document.getElementById('hargaMax').value = jasa.harga_max || '';
         document.getElementById('satuanHarga').value = jasa.satuan_harga || 'per_proyek';
+        document.getElementById('teleponPenyedia').value = jasa.telepon || '';
+        document.getElementById('emailPenyedia').value = jasa.email || '';
         document.getElementById('waktuLayanan').value = jasa.waktu_layanan || '';
         document.getElementById('areaLayanan').value = jasa.area_layanan || '';
-        document.getElementById('statusLayanan').value = jasa.status;
         document.getElementById('rating').value = jasa.rating || '';
         document.getElementById('website').value = jasa.website || '';
-        document.getElementById('sertifikat').value = jasa.sertifikat || '';
-        document.getElementById('keunggulan').value = jasa.keunggulan || '';
-        document.getElementById('syaratKetentuan').value = jasa.syarat_ketentuan || '';
+        document.getElementById('statusLayanan').value = jasa.status || 'aktif';
+        document.getElementById('deskripsiLayanan').value = jasa.deskripsi || '';
         document.getElementById('jasaModal').classList.remove('hidden');
     }
 }
@@ -505,14 +534,18 @@ function editJasa(id) {
 async function deleteJasa(id) {
     if (confirm('Apakah Anda yakin ingin menghapus layanan jasa ini?')) {
         try {
+            const token = await getCSRFToken();
             const response = await fetch(`/pulosarok/business/api/jasa/${id}/`, {
                 method: 'DELETE',
                 headers: {
-                    'X-CSRFToken': getCSRFToken()
+                    'X-CSRFToken': token,
+                    'Content-Type': 'application/json'
                 }
             });
             
-            if (response.ok && response.status === 204) {
+            const data = await response.json();
+            
+            if (response.ok && data.success) {
                 alert('Layanan jasa berhasil dihapus!');
                 loadJasaData(currentPage);
             } else {
@@ -542,8 +575,13 @@ document.getElementById('jasaForm').addEventListener('submit', async function(e)
         telepon: document.getElementById('teleponPenyedia').value,
         email: document.getElementById('emailPenyedia').value,
         alamat: document.getElementById('alamatPenyedia').value,
+        pengalaman: parseInt(document.getElementById('pengalaman').value) || 0,
         harga_min: parseInt(document.getElementById('hargaMin').value) || 0,
+        harga_max: parseInt(document.getElementById('hargaMax').value) || 0,
+        satuan_harga: document.getElementById('satuanHarga').value,
         waktu_layanan: document.getElementById('waktuLayanan').value,
+        area_layanan: document.getElementById('areaLayanan').value,
+        website: document.getElementById('website').value,
         status: document.getElementById('statusLayanan').value,
         rating: parseFloat(document.getElementById('rating').value) || null
     };
@@ -555,7 +593,6 @@ document.getElementById('jasaForm').addEventListener('submit', async function(e)
         let response;
         if (jasaId) {
             // Update existing jasa
-            formData.id = jasaId;
             response = await fetch(`/pulosarok/business/api/jasa/${jasaId}/`, {
                 method: 'PUT',
                 headers: {

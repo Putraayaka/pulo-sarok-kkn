@@ -142,9 +142,9 @@
             <p class="text-gray-600 mt-1">Buat dan publikasikan berita baru untuk website desa</p>
         </div>
         <div class="flex space-x-3">
-            <a href="{% url 'news:news_admin' %}" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition duration-200">
+            <button onclick="history.back()" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition duration-200">
                 <i class="fas fa-arrow-left mr-2"></i>Kembali
-            </a>
+            </button>
         </div>
     </div>
 
@@ -377,6 +377,22 @@
                 </div>
                 
                 <div class="form-group">
+                    <label for="{{ form.priority.id_for_label }}" class="form-label">
+                        {{ form.priority.label }}
+                        <span class="text-red-500">*</span>
+                    </label>
+                    {{ form.priority }}
+                    {% if form.priority.errors %}
+                        <div class="invalid-feedback">
+                            {{ form.priority.errors.0 }}
+                        </div>
+                    {% endif %}
+                    {% if form.priority.help_text %}
+                        <div class="form-text">{{ form.priority.help_text }}</div>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group">
                     <label for="{{ form.is_featured.id_for_label }}" class="form-label">
                         {{ form.is_featured.label }}
                     </label>
@@ -487,17 +503,60 @@ $(document).ready(function() {
     // Additional images upload
     setupAdditionalImagesUpload();
     
-    // Save as draft
+    // Save Draft button
     $('#saveDraftBtn').on('click', function() {
+        console.log('Save Draft clicked');
+        alert('Save Draft button clicked');
         $('#id_status').val('draft');
-        $('#newsForm').submit();
+        console.log('Status set to:', $('#id_status').val());
+        if (validateForm()) {
+            console.log('Validation passed, submitting form');
+            alert('Validation passed, submitting form');
+            $('#newsForm').submit();
+        } else {
+            console.log('Validation failed');
+            alert('Validation failed');
+        }
+    });
+    
+    // Publish button - set status to published when form is submitted via publish button
+    $('button[type="submit"]:contains("Publikasikan")').on('click', function(e) {
+        console.log('Publish button clicked');
+        alert('Publish button clicked');
+        $('#id_status').val('published');
+        console.log('Status set to:', $('#id_status').val());
     });
     
     // Form validation
     $('#newsForm').on('submit', function(e) {
+        console.log('Form submit triggered');
+        alert('Form submit triggered - check console for details');
+        
         if (!validateForm()) {
+            console.log('Form validation failed');
+            alert('Form validation failed');
             e.preventDefault();
+            return false;
         }
+        
+        console.log('Form validation passed, submitting...');
+        alert('Form validation passed, submitting...');
+        
+        // Update Summernote content to textarea before submit
+        $('#id_content').val($('#id_content').summernote('code'));
+        
+        // Log form data for debugging
+        const formData = new FormData(this);
+        console.log('Form data:');
+        for (let [key, value] of formData.entries()) {
+            console.log(key + ': ' + value);
+        }
+        
+        // Show loading state
+        const submitBtn = $(this).find('button[type="submit"]');
+        submitBtn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-2"></i>Menyimpan...');
+        
+        return true;
     });
 });
 
@@ -646,20 +705,46 @@ function uploadImage(file) {
 
 function validateForm() {
     let isValid = true;
-    const requiredFields = ['#id_title', '#id_content', '#id_category'];
+    const errors = [];
     
-    requiredFields.forEach(function(field) {
-        const $field = $(field);
-        if (!$field.val().trim()) {
-            $field.addClass('border-red-500');
-            isValid = false;
-        } else {
-            $field.removeClass('border-red-500');
-        }
-    });
+    // Validate title
+    const title = $('#id_title').val().trim();
+    console.log('Title:', title);
+    if (!title) {
+        $('#id_title').addClass('border-red-500');
+        errors.push('Judul wajib diisi');
+        isValid = false;
+    } else {
+        $('#id_title').removeClass('border-red-500');
+    }
+    
+    // Validate content (Summernote)
+    const content = $('#id_content').summernote('code').trim();
+    console.log('Content:', content);
+    if (!content || content === '<p><br></p>' || content === '<br>') {
+        $('#id_content').next('.note-editor').addClass('border-red-500');
+        errors.push('Konten wajib diisi');
+        isValid = false;
+    } else {
+        $('#id_content').next('.note-editor').removeClass('border-red-500');
+    }
+    
+    // Validate category
+    const category = $('#id_category').val();
+    console.log('Category:', category);
+    if (!category) {
+        $('#id_category').addClass('border-red-500');
+        errors.push('Kategori wajib dipilih');
+        isValid = false;
+    } else {
+        $('#id_category').removeClass('border-red-500');
+    }
     
     if (!isValid) {
-        alert('Mohon lengkapi semua field yang wajib diisi.');
+        console.log('Validation errors:', errors);
+        alert('Mohon lengkapi semua field yang wajib diisi:\n- ' + errors.join('\n- '));
+    } else {
+        console.log('All validations passed');
     }
     
     return isValid;

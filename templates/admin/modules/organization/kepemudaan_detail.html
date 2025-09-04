@@ -48,6 +48,14 @@
                             <dd class="mt-1 text-sm text-gray-900">{{ object.ketua.name|default:'-' }}</dd>
                         </div>
                         <div>
+                            <dt class="text-sm font-medium text-gray-500">Sekretaris</dt>
+                            <dd class="mt-1 text-sm text-gray-900">{{ object.sekretaris.name|default:'-' }}</dd>
+                        </div>
+                        <div>
+                            <dt class="text-sm font-medium text-gray-500">Bendahara</dt>
+                            <dd class="mt-1 text-sm text-gray-900">{{ object.bendahara.name|default:'-' }}</dd>
+                        </div>
+                        <div>
                             <dt class="text-sm font-medium text-gray-500">Tanggal Terbentuk</dt>
                             <dd class="mt-1 text-sm text-gray-900">{{ object.tanggal_terbentuk|date:"d F Y"|default:'-' }}</dd>
                         </div>
@@ -79,12 +87,8 @@
                     </h3>
                     <dl class="grid grid-cols-1 gap-4">
                         <div>
-                            <dt class="text-sm font-medium text-gray-500">Jumlah Anggota</dt>
-                            <dd class="mt-1 text-sm text-gray-900">{{ object.jumlah_anggota|default:'-' }}</dd>
-                        </div>
-                        <div>
                             <dt class="text-sm font-medium text-gray-500">Jumlah Anggota Aktif</dt>
-                            <dd class="mt-1 text-sm text-gray-900">{{ object.jumlah_anggota_aktif|default:'-' }}</dd>
+                            <dd class="mt-1 text-sm text-gray-900">{{ object.jumlah_anggota_aktif|default:'0' }} orang</dd>
                         </div>
                         <div>
                             <dt class="text-sm font-medium text-gray-500">Rentang Usia</dt>

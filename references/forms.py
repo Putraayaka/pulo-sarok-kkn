@@ -57,61 +57,6 @@ class PendudukForm(forms.ModelForm):
             'rw_number': forms.TextInput(attrs={'maxlength': '3'}),
             'postal_code': forms.TextInput(attrs={'maxlength': '5'}),
         }
-    
-    def clean_nik(self):
-        nik = self.cleaned_data.get('nik')
-        if nik:
-            # Check for duplicate NIK
-            queryset = Penduduk.objects.filter(nik=nik)
-            if self.instance.pk:
-                queryset = queryset.exclude(pk=self.instance.pk)
-            if queryset.exists():
-                raise forms.ValidationError('NIK sudah terdaftar dalam sistem.')
-        return nik
-    
-    def clean_kk_number(self):
-        kk_number = self.cleaned_data.get('kk_number')
-        # Just validate the kk_number format here, don't create Family yet
-        # Family creation will be handled in save() method when all data is available
-        return kk_number
-    
-    def save(self, commit=True):
-        instance = super().save(commit=False)
-        
-        # Auto-grouping: if KK number is provided, handle family creation/linking
-        if instance.kk_number:
-            try:
-                # Find existing family with same KK number
-                family = Family.objects.get(kk_number=instance.kk_number)
-                if family.head and not instance.family_head:
-                    # If family has a head and this person doesn't have family_head set
-                    instance.family_head = family.head
-                elif not family.head and not instance.family_head:
-                    # If family doesn't have a head, make this person the head
-                    family.head = instance
-                    if commit:
-                        family.save()
-            except Family.DoesNotExist:
-                # Create new family if it doesn't exist
-                if commit:
-                    instance.save()  # Save instance first to get ID
-                    family = Family.objects.create(
-                        kk_number=instance.kk_number,
-                        head=instance,
-                        dusun=instance.dusun,
-                        lorong=instance.lorong,
-                        address=instance.address,
-                        rt_number=instance.rt_number,
-                        rw_number=instance.rw_number,
-                        house_number=instance.house_number,
-                        postal_code=instance.postal_code,
-                    )
-                    return instance
-        
-        if commit:
-            instance.save()
-        return instance
-
         labels = {
             'nik': 'NIK',
             'name': 'Nama Lengkap',
@@ -149,6 +94,195 @@ class PendudukForm(forms.ModelForm):
             'death_date': 'Tanggal Meninggal',
             'death_place': 'Tempat Meninggal',
         }
+        error_messages = {
+            'nik': {
+                'required': 'NIK wajib diisi.',
+                'unique': 'NIK sudah terdaftar dalam sistem.',
+                'max_length': 'NIK tidak boleh lebih dari 16 karakter.',
+                'min_length': 'NIK harus 16 karakter.',
+            },
+            'name': {
+                'required': 'Nama lengkap wajib diisi.',
+                'max_length': 'Nama tidak boleh lebih dari 100 karakter.',
+            },
+            'gender': {
+                'required': 'Jenis kelamin wajib dipilih.',
+                'invalid_choice': 'Pilihan jenis kelamin tidak valid.',
+            },
+            'birth_place': {
+                'required': 'Tempat lahir wajib diisi.',
+                'max_length': 'Tempat lahir tidak boleh lebih dari 100 karakter.',
+            },
+            'birth_date': {
+                'required': 'Tanggal lahir wajib diisi.',
+                'invalid': 'Format tanggal tidak valid. Gunakan format YYYY-MM-DD.',
+            },
+            'religion': {
+                'invalid_choice': 'Pilihan agama tidak valid.',
+            },
+            'marital_status': {
+                'invalid_choice': 'Pilihan status perkawinan tidak valid.',
+            },
+            'education': {
+                'invalid_choice': 'Pilihan pendidikan tidak valid.',
+            },
+            'blood_type': {
+                'invalid_choice': 'Pilihan golongan darah tidak valid.',
+            },
+            'citizenship': {
+                'invalid_choice': 'Pilihan kewarganegaraan tidak valid.',
+            },
+            'email': {
+                'invalid': 'Format email tidak valid.',
+            },
+            'phone_number': {
+                'max_length': 'Nomor telepon tidak boleh lebih dari 15 karakter.',
+            },
+            'mobile_number': {
+                'max_length': 'Nomor HP tidak boleh lebih dari 15 karakter.',
+            },
+            'height': {
+                'invalid': 'Tinggi badan harus berupa angka.',
+                'min_value': 'Tinggi badan tidak boleh kurang dari 0.',
+                'max_value': 'Tinggi badan tidak boleh lebih dari 300 cm.',
+            },
+            'weight': {
+                'invalid': 'Berat badan harus berupa angka.',
+                'min_value': 'Berat badan tidak boleh kurang dari 0.',
+                'max_value': 'Berat badan tidak boleh lebih dari 500 kg.',
+            },
+        }
+    
+    def clean_nik(self):
+        nik = self.cleaned_data.get('nik')
+        if nik:
+            # Validate NIK format (should be 16 digits)
+            if not nik.isdigit():
+                raise forms.ValidationError('NIK harus berupa angka.')
+            if len(nik) != 16:
+                raise forms.ValidationError('NIK harus terdiri dari 16 digit.')
+            
+            # Check for duplicate NIK
+            queryset = Penduduk.objects.filter(nik=nik)
+            if self.instance.pk:
+                queryset = queryset.exclude(pk=self.instance.pk)
+            if queryset.exists():
+                raise forms.ValidationError('NIK sudah terdaftar dalam sistem.')
+        return nik
+    
+    def clean_birth_date(self):
+        birth_date = self.cleaned_data.get('birth_date')
+        if birth_date:
+            from datetime import date
+            today = date.today()
+            if birth_date > today:
+                raise forms.ValidationError('Tanggal lahir tidak boleh di masa depan.')
+            # Check if age is reasonable (not more than 150 years)
+            age = today.year - birth_date.year - ((today.month, today.day) < (birth_date.month, birth_date.day))
+            if age > 150:
+                raise forms.ValidationError('Umur tidak boleh lebih dari 150 tahun.')
+        return birth_date
+    
+    def clean_phone_number(self):
+        phone = self.cleaned_data.get('phone_number')
+        if phone:
+            # Remove any non-digit characters for validation
+            digits_only = ''.join(filter(str.isdigit, phone))
+            if len(digits_only) < 10:
+                raise forms.ValidationError('Nomor telepon minimal 10 digit.')
+            if len(digits_only) > 15:
+                raise forms.ValidationError('Nomor telepon maksimal 15 digit.')
+        return phone
+    
+    def clean_mobile_number(self):
+        mobile = self.cleaned_data.get('mobile_number')
+        if mobile:
+            # Remove any non-digit characters for validation
+            digits_only = ''.join(filter(str.isdigit, mobile))
+            if len(digits_only) < 10:
+                raise forms.ValidationError('Nomor HP minimal 10 digit.')
+            if len(digits_only) > 15:
+                raise forms.ValidationError('Nomor HP maksimal 15 digit.')
+        return mobile
+    
+    def clean_kk_number(self):
+        kk_number = self.cleaned_data.get('kk_number')
+        if kk_number:
+            # Validate KK number format (should be 16 digits)
+            if not kk_number.isdigit():
+                raise forms.ValidationError('Nomor KK harus berupa angka.')
+            if len(kk_number) != 16:
+                raise forms.ValidationError('Nomor KK harus terdiri dari 16 digit.')
+            
+            # Check for duplicate KK number
+            queryset = Penduduk.objects.filter(kk_number=kk_number)
+            if self.instance.pk:
+                queryset = queryset.exclude(pk=self.instance.pk)
+            if queryset.exists():
+                raise forms.ValidationError('Nomor KK sudah terdaftar dalam sistem.')
+        return kk_number
+    
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+        if email:
+            from django.core.validators import validate_email
+            from django.core.exceptions import ValidationError as DjangoValidationError
+            try:
+                validate_email(email)
+            except DjangoValidationError:
+                raise forms.ValidationError('Format email tidak valid.')
+        return email
+    
+    def clean_height(self):
+        height = self.cleaned_data.get('height')
+        if height is not None:
+            if height < 50 or height > 250:
+                raise forms.ValidationError('Tinggi badan harus antara 50-250 cm.')
+        return height
+    
+    def clean_weight(self):
+        weight = self.cleaned_data.get('weight')
+        if weight is not None:
+            if weight < 1 or weight > 300:
+                raise forms.ValidationError('Berat badan harus antara 1-300 kg.')
+        return weight
+    
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        
+        # Auto-grouping: if KK number is provided, handle family creation/linking
+        if instance.kk_number:
+            try:
+                # Find existing family with same KK number
+                family = Family.objects.get(kk_number=instance.kk_number)
+                if family.head and not instance.family_head:
+                    # If family has a head and this person doesn't have family_head set
+                    instance.family_head = family.head
+                elif not family.head and not instance.family_head:
+                    # If family doesn't have a head, make this person the head
+                    family.head = instance
+                    if commit:
+                        family.save()
+            except Family.DoesNotExist:
+                # Create new family if it doesn't exist
+                if commit:
+                    instance.save()  # Save instance first to get ID
+                    family = Family.objects.create(
+                        kk_number=instance.kk_number,
+                        head=instance,
+                        dusun=instance.dusun,
+                        lorong=instance.lorong,
+                        address=instance.address,
+                        rt_number=instance.rt_number,
+                        rw_number=instance.rw_number,
+                        house_number=instance.house_number,
+                        postal_code=instance.postal_code,
+                    )
+                    return instance
+        
+        if commit:
+            instance.save()
+        return instance
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

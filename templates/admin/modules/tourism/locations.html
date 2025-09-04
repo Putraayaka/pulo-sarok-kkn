@@ -1,0 +1,681 @@
+{% extends 'admin/base.html' %}
+
+{% block title %}Manajemen Lokasi Wisata{% endblock %}
+
+{% block page_title %}Manajemen Lokasi Wisata{% endblock %}
+
+{% block content %}
+<div class="p-4 sm:p-6">
+    <!-- Header Section -->
+    <div class="bg-white rounded-lg shadow-sm border p-4 sm:p-6 mb-6">
+        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+            <div>
+                <h2 class="text-xl sm:text-2xl font-bold text-gray-900">Manajemen Lokasi Wisata</h2>
+                <p class="text-gray-600 mt-1 text-sm sm:text-base">Kelola data lokasi wisata dan destinasi</p>
+            </div>
+            <div class="flex flex-col sm:flex-row gap-2 sm:gap-3">
+                <button onclick="showAddLocationModal()" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors duration-200 text-sm sm:text-base">
+                    <i class="fas fa-plus mr-2"></i>
+                    Tambah Lokasi
+                </button>
+                <button onclick="refreshLocations()" class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors duration-200 text-sm sm:text-base">
+                    <i class="fas fa-sync-alt mr-2"></i>
+                    Refresh
+                </button>
+                <button onclick="exportLocations()" class="bg-purple-600 text-white px-4 py-2 rounded-md hover:bg-purple-700 transition-colors duration-200 text-sm sm:text-base">
+                    <i class="fas fa-download mr-2"></i>
+                    Export
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter Section -->
+    <div class="bg-white rounded-lg shadow-sm border p-4 sm:p-6 mb-6">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Pencarian</label>
+                <input type="text" id="searchInput" placeholder="Cari nama lokasi..." class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Kategori</label>
+                <select id="categoryFilter" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">
+                    <option value="">Semua Kategori</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                <select id="statusFilter" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">
+                    <option value="">Semua Status</option>
+                    <option value="true">Aktif</option>
+                    <option value="false">Tidak Aktif</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Tipe Lokasi</label>
+                <select id="typeFilter" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">
+                    <option value="">Semua Tipe</option>
+                    <option value="wisata_alam">Wisata Alam</option>
+                    <option value="wisata_budaya">Wisata Budaya</option>
+                    <option value="wisata_kuliner">Wisata Kuliner</option>
+                    <option value="wisata_religi">Wisata Religi</option>
+                </select>
+            </div>
+        </div>
+        <div class="mt-4 flex gap-2">
+            <button onclick="applyFilters()" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors duration-200 text-sm">
+                <i class="fas fa-filter mr-2"></i>
+                Terapkan Filter
+            </button>
+            <button onclick="resetFilters()" class="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700 transition-colors duration-200 text-sm">
+                <i class="fas fa-times mr-2"></i>
+                Reset
+            </button>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <div class="bg-white rounded-lg shadow-sm border p-4 sm:p-6">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-blue-100 text-blue-600">
+                    <i class="fas fa-map-marker-alt text-xl"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-600">Total Lokasi</p>
+                    <p class="text-2xl font-bold text-gray-900" id="totalLocations">0</p>
+                </div>
+            </div>
+        </div>
+        <div class="bg-white rounded-lg shadow-sm border p-4 sm:p-6">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-green-100 text-green-600">
+                    <i class="fas fa-check-circle text-xl"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-600">Lokasi Aktif</p>
+                    <p class="text-2xl font-bold text-gray-900" id="activeLocations">0</p>
+                </div>
+            </div>
+        </div>
+        <div class="bg-white rounded-lg shadow-sm border p-4 sm:p-6">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-yellow-100 text-yellow-600">
+                    <i class="fas fa-star text-xl"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-600">Lokasi Unggulan</p>
+                    <p class="text-2xl font-bold text-gray-900" id="featuredLocations">0</p>
+                </div>
+            </div>
+        </div>
+        <div class="bg-white rounded-lg shadow-sm border p-4 sm:p-6">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-purple-100 text-purple-600">
+                    <i class="fas fa-tags text-xl"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-600">Kategori</p>
+                    <p class="text-2xl font-bold text-gray-900" id="totalCategories">0</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Data Table -->
+    <div class="bg-white rounded-lg shadow-sm border overflow-hidden">
+        <div class="px-4 sm:px-6 py-4 border-b border-gray-200">
+            <h3 class="text-lg font-medium text-gray-900">Daftar Lokasi Wisata</h3>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Lokasi</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kategori</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipe</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rating</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Dibuat</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody id="locationsTableBody" class="bg-white divide-y divide-gray-200">
+                    <!-- Data will be loaded here -->
+                </tbody>
+            </table>
+        </div>
+        <div class="px-6 py-3 bg-gray-50 border-t border-gray-200">
+            <div class="flex items-center justify-between">
+                <div class="text-sm text-gray-700">
+                    Menampilkan <span id="showingStart">0</span> - <span id="showingEnd">0</span> dari <span id="totalRecords">0</span> data
+                </div>
+                <div class="flex space-x-2">
+                    <button id="prevPage" onclick="previousPage()" class="px-3 py-1 text-sm bg-gray-200 text-gray-700 rounded hover:bg-gray-300 disabled:opacity-50" disabled>
+                        Sebelumnya
+                    </button>
+                    <button id="nextPage" onclick="nextPage()" class="px-3 py-1 text-sm bg-gray-200 text-gray-700 rounded hover:bg-gray-300 disabled:opacity-50" disabled>
+                        Selanjutnya
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add/Edit Location Modal -->
+<div id="locationModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+    <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white">
+        <div class="mt-3">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-medium text-gray-900" id="modalTitle">Tambah Lokasi Wisata</h3>
+                <button onclick="closeLocationModal()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            <form id="locationForm">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Nama Lokasi *</label>
+                        <input type="text" id="locationName" name="name" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Kategori *</label>
+                        <select id="locationCategory" name="category" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="">Pilih Kategori</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Tipe Lokasi *</label>
+                        <select id="locationType" name="location_type" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="">Pilih Tipe</option>
+                            <option value="wisata_alam">Wisata Alam</option>
+                            <option value="wisata_budaya">Wisata Budaya</option>
+                            <option value="wisata_kuliner">Wisata Kuliner</option>
+                            <option value="wisata_religi">Wisata Religi</option>
+                        </select>
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Deskripsi Singkat</label>
+                        <textarea id="locationShortDesc" name="short_description" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Alamat</label>
+                        <textarea id="locationAddress" name="address" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Latitude</label>
+                        <input type="number" step="any" id="locationLat" name="latitude" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Longitude</label>
+                        <input type="number" step="any" id="locationLng" name="longitude" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Jam Operasional</label>
+                        <input type="text" id="locationHours" name="opening_hours" placeholder="08:00 - 17:00" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Harga Tiket Masuk</label>
+                        <input type="number" step="0.01" id="locationFee" name="entry_fee" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Telepon</label>
+                        <input type="text" id="locationPhone" name="contact_phone" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                        <input type="email" id="locationEmail" name="contact_email" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Website</label>
+                        <input type="url" id="locationWebsite" name="website" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Fasilitas</label>
+                        <textarea id="locationFacilities" name="facilities" rows="2" placeholder="Parkir, Toilet, Mushola, dll" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Aktivitas</label>
+                        <textarea id="locationActivities" name="activities" rows="2" placeholder="Berenang, Hiking, Fotografi, dll" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                    </div>
+                    <div>
+                        <label class="flex items-center">
+                            <input type="checkbox" id="locationFeatured" name="featured" class="mr-2">
+                            <span class="text-sm font-medium text-gray-700">Lokasi Unggulan</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="mt-6 flex justify-end space-x-3">
+                    <button type="button" onclick="closeLocationModal()" class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 transition-colors duration-200">
+                        Batal
+                    </button>
+                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors duration-200">
+                        <i class="fas fa-save mr-2"></i>
+                        Simpan
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Location Detail Modal -->
+<div id="locationDetailModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+    <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white">
+        <div class="mt-3">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-medium text-gray-900">Detail Lokasi Wisata</h3>
+                <button onclick="closeLocationDetailModal()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            <div id="locationDetailContent">
+                <!-- Detail content will be loaded here -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Tourism Locations Management JavaScript
+let currentPage = 1;
+let pageSize = 10;
+let totalPages = 1;
+let currentLocationId = null;
+
+// Initialize page
+document.addEventListener('DOMContentLoaded', function() {
+    loadLocations();
+    loadCategories();
+    loadStatistics();
+});
+
+// Load locations data
+function loadLocations() {
+    const searchTerm = document.getElementById('searchInput').value;
+    const category = document.getElementById('categoryFilter').value;
+    const status = document.getElementById('statusFilter').value;
+    const type = document.getElementById('typeFilter').value;
+    
+    let url = `/api/tourism/admin/locations/?page=${currentPage}&page_size=${pageSize}`;
+    
+    if (searchTerm) url += `&search=${encodeURIComponent(searchTerm)}`;
+    if (category) url += `&category=${category}`;
+    if (status) url += `&is_active=${status}`;
+    if (type) url += `&location_type=${type}`;
+    
+    fetch(url)
+        .then(response => response.json())
+        .then(data => {
+            if (data.results) {
+                displayLocations(data.results);
+                updatePagination(data);
+            }
+        })
+        .catch(error => {
+            console.error('Error loading locations:', error);
+            showNotification('Gagal memuat data lokasi', 'error');
+        });
+}
+
+// Display locations in table
+function displayLocations(locations) {
+    const tbody = document.getElementById('locationsTableBody');
+    tbody.innerHTML = '';
+    
+    locations.forEach(location => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td class="px-6 py-4 whitespace-nowrap">
+                <div class="flex items-center">
+                    <div class="ml-4">
+                        <div class="text-sm font-medium text-gray-900">${location.name}</div>
+                        <div class="text-sm text-gray-500">${location.short_description || ''}</div>
+                    </div>
+                </div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+                <span class="text-sm text-gray-900">${location.category ? location.category.name : '-'}</span>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+                <span class="text-sm text-gray-900">${location.location_type || '-'}</span>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+                <div class="flex items-center">
+                    <span class="text-sm text-gray-900">${location.average_rating || 0}</span>
+                    <i class="fas fa-star text-yellow-400 ml-1"></i>
+                    <span class="text-xs text-gray-500 ml-1">(${location.total_reviews || 0})</span>
+                </div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                    location.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                }">
+                    ${location.is_active ? 'Aktif' : 'Tidak Aktif'}
+                </span>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                ${new Date(location.created_at).toLocaleDateString('id-ID')}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                <button onclick="viewLocation(${location.id})" class="text-blue-600 hover:text-blue-900 mr-3">
+                    <i class="fas fa-eye"></i>
+                </button>
+                <button onclick="editLocation(${location.id})" class="text-indigo-600 hover:text-indigo-900 mr-3">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button onclick="deleteLocation(${location.id})" class="text-red-600 hover:text-red-900">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </td>
+        `;
+        tbody.appendChild(row);
+    });
+}
+
+// Load categories for dropdown
+function loadCategories() {
+    fetch('/api/tourism/admin/categories/')
+        .then(response => response.json())
+        .then(data => {
+            if (data.results) {
+                const categoryFilter = document.getElementById('categoryFilter');
+                const locationCategory = document.getElementById('locationCategory');
+                
+                data.results.forEach(category => {
+                    const option1 = new Option(category.name, category.id);
+                    const option2 = new Option(category.name, category.id);
+                    categoryFilter.appendChild(option1);
+                    locationCategory.appendChild(option2);
+                });
+            }
+        })
+        .catch(error => console.error('Error loading categories:', error));
+}
+
+// Load statistics
+function loadStatistics() {
+    fetch('/api/tourism/stats/')
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('totalLocations').textContent = data.total_locations || 0;
+            document.getElementById('activeLocations').textContent = data.active_locations || 0;
+            document.getElementById('featuredLocations').textContent = data.featured_locations || 0;
+            document.getElementById('totalCategories').textContent = data.total_categories || 0;
+        })
+        .catch(error => console.error('Error loading statistics:', error));
+}
+
+// Modal functions
+function showAddLocationModal() {
+    currentLocationId = null;
+    document.getElementById('modalTitle').textContent = 'Tambah Lokasi Wisata';
+    document.getElementById('locationForm').reset();
+    document.getElementById('locationModal').classList.remove('hidden');
+}
+
+function closeLocationModal() {
+    document.getElementById('locationModal').classList.add('hidden');
+}
+
+function closeLocationDetailModal() {
+    document.getElementById('locationDetailModal').classList.add('hidden');
+}
+
+// CRUD operations
+function editLocation(id) {
+    currentLocationId = id;
+    document.getElementById('modalTitle').textContent = 'Edit Lokasi Wisata';
+    
+    fetch(`/api/tourism/admin/locations/${id}/`)
+        .then(response => response.json())
+        .then(data => {
+            // Populate form with location data
+            document.getElementById('locationName').value = data.name || '';
+            document.getElementById('locationCategory').value = data.category ? data.category.id : '';
+            document.getElementById('locationType').value = data.location_type || '';
+            document.getElementById('locationShortDesc').value = data.short_description || '';
+            document.getElementById('locationAddress').value = data.address || '';
+            document.getElementById('locationLat').value = data.latitude || '';
+            document.getElementById('locationLng').value = data.longitude || '';
+            document.getElementById('locationHours').value = data.opening_hours || '';
+            document.getElementById('locationFee').value = data.entry_fee || '';
+            document.getElementById('locationPhone').value = data.contact_phone || '';
+            document.getElementById('locationEmail').value = data.contact_email || '';
+            document.getElementById('locationWebsite').value = data.website || '';
+            document.getElementById('locationFacilities').value = data.facilities || '';
+            document.getElementById('locationActivities').value = data.activities || '';
+            document.getElementById('locationFeatured').checked = data.featured || false;
+            
+            document.getElementById('locationModal').classList.remove('hidden');
+        })
+        .catch(error => {
+            console.error('Error loading location:', error);
+            showNotification('Gagal memuat data lokasi', 'error');
+        });
+}
+
+function viewLocation(id) {
+    fetch(`/api/tourism/admin/locations/${id}/`)
+        .then(response => response.json())
+        .then(data => {
+            const content = `
+                <div class="space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Nama Lokasi</label>
+                            <p class="mt-1 text-sm text-gray-900">${data.name || '-'}</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Kategori</label>
+                            <p class="mt-1 text-sm text-gray-900">${data.category ? data.category.name : '-'}</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Tipe Lokasi</label>
+                            <p class="mt-1 text-sm text-gray-900">${data.location_type || '-'}</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Rating</label>
+                            <p class="mt-1 text-sm text-gray-900">${data.average_rating || 0} ⭐ (${data.total_reviews || 0} ulasan)</p>
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700">Deskripsi</label>
+                            <p class="mt-1 text-sm text-gray-900">${data.short_description || '-'}</p>
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700">Alamat</label>
+                            <p class="mt-1 text-sm text-gray-900">${data.address || '-'}</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Koordinat</label>
+                            <p class="mt-1 text-sm text-gray-900">${data.latitude || '-'}, ${data.longitude || '-'}</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Jam Operasional</label>
+                            <p class="mt-1 text-sm text-gray-900">${data.opening_hours || '-'}</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Harga Tiket</label>
+                            <p class="mt-1 text-sm text-gray-900">Rp ${data.entry_fee ? Number(data.entry_fee).toLocaleString('id-ID') : '0'}</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Kontak</label>
+                            <p class="mt-1 text-sm text-gray-900">${data.contact_phone || '-'}</p>
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700">Fasilitas</label>
+                            <p class="mt-1 text-sm text-gray-900">${data.facilities || '-'}</p>
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700">Aktivitas</label>
+                            <p class="mt-1 text-sm text-gray-900">${data.activities || '-'}</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('locationDetailContent').innerHTML = content;
+            document.getElementById('locationDetailModal').classList.remove('hidden');
+        })
+        .catch(error => {
+            console.error('Error loading location details:', error);
+            showNotification('Gagal memuat detail lokasi', 'error');
+        });
+}
+
+function deleteLocation(id) {
+    if (confirm('Apakah Anda yakin ingin menghapus lokasi ini?')) {
+        fetch(`/api/tourism/admin/locations/${id}/`, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => {
+            if (response.ok) {
+                showNotification('Lokasi berhasil dihapus', 'success');
+                loadLocations();
+                loadStatistics();
+            } else {
+                throw new Error('Failed to delete location');
+            }
+        })
+        .catch(error => {
+            console.error('Error deleting location:', error);
+            showNotification('Gagal menghapus lokasi', 'error');
+        });
+    }
+}
+
+// Form submission
+document.getElementById('locationForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    const data = Object.fromEntries(formData.entries());
+    
+    // Convert checkbox to boolean
+    data.featured = document.getElementById('locationFeatured').checked;
+    
+    const url = currentLocationId 
+        ? `/api/tourism/admin/locations/${currentLocationId}/`
+        : '/api/tourism/admin/locations/';
+    
+    const method = currentLocationId ? 'PUT' : 'POST';
+    
+    fetch(url, {
+        method: method,
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken'),
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.id || data.success !== false) {
+            showNotification(
+                currentLocationId ? 'Lokasi berhasil diperbarui' : 'Lokasi berhasil ditambahkan',
+                'success'
+            );
+            closeLocationModal();
+            loadLocations();
+            loadStatistics();
+        } else {
+            throw new Error(data.message || 'Failed to save location');
+        }
+    })
+    .catch(error => {
+        console.error('Error saving location:', error);
+        showNotification('Gagal menyimpan lokasi', 'error');
+    });
+});
+
+// Filter and utility functions
+function applyFilters() {
+    currentPage = 1;
+    loadLocations();
+}
+
+function resetFilters() {
+    document.getElementById('searchInput').value = '';
+    document.getElementById('categoryFilter').value = '';
+    document.getElementById('statusFilter').value = '';
+    document.getElementById('typeFilter').value = '';
+    currentPage = 1;
+    loadLocations();
+}
+
+function refreshLocations() {
+    loadLocations();
+    loadStatistics();
+    showNotification('Data berhasil diperbarui', 'success');
+}
+
+function exportLocations() {
+    window.open('/api/tourism/admin/locations/export/', '_blank');
+}
+
+// Pagination
+function updatePagination(data) {
+    totalPages = data.num_pages || 1;
+    
+    document.getElementById('showingStart').textContent = ((currentPage - 1) * pageSize) + 1;
+    document.getElementById('showingEnd').textContent = Math.min(currentPage * pageSize, data.count || 0);
+    document.getElementById('totalRecords').textContent = data.count || 0;
+    
+    document.getElementById('prevPage').disabled = !data.has_previous;
+    document.getElementById('nextPage').disabled = !data.has_next;
+}
+
+function previousPage() {
+    if (currentPage > 1) {
+        currentPage--;
+        loadLocations();
+    }
+}
+
+function nextPage() {
+    if (currentPage < totalPages) {
+        currentPage++;
+        loadLocations();
+    }
+}
+
+// Utility functions
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+function showNotification(message, type = 'info') {
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.className = `fixed top-4 right-4 p-4 rounded-md shadow-lg z-50 ${
+        type === 'success' ? 'bg-green-500 text-white' :
+        type === 'error' ? 'bg-red-500 text-white' :
+        'bg-blue-500 text-white'
+    }`;
+    notification.textContent = message;
+    
+    document.body.appendChild(notification);
+    
+    // Remove after 3 seconds
+    setTimeout(() => {
+        notification.remove();
+    }, 3000);
+}
+</script>
+{% endblock %}

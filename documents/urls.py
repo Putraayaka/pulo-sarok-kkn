@@ -6,6 +6,7 @@ app_name = 'documents'
 urlpatterns = [
     # Documents module view
     path('', views.documents_admin, name='documents_admin'),
+    path('documents-view/', views.documents_view, name='documents_view'),
     
     # DocumentType APIs
     path('types/', views.document_type_list_api, name='documenttype_list'),

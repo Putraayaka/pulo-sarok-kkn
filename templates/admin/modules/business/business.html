@@ -1,0 +1,523 @@
+{% extends 'admin/base.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block extra_css %}
+<link href="{% static 'admin/css/modules.css' %}" rel="stylesheet">
+<style>
+    .stats-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        border-radius: 15px;
+        color: white;
+        transition: transform 0.3s ease;
+    }
+    .stats-card:hover {
+        transform: translateY(-5px);
+    }
+    .stats-card .card-body {
+        padding: 1.5rem;
+    }
+    .stats-icon {
+        font-size: 2.5rem;
+        opacity: 0.8;
+    }
+    .filter-card {
+        border: none;
+        box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        border-radius: 15px;
+    }
+    .table-card {
+        border: none;
+        box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        border-radius: 15px;
+        overflow: hidden;
+    }
+    .btn-action {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.875rem;
+        border-radius: 6px;
+    }
+    .status-badge {
+        font-size: 0.75rem;
+        padding: 0.25rem 0.5rem;
+        border-radius: 12px;
+    }
+    .page-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2rem 0;
+        margin-bottom: 2rem;
+        border-radius: 0 0 20px 20px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="page-header">
+    <div class="container-fluid">
+        <div class="row align-items-center">
+            <div class="col">
+                <h1 class="h3 mb-0">{{ page_title }}</h1>
+                <p class="mb-0 opacity-75">{{ page_subtitle }}</p>
+            </div>
+            <div class="col-auto">
+                <button class="btn btn-light" onclick="refreshData()">
+                    <i class="fas fa-sync-alt me-2"></i>Refresh
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container-fluid">
+    <!-- Filters -->
+    <div class="card filter-card mb-4">
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label">Pencarian</label>
+                    <input type="text" class="form-control" id="searchInput" placeholder="Cari nama bisnis...">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Status</label>
+                    <select class="form-select" id="statusFilter">
+                        <option value="">Semua Status</option>
+                        <option value="active">Aktif</option>
+                        <option value="inactive">Tidak Aktif</option>
+                        <option value="pending">Menunggu</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Jenis Bisnis</label>
+                    <select class="form-select" id="typeFilter">
+                        <option value="">Semua Jenis</option>
+                        <option value="kuliner">Kuliner</option>
+                        <option value="kerajinan">Kerajinan</option>
+                        <option value="jasa">Jasa</option>
+                        <option value="perdagangan">Perdagangan</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Tanggal Dibuat</label>
+                    <input type="date" class="form-control" id="dateFilter">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">&nbsp;</label>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-primary" onclick="applyFilters()">
+                            <i class="fas fa-filter me-2"></i>Filter
+                        </button>
+                        <button class="btn btn-outline-secondary" onclick="clearFilters()">
+                            <i class="fas fa-times me-2"></i>Reset
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card stats-card">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <h5 class="card-title mb-1">Total Bisnis</h5>
+                            <h2 class="mb-0" id="totalBusiness">-</h2>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-store stats-icon"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card stats-card">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <h5 class="card-title mb-1">Bisnis Aktif</h5>
+                            <h2 class="mb-0" id="activeBusiness">-</h2>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-check-circle stats-icon"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card stats-card">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <h5 class="card-title mb-1">Jenis Bisnis</h5>
+                            <h2 class="mb-0" id="businessTypes">-</h2>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-tags stats-icon"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card stats-card">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <h5 class="card-title mb-1">Bisnis Baru</h5>
+                            <h2 class="mb-0" id="newBusiness">-</h2>
+                            <small class="opacity-75">Bulan ini</small>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-plus-circle stats-icon"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Business Table -->
+    <div class="card table-card">
+        <div class="card-header bg-white border-0 py-3">
+            <div class="row align-items-center">
+                <div class="col">
+                    <h5 class="mb-0">Daftar Bisnis</h5>
+                </div>
+                <div class="col-auto">
+                    <div class="btn-group">
+                        <button class="btn btn-success btn-sm" onclick="addBusiness()">
+                            <i class="fas fa-plus me-2"></i>Tambah Bisnis
+                        </button>
+                        <button class="btn btn-outline-primary btn-sm" onclick="exportData()">
+                            <i class="fas fa-download me-2"></i>Export
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>ID</th>
+                            <th>Nama Bisnis</th>
+                            <th>Pemilik</th>
+                            <th>Jenis</th>
+                            <th>Kontak</th>
+                            <th>Status</th>
+                            <th>Tanggal Dibuat</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="businessTableBody">
+                        <tr>
+                            <td colspan="8" class="text-center py-4">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                                <p class="mt-2 mb-0">Memuat data...</p>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="card-footer bg-white border-0">
+            <nav aria-label="Business pagination">
+                <ul class="pagination justify-content-center mb-0" id="pagination">
+                    <!-- Pagination will be generated by JavaScript -->
+                </ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+<!-- Add/Edit Business Modal -->
+<div class="modal fade" id="businessModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="businessModalTitle">Tambah Bisnis</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="businessForm">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Nama Bisnis *</label>
+                            <input type="text" class="form-control" id="businessName" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Nama Pemilik *</label>
+                            <input type="text" class="form-control" id="ownerName" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Jenis Bisnis *</label>
+                            <select class="form-select" id="businessType" required>
+                                <option value="">Pilih Jenis</option>
+                                <option value="kuliner">Kuliner</option>
+                                <option value="kerajinan">Kerajinan</option>
+                                <option value="jasa">Jasa</option>
+                                <option value="perdagangan">Perdagangan</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Nomor Telepon</label>
+                            <input type="tel" class="form-control" id="phoneNumber">
+                        </div>
+                        <div class="col-12 mb-3">
+                            <label class="form-label">Alamat</label>
+                            <textarea class="form-control" id="address" rows="3"></textarea>
+                        </div>
+                        <div class="col-12 mb-3">
+                            <label class="form-label">Deskripsi</label>
+                            <textarea class="form-control" id="description" rows="4"></textarea>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Status</label>
+                            <select class="form-select" id="status">
+                                <option value="active">Aktif</option>
+                                <option value="inactive">Tidak Aktif</option>
+                                <option value="pending">Menunggu</option>
+                            </select>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                <button type="button" class="btn btn-primary" onclick="saveBusiness()">Simpan</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Business Detail Modal -->
+<div class="modal fade" id="businessDetailModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Detail Bisnis</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="businessDetailContent">
+                <!-- Detail content will be loaded here -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let currentPage = 1;
+let currentFilters = {};
+
+// Initialize page
+$(document).ready(function() {
+    loadStatistics();
+    loadBusinessData();
+});
+
+// Load statistics
+function loadStatistics() {
+    // Mock data - replace with actual API calls
+    $('#totalBusiness').text('45');
+    $('#activeBusiness').text('38');
+    $('#businessTypes').text('4');
+    $('#newBusiness').text('7');
+}
+
+// Load business data
+function loadBusinessData(page = 1) {
+    currentPage = page;
+    
+    // Mock data - replace with actual API call
+    const mockData = [
+        {
+            id: 1,
+            name: 'Warung Makan Sederhana',
+            owner: 'Ibu Sari',
+            type: 'Kuliner',
+            phone: '081234567890',
+            status: 'active',
+            created_at: '2024-01-15'
+        },
+        {
+            id: 2,
+            name: 'Kerajinan Bambu Kreatif',
+            owner: 'Pak Budi',
+            type: 'Kerajinan',
+            phone: '081234567891',
+            status: 'active',
+            created_at: '2024-01-10'
+        }
+    ];
+    
+    renderBusinessTable(mockData);
+}
+
+// Render business table
+function renderBusinessTable(data) {
+    const tbody = $('#businessTableBody');
+    tbody.empty();
+    
+    if (data.length === 0) {
+        tbody.append(`
+            <tr>
+                <td colspan="8" class="text-center py-4">
+                    <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                    <p class="text-muted">Tidak ada data bisnis</p>
+                </td>
+            </tr>
+        `);
+        return;
+    }
+    
+    data.forEach(business => {
+        const statusClass = business.status === 'active' ? 'success' : 
+                           business.status === 'inactive' ? 'danger' : 'warning';
+        const statusText = business.status === 'active' ? 'Aktif' : 
+                          business.status === 'inactive' ? 'Tidak Aktif' : 'Menunggu';
+        
+        tbody.append(`
+            <tr>
+                <td>${business.id}</td>
+                <td><strong>${business.name}</strong></td>
+                <td>${business.owner}</td>
+                <td>${business.type}</td>
+                <td>${business.phone || '-'}</td>
+                <td><span class="badge bg-${statusClass} status-badge">${statusText}</span></td>
+                <td>${new Date(business.created_at).toLocaleDateString('id-ID')}</td>
+                <td>
+                    <div class="btn-group">
+                        <button class="btn btn-outline-primary btn-action" onclick="viewBusiness(${business.id})" title="Lihat Detail">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button class="btn btn-outline-warning btn-action" onclick="editBusiness(${business.id})" title="Edit">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-outline-danger btn-action" onclick="deleteBusiness(${business.id})" title="Hapus">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+        `);
+    });
+}
+
+// Filter functions
+function applyFilters() {
+    currentFilters = {
+        search: $('#searchInput').val(),
+        status: $('#statusFilter').val(),
+        type: $('#typeFilter').val(),
+        date: $('#dateFilter').val()
+    };
+    loadBusinessData(1);
+}
+
+function clearFilters() {
+    $('#searchInput').val('');
+    $('#statusFilter').val('');
+    $('#typeFilter').val('');
+    $('#dateFilter').val('');
+    currentFilters = {};
+    loadBusinessData(1);
+}
+
+// Business management functions
+function addBusiness() {
+    $('#businessModalTitle').text('Tambah Bisnis');
+    $('#businessForm')[0].reset();
+    $('#businessModal').modal('show');
+}
+
+function editBusiness(id) {
+    $('#businessModalTitle').text('Edit Bisnis');
+    // Load business data and populate form
+    $('#businessModal').modal('show');
+}
+
+function viewBusiness(id) {
+    // Load and display business details
+    $('#businessDetailContent').html(`
+        <div class="text-center py-4">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-2 mb-0">Memuat detail...</p>
+        </div>
+    `);
+    $('#businessDetailModal').modal('show');
+    
+    // Mock detail loading
+    setTimeout(() => {
+        $('#businessDetailContent').html(`
+            <div class="row">
+                <div class="col-md-6">
+                    <h6>Informasi Bisnis</h6>
+                    <table class="table table-borderless">
+                        <tr><td><strong>Nama:</strong></td><td>Warung Makan Sederhana</td></tr>
+                        <tr><td><strong>Pemilik:</strong></td><td>Ibu Sari</td></tr>
+                        <tr><td><strong>Jenis:</strong></td><td>Kuliner</td></tr>
+                        <tr><td><strong>Telepon:</strong></td><td>081234567890</td></tr>
+                    </table>
+                </div>
+                <div class="col-md-6">
+                    <h6>Detail Lainnya</h6>
+                    <table class="table table-borderless">
+                        <tr><td><strong>Status:</strong></td><td><span class="badge bg-success">Aktif</span></td></tr>
+                        <tr><td><strong>Dibuat:</strong></td><td>15 Januari 2024</td></tr>
+                        <tr><td><strong>Diperbarui:</strong></td><td>20 Januari 2024</td></tr>
+                    </table>
+                </div>
+                <div class="col-12">
+                    <h6>Alamat</h6>
+                    <p>Jl. Raya Desa No. 123, Desa Contoh</p>
+                    <h6>Deskripsi</h6>
+                    <p>Warung makan yang menyediakan berbagai makanan tradisional dengan cita rasa autentik.</p>
+                </div>
+            </div>
+        `);
+    }, 1000);
+}
+
+function deleteBusiness(id) {
+    if (confirm('Apakah Anda yakin ingin menghapus bisnis ini?')) {
+        // Delete business logic
+        loadBusinessData(currentPage);
+    }
+}
+
+function saveBusiness() {
+    // Save business logic
+    $('#businessModal').modal('hide');
+    loadBusinessData(currentPage);
+}
+
+// Utility functions
+function refreshData() {
+    loadStatistics();
+    loadBusinessData(currentPage);
+}
+
+function exportData() {
+    // Export functionality
+    alert('Fitur export akan segera tersedia');
+}
+</script>
+{% endblock %}

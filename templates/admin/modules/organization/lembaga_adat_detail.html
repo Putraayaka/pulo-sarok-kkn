@@ -109,15 +109,15 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <h3 class="text-sm font-medium text-gray-500">Ketua</h3>
-                        <p class="mt-1 text-sm text-gray-900">{{ lembaga.ketua|default:'-' }}</p>
+                        <p class="mt-1 text-sm text-gray-900">{{ lembaga.ketua.name|default:'-' }}</p>
                     </div>
                     <div>
                         <h3 class="text-sm font-medium text-gray-500">Sekretaris</h3>
-                        <p class="mt-1 text-sm text-gray-900">{{ lembaga.sekretaris|default:'-' }}</p>
+                        <p class="mt-1 text-sm text-gray-900">{{ lembaga.sekretaris.name|default:'-' }}</p>
                     </div>
                     <div>
                         <h3 class="text-sm font-medium text-gray-500">Bendahara</h3>
-                        <p class="mt-1 text-sm text-gray-900">{{ lembaga.bendahara|default:'-' }}</p>
+                        <p class="mt-1 text-sm text-gray-900">{{ lembaga.bendahara.name|default:'-' }}</p>
                     </div>
                     <div>
                         <h3 class="text-sm font-medium text-gray-500">Jumlah Anggota</h3>

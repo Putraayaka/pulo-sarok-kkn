@@ -950,7 +950,7 @@ function loadDusunData() {
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${dusun.name}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${dusun.code}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${dusun.area_size || 0}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${dusun.total_residents}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${dusun.population_count}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                             <button onclick="editItem('dusun', ${dusun.id})" class="text-primary-600 hover:text-primary-900 mr-3">
                                 <i class="fas fa-edit"></i>
@@ -1725,6 +1725,48 @@ function showToast(message, type) {
         toast.remove();
     }, 3000);
 }
+
+// Add click outside to close modal functionality
+function setupModalClickOutside() {
+    const modals = ['crud-modal', 'delete-modal'];
+    
+    modals.forEach(modalId => {
+        const modal = document.getElementById(modalId);
+        if (modal) {
+            modal.addEventListener('click', function(e) {
+                // Check if click is on the modal backdrop (not on modal content)
+                if (e.target === modal) {
+                    if (modalId === 'crud-modal') {
+                        closeModal();
+                    } else if (modalId === 'delete-modal') {
+                        closeDeleteModal();
+                    }
+                }
+            });
+        }
+    });
+}
+
+// Add ESC key functionality to close modals
+function setupEscKeyHandler() {
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            // Check which modal is currently open and close it
+            const crudModal = document.getElementById('crud-modal');
+            const deleteModal = document.getElementById('delete-modal');
+            
+            if (crudModal && !crudModal.classList.contains('hidden')) {
+                closeModal();
+            } else if (deleteModal && !deleteModal.classList.contains('hidden')) {
+                closeDeleteModal();
+            }
+        }
+    });
+}
+
+// Initialize modal functionality
+setupModalClickOutside();
+setupEscKeyHandler();
 </script>
 {% endblock %}
 

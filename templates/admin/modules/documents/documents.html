@@ -1,0 +1,602 @@
+{% extends 'admin/base.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .documents-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 10px;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    
+    .documents-header h1 {
+        margin: 0;
+        font-size: 2.5rem;
+        font-weight: 700;
+    }
+    
+    .documents-header p {
+        margin: 0.5rem 0 0 0;
+        opacity: 0.9;
+        font-size: 1.1rem;
+    }
+    
+    .filter-section {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        margin-bottom: 2rem;
+    }
+    
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .stat-card {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        border-left: 4px solid;
+        transition: transform 0.3s ease;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-5px);
+    }
+    
+    .stat-card.total { border-left-color: #3498db; }
+    .stat-card.active { border-left-color: #2ecc71; }
+    .stat-card.types { border-left-color: #f39c12; }
+    .stat-card.recent { border-left-color: #e74c3c; }
+    
+    .stat-number {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin: 0;
+    }
+    
+    .stat-label {
+        color: #666;
+        margin: 0.5rem 0 0 0;
+        font-size: 0.9rem;
+    }
+    
+    .documents-table {
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        overflow: hidden;
+    }
+    
+    .table-header {
+        background: #f8f9fa;
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid #dee2e6;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .btn-group .btn {
+        margin-left: 0.5rem;
+    }
+    
+    .table {
+        margin: 0;
+    }
+    
+    .table th {
+        background: #f8f9fa;
+        border-top: none;
+        font-weight: 600;
+        color: #495057;
+    }
+    
+    .badge {
+        font-size: 0.75rem;
+        padding: 0.375rem 0.75rem;
+    }
+    
+    .action-buttons .btn {
+        padding: 0.25rem 0.5rem;
+        margin: 0 0.125rem;
+        font-size: 0.75rem;
+    }
+    
+    .modal-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+    
+    .form-group label {
+        font-weight: 600;
+        color: #495057;
+    }
+    
+    .loading {
+        text-align: center;
+        padding: 2rem;
+        color: #666;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 3rem;
+        color: #666;
+    }
+    
+    .empty-state i {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="documents-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1><i class="fas fa-file-alt me-3"></i>{{ page_title }}</h1>
+                <p>{{ page_subtitle }}</p>
+            </div>
+            <button class="btn btn-light btn-lg" onclick="refreshData()">
+                <i class="fas fa-sync-alt"></i> Refresh
+            </button>
+        </div>
+    </div>
+    
+    <!-- Filters -->
+    <div class="filter-section">
+        <div class="row">
+            <div class="col-md-3">
+                <div class="form-group">
+                    <label for="searchInput">Pencarian</label>
+                    <input type="text" class="form-control" id="searchInput" placeholder="Cari dokumen...">
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="form-group">
+                    <label for="statusFilter">Status</label>
+                    <select class="form-control" id="statusFilter">
+                        <option value="">Semua Status</option>
+                        <option value="active">Aktif</option>
+                        <option value="archived">Diarsipkan</option>
+                        <option value="draft">Draft</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="form-group">
+                    <label for="typeFilter">Jenis Dokumen</label>
+                    <select class="form-control" id="typeFilter">
+                        <option value="">Semua Jenis</option>
+                        <option value="surat">Surat</option>
+                        <option value="laporan">Laporan</option>
+                        <option value="proposal">Proposal</option>
+                        <option value="sk">SK</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="form-group">
+                    <label for="dateFilter">Tanggal</label>
+                    <input type="date" class="form-control" id="dateFilter">
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="form-group">
+                    <label>&nbsp;</label>
+                    <div class="d-flex">
+                        <button class="btn btn-primary me-2" onclick="applyFilters()">
+                            <i class="fas fa-search"></i> Filter
+                        </button>
+                        <button class="btn btn-secondary" onclick="clearFilters()">
+                            <i class="fas fa-times"></i> Reset
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Statistics -->
+    <div class="stats-grid">
+        <div class="stat-card total">
+            <h3 class="stat-number" id="totalDocuments">0</h3>
+            <p class="stat-label">Total Dokumen</p>
+        </div>
+        <div class="stat-card active">
+            <h3 class="stat-number" id="activeDocuments">0</h3>
+            <p class="stat-label">Dokumen Aktif</p>
+        </div>
+        <div class="stat-card types">
+            <h3 class="stat-number" id="documentTypes">0</h3>
+            <p class="stat-label">Jenis Dokumen</p>
+        </div>
+        <div class="stat-card recent">
+            <h3 class="stat-number" id="recentDocuments">0</h3>
+            <p class="stat-label">Dokumen Baru Bulan Ini</p>
+        </div>
+    </div>
+    
+    <!-- Documents Table -->
+    <div class="documents-table">
+        <div class="table-header">
+            <h5 class="mb-0"><i class="fas fa-list me-2"></i>Daftar Dokumen</h5>
+            <div class="btn-group">
+                <button class="btn btn-success" onclick="addDocument()">
+                    <i class="fas fa-plus"></i> Tambah Dokumen
+                </button>
+                <button class="btn btn-info" onclick="exportData()">
+                    <i class="fas fa-download"></i> Export
+                </button>
+            </div>
+        </div>
+        
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>No</th>
+                        <th>Judul Dokumen</th>
+                        <th>Jenis</th>
+                        <th>Tanggal Dibuat</th>
+                        <th>Status</th>
+                        <th>Ukuran File</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody id="documentsTableBody">
+                    <tr>
+                        <td colspan="7" class="loading">
+                            <i class="fas fa-spinner fa-spin"></i> Memuat data...
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Add/Edit Document Modal -->
+<div class="modal fade" id="documentModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="documentModalTitle">
+                    <i class="fas fa-file-alt me-2"></i>Tambah Dokumen
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="documentForm">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label for="documentTitle">Judul Dokumen *</label>
+                                <input type="text" class="form-control" id="documentTitle" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label for="documentType">Jenis Dokumen *</label>
+                                <select class="form-control" id="documentType" required>
+                                    <option value="">Pilih Jenis</option>
+                                    <option value="surat">Surat</option>
+                                    <option value="laporan">Laporan</option>
+                                    <option value="proposal">Proposal</option>
+                                    <option value="sk">Surat Keputusan</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label for="documentStatus">Status</label>
+                                <select class="form-control" id="documentStatus">
+                                    <option value="active">Aktif</option>
+                                    <option value="archived">Diarsipkan</option>
+                                    <option value="draft">Draft</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label for="documentFile">File Dokumen</label>
+                                <input type="file" class="form-control" id="documentFile" accept=".pdf,.doc,.docx">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group mb-3">
+                        <label for="documentDescription">Deskripsi</label>
+                        <textarea class="form-control" id="documentDescription" rows="3" placeholder="Deskripsi dokumen..."></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                <button type="button" class="btn btn-primary" onclick="saveDocument()">Simpan</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Document Detail Modal -->
+<div class="modal fade" id="documentDetailModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-info-circle me-2"></i>Detail Dokumen
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="documentDetailContent">
+                <!-- Detail content will be loaded here -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let currentDocumentId = null;
+    
+    // Initialize page
+    $(document).ready(function() {
+        loadDocuments();
+        loadStatistics();
+    });
+    
+    // Load documents data
+    function loadDocuments() {
+        $('#documentsTableBody').html('<tr><td colspan="7" class="loading"><i class="fas fa-spinner fa-spin"></i> Memuat data...</td></tr>');
+        
+        // Simulate API call
+        setTimeout(() => {
+            const sampleData = [
+                {
+                    id: 1,
+                    title: 'Surat Keputusan Kepala Desa No. 01/2024',
+                    type: 'SK',
+                    created_date: '2024-01-15',
+                    status: 'active',
+                    file_size: '2.5 MB'
+                },
+                {
+                    id: 2,
+                    title: 'Laporan Keuangan Desa Q1 2024',
+                    type: 'Laporan',
+                    created_date: '2024-01-10',
+                    status: 'active',
+                    file_size: '1.8 MB'
+                },
+                {
+                    id: 3,
+                    title: 'Proposal Pembangunan Jalan Desa',
+                    type: 'Proposal',
+                    created_date: '2024-01-08',
+                    status: 'draft',
+                    file_size: '3.2 MB'
+                }
+            ];
+            
+            displayDocuments(sampleData);
+        }, 1000);
+    }
+    
+    // Display documents in table
+    function displayDocuments(documents) {
+        if (documents.length === 0) {
+            $('#documentsTableBody').html(`
+                <tr>
+                    <td colspan="7" class="empty-state">
+                        <i class="fas fa-file-alt"></i>
+                        <p>Tidak ada dokumen ditemukan</p>
+                    </td>
+                </tr>
+            `);
+            return;
+        }
+        
+        let html = '';
+        documents.forEach((doc, index) => {
+            const statusBadge = getStatusBadge(doc.status);
+            html += `
+                <tr>
+                    <td>${index + 1}</td>
+                    <td>${doc.title}</td>
+                    <td><span class="badge bg-info">${doc.type}</span></td>
+                    <td>${formatDate(doc.created_date)}</td>
+                    <td>${statusBadge}</td>
+                    <td>${doc.file_size}</td>
+                    <td class="action-buttons">
+                        <button class="btn btn-sm btn-info" onclick="viewDocument(${doc.id})" title="Lihat">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button class="btn btn-sm btn-warning" onclick="editDocument(${doc.id})" title="Edit">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-sm btn-success" onclick="downloadDocument(${doc.id})" title="Download">
+                            <i class="fas fa-download"></i>
+                        </button>
+                        <button class="btn btn-sm btn-danger" onclick="deleteDocument(${doc.id})" title="Hapus">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `;
+        });
+        
+        $('#documentsTableBody').html(html);
+    }
+    
+    // Load statistics
+    function loadStatistics() {
+        // Simulate API calls for statistics
+        $('#totalDocuments').text('156');
+        $('#activeDocuments').text('142');
+        $('#documentTypes').text('8');
+        $('#recentDocuments').text('23');
+    }
+    
+    // Get status badge
+    function getStatusBadge(status) {
+        const badges = {
+            'active': '<span class="badge bg-success">Aktif</span>',
+            'archived': '<span class="badge bg-secondary">Diarsipkan</span>',
+            'draft': '<span class="badge bg-warning">Draft</span>'
+        };
+        return badges[status] || '<span class="badge bg-secondary">Unknown</span>';
+    }
+    
+    // Format date
+    function formatDate(dateString) {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('id-ID');
+    }
+    
+    // Add new document
+    function addDocument() {
+        currentDocumentId = null;
+        $('#documentModalTitle').html('<i class="fas fa-plus me-2"></i>Tambah Dokumen');
+        $('#documentForm')[0].reset();
+        $('#documentModal').modal('show');
+    }
+    
+    // Edit document
+    function editDocument(id) {
+        currentDocumentId = id;
+        $('#documentModalTitle').html('<i class="fas fa-edit me-2"></i>Edit Dokumen');
+        
+        // Load document data (simulate API call)
+        // In real implementation, fetch data from API
+        
+        $('#documentModal').modal('show');
+    }
+    
+    // View document detail
+    function viewDocument(id) {
+        $('#documentDetailContent').html('<div class="text-center"><i class="fas fa-spinner fa-spin"></i> Memuat detail...</div>');
+        $('#documentDetailModal').modal('show');
+        
+        // Simulate API call
+        setTimeout(() => {
+            const detailHtml = `
+                <div class="row">
+                    <div class="col-md-6">
+                        <strong>Judul:</strong><br>
+                        Surat Keputusan Kepala Desa No. 01/2024
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Jenis:</strong><br>
+                        Surat Keputusan
+                    </div>
+                </div>
+                <hr>
+                <div class="row">
+                    <div class="col-md-6">
+                        <strong>Status:</strong><br>
+                        <span class="badge bg-success">Aktif</span>
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Ukuran File:</strong><br>
+                        2.5 MB
+                    </div>
+                </div>
+                <hr>
+                <div class="row">
+                    <div class="col-12">
+                        <strong>Deskripsi:</strong><br>
+                        Surat keputusan mengenai penetapan anggaran desa untuk tahun 2024.
+                    </div>
+                </div>
+            `;
+            $('#documentDetailContent').html(detailHtml);
+        }, 500);
+    }
+    
+    // Save document
+    function saveDocument() {
+        // Validate form
+        if (!$('#documentTitle').val() || !$('#documentType').val()) {
+            alert('Mohon lengkapi field yang wajib diisi!');
+            return;
+        }
+        
+        // Simulate API call
+        alert(currentDocumentId ? 'Dokumen berhasil diperbarui!' : 'Dokumen berhasil ditambahkan!');
+        $('#documentModal').modal('hide');
+        loadDocuments();
+        loadStatistics();
+    }
+    
+    // Download document
+    function downloadDocument(id) {
+        alert('Mengunduh dokumen ID: ' + id);
+        // In real implementation, trigger file download
+    }
+    
+    // Delete document
+    function deleteDocument(id) {
+        if (confirm('Apakah Anda yakin ingin menghapus dokumen ini?')) {
+            // Simulate API call
+            alert('Dokumen berhasil dihapus!');
+            loadDocuments();
+            loadStatistics();
+        }
+    }
+    
+    // Apply filters
+    function applyFilters() {
+        const search = $('#searchInput').val();
+        const status = $('#statusFilter').val();
+        const type = $('#typeFilter').val();
+        const date = $('#dateFilter').val();
+        
+        // Simulate filtered data loading
+        loadDocuments();
+    }
+    
+    // Clear filters
+    function clearFilters() {
+        $('#searchInput').val('');
+        $('#statusFilter').val('');
+        $('#typeFilter').val('');
+        $('#dateFilter').val('');
+        loadDocuments();
+    }
+    
+    // Refresh data
+    function refreshData() {
+        loadDocuments();
+        loadStatistics();
+    }
+    
+    // Export data
+    function exportData() {
+        alert('Mengekspor data dokumen...');
+        // In real implementation, trigger export functionality
+    }
+</script>
+{% endblock %}

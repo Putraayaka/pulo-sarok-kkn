@@ -60,7 +60,7 @@
                 <p class="mt-1 text-sm text-gray-600">{% if form.instance.id %}Edit data{% else %}Tambahkan data baru{% endif %} lembaga adat</p>
             </div>
             <div class="mt-4 sm:mt-0">
-                <a href="{% url 'organization:lembaga_adat_list' %}" class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500">
+                <a href="#" id="back-button" class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500">
                     <i class="fas fa-arrow-left mr-2"></i>Kembali
                 </a>
             </div>
@@ -271,6 +271,31 @@
         return cookieValue;
     }
 
+    // Format date for HTML date input
+    function formatDateForInput(dateString) {
+        if (!dateString) return '';
+        
+        // Handle different date formats
+        let date;
+        if (dateString.includes('T')) {
+            // ISO format: 2023-01-01T00:00:00Z
+            date = new Date(dateString);
+        } else if (dateString.includes('-')) {
+            // YYYY-MM-DD format
+            const parts = dateString.split('-');
+            date = new Date(parts[0], parts[1] - 1, parts[2]);
+        } else if (dateString.includes('/')) {
+            // DD/MM/YYYY format
+            const parts = dateString.split('/');
+            date = new Date(parts[2], parts[1] - 1, parts[0]);
+        } else {
+            return dateString; // Return as is if format is unknown
+        }
+        
+        // Format as YYYY-MM-DD for input[type=date]
+        return date.toISOString().split('T')[0];
+    }
+
     // Notification function
     function showNotification(message, type = 'success') {
         const notification = document.createElement('div');
@@ -286,8 +311,37 @@
         }, 3000);
     }
 
+    // Initialize date fields for edit mode
+    function initializeDateFields() {
+        {% if form.instance.id %}
+            // Initialize tanggal_terbentuk field if editing
+            const tanggalTerbentukField = document.getElementById('{{ form.tanggal_terbentuk.id_for_label }}');
+            if (tanggalTerbentukField && '{{ form.instance.tanggal_terbentuk|date:"Y-m-d" }}') {
+                tanggalTerbentukField.value = '{{ form.instance.tanggal_terbentuk|date:"Y-m-d" }}';
+            }
+        {% endif %}
+    }
+
     // Form submission with AJAX
     document.addEventListener('DOMContentLoaded', function() {
+        // Initialize date fields for edit mode
+        initializeDateFields();
+        
+        // Handle back button functionality
+        const backButton = document.getElementById('back-button');
+        if (backButton) {
+            backButton.addEventListener('click', function(e) {
+                e.preventDefault();
+                const storedPage = localStorage.getItem('lembagaAdatCurrentPage');
+                if (storedPage) {
+                    localStorage.removeItem('lembagaAdatCurrentPage');
+                    window.location.href = `/pulosarok/organization/lembaga-adat/?page=${storedPage}`;
+                } else {
+                    window.location.href = '/pulosarok/organization/lembaga-adat/';
+                }
+            });
+        }
+        
         const form = document.getElementById('lembaga-adat-form');
         
         form.addEventListener('submit', function(e) {
@@ -333,7 +387,14 @@
                     if (data.redirect_url) {
                         window.location.href = data.redirect_url;
                     } else {
-                        window.location.href = '/pulosarok/organization/lembaga-adat/';
+                        // Check if there's a stored page to return to
+                        const storedPage = localStorage.getItem('lembagaAdatCurrentPage');
+                        if (storedPage) {
+                            localStorage.removeItem('lembagaAdatCurrentPage');
+                            window.location.href = `/pulosarok/organization/lembaga-adat/?page=${storedPage}`;
+                        } else {
+                            window.location.href = '/pulosarok/organization/lembaga-adat/';
+                        }
                     }
                 } else {
                     // Show error messages

@@ -14,18 +14,6 @@
         </div>
         
         <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 w-full sm:w-auto">
-            <!-- Export/Import Buttons -->
-            <div class="flex space-x-2">
-                <button onclick="exportData()" 
-                        class="flex-1 sm:flex-none px-3 py-2 bg-green-600 text-white text-sm rounded-md hover:bg-green-700 focus:ring-2 focus:ring-green-500">
-                    <i class="fas fa-download mr-1"></i>Export
-                </button>
-                <button onclick="importData()" 
-                        class="flex-1 sm:flex-none px-3 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 focus:ring-2 focus:ring-blue-500">
-                    <i class="fas fa-upload mr-1"></i>Import
-                </button>
-            </div>
-            
             <!-- Add Button -->
             <button onclick="openCreateModal()" 
                     class="w-full sm:w-auto px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 focus:ring-2 focus:ring-primary-500">
@@ -172,8 +160,9 @@
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Jumlah Penduduk</label>
-                        <input type="number" name="population_count" value="0" 
+                        <input type="number" name="population_count" value="0" min="0"
                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500">
+                        <p class="text-xs text-gray-500 mt-1">Masukkan jumlah penduduk di dusun ini</p>
                     </div>
                 </div>
                 <div>
@@ -229,48 +218,7 @@
 </div>
 
 <!-- Import Modal -->
-<div id="import-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full z-50">
-    <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-2/3 lg:w-1/2 shadow-lg rounded-md bg-white">
-        <div class="mt-3">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-lg font-medium text-gray-900">Import Data Dusun</h3>
-                <button onclick="closeImportModal()" class="text-gray-400 hover:text-gray-600">
-                    <i class="fas fa-times text-xl"></i>
-                </button>
-            </div>
-            
-            <form id="import-form" enctype="multipart/form-data">
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">File Excel/CSV</label>
-                        <input type="file" name="file" accept=".xlsx,.xls,.csv" required
-                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500">
-                        <p class="mt-1 text-sm text-gray-500">Format yang didukung: .xlsx, .xls, .csv</p>
-                    </div>
-                    
-                    <div class="bg-yellow-50 p-4 rounded-md">
-                        <h4 class="text-sm font-medium text-yellow-800 mb-2">Format File:</h4>
-                        <p class="text-sm text-yellow-700">Kolom yang diperlukan: name, code, area_size, population_count, description</p>
-                        <button type="button" onclick="downloadTemplate()" class="mt-2 text-sm text-primary-600 hover:text-primary-800">
-                            <i class="fas fa-download mr-1"></i>Download Template
-                        </button>
-                    </div>
-                </div>
-                
-                <div class="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-3 pt-4 border-t mt-6">
-                    <button type="button" onclick="closeImportModal()" 
-                            class="w-full sm:w-auto px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400">
-                        Batal
-                    </button>
-                    <button type="submit" 
-                            class="w-full sm:w-auto px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700">
-                        <i class="fas fa-upload mr-2"></i>Import
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
+
 
 <script>
 // Global variables
@@ -292,37 +240,46 @@ function setupEventListeners() {
         loadData();
     }, 300));
     
-    // Select all checkbox
-    document.getElementById('select-all').addEventListener('change', function() {
-        const checkboxes = document.querySelectorAll('.item-checkbox');
-        checkboxes.forEach(cb => {
-            cb.checked = this.checked;
-            if (this.checked) {
-                selectedItems.add(cb.value);
-            } else {
-                selectedItems.delete(cb.value);
-            }
+    // Select all checkbox - add null check
+    const selectAllCheckbox = document.getElementById('select-all');
+    if (selectAllCheckbox) {
+        selectAllCheckbox.addEventListener('change', function() {
+            const checkboxes = document.querySelectorAll('.item-checkbox');
+            checkboxes.forEach(cb => {
+                cb.checked = this.checked;
+                if (this.checked) {
+                    selectedItems.add(cb.value);
+                } else {
+                    selectedItems.delete(cb.value);
+                }
+            });
+            updateBulkActions();
         });
-        updateBulkActions();
-    });
+    }
     
-    // Form submission
-    document.getElementById('crud-form').addEventListener('submit', function(e) {
-        e.preventDefault();
-        saveData();
-    });
+    // Form submission - add null check
+    const crudForm = document.getElementById('crud-form');
+    if (crudForm) {
+        crudForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            saveData();
+        });
+    }
     
-    // Import form
-    document.getElementById('import-form').addEventListener('submit', function(e) {
-        e.preventDefault();
-        handleImport();
-    });
+    // Import form - add null check
+    const importForm = document.getElementById('import-form');
+    if (importForm) {
+        importForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            handleImport();
+        });
+    }
 }
 
 function loadData() {
     showLoading();
     const search = document.getElementById('search').value;
-    const url = `/api/references/api/dusun/?page=${currentPage}&search=${encodeURIComponent(search)}`;
+    const url = `/pulosarok/references/admin-api/dusun/?page=${currentPage}&search=${encodeURIComponent(search)}`;
     
     fetch(url)
         .then(response => {
@@ -338,13 +295,17 @@ function loadData() {
                 updatePagination(data.pagination || {});
                 hideEmptyState();
             } else {
-                showEmptyState();
+                showEmptyState(search.trim() !== '');
             }
         })
         .catch(error => {
             hideLoading();
             console.error('Error loading data:', error);
-            showToast('Terjadi kesalahan saat memuat data', 'error');
+            if (error.name === 'TypeError' && error.message.includes('fetch')) {
+                showToast('Tidak dapat terhubung ke server untuk memuat data dusun. Periksa koneksi internet Anda.', 'error');
+            } else {
+                showToast('Gagal memuat data dusun. Silakan refresh halaman atau coba lagi.', 'error');
+            }
         });
 }
 
@@ -374,7 +335,7 @@ function renderDesktopView(data) {
                     <div class="text-sm text-gray-900">${item.area_size || 0} Ha</div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
-                    <div class="text-sm text-gray-900">${item.total_residents || 0} orang</div>
+                    <div class="text-sm text-gray-900">${item.population_count || 0} orang</div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
                     <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full ${item.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
@@ -413,7 +374,7 @@ function renderMobileView(data) {
                             <p class="text-sm text-gray-500">Kode: ${item.code}</p>
                             <div class="mt-2 space-y-1">
                                 <p class="text-xs text-gray-600">Luas: ${item.area_size || 0} Ha</p>
-                                <p class="text-xs text-gray-600">Penduduk: ${item.total_residents || 0} orang</p>
+                                <p class="text-xs text-gray-600">Penduduk: ${item.population_count || 0} orang</p>
                                 <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full ${item.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
                                     ${item.is_active ? 'Aktif' : 'Tidak Aktif'}
                                 </span>
@@ -475,7 +436,7 @@ function editItem(id) {
     currentEditId = id;
     document.getElementById('modal-title').textContent = 'Edit Dusun';
     
-    fetch(`{% url "references:dusun_detail" 0 %}`.replace('0', id))
+    fetch(`/pulosarok/references/admin-api/dusun/${id}/`)
         .then(response => response.json())
         .then(data => {
             populateForm(data);
@@ -504,9 +465,16 @@ function saveData() {
     const formData = new FormData(document.getElementById('crud-form'));
     const data = {};
     
+    console.log('=== FRONTEND DEBUG START ===');
+    console.log('DEBUG - FormData entries:');
     for (let [key, value] of formData.entries()) {
+        console.log(`  ${key}: ${value}`);
         data[key] = value;
     }
+    
+    const populationField = document.querySelector('[name="population_count"]');
+    console.log('DEBUG - Population count field exists:', !!populationField);
+    console.log('DEBUG - Population count field value:', populationField ? populationField.value : 'FIELD NOT FOUND');
     
     // Handle checkboxes
     document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
@@ -518,10 +486,19 @@ function saveData() {
     });
     
     const url = currentEditId 
-        ? `/api/references/api/dusun/${currentEditId}/`
-        : `/api/references/api/dusun/create/`;
+        ? `/pulosarok/references/admin-api/dusun/${currentEditId}/`
+        : `/pulosarok/references/admin-api/dusun/create/`;
     
     const method = currentEditId ? 'PUT' : 'POST';
+    
+    console.log('=== FETCH REQUEST DEBUG ===');
+    console.log('Sending data:', data);
+    console.log('Population count value:', data.population_count);
+    console.log('URL:', url);
+    console.log('Method:', method);
+    console.log('Current Edit ID:', currentEditId);
+    console.log('CSRF Token:', getCookie('csrftoken'));
+    console.log('=== MAKING FETCH REQUEST ===');
     
     fetch(url, {
         method: method,
@@ -532,23 +509,46 @@ function saveData() {
         body: JSON.stringify(data)
     })
     .then(response => {
+        console.log('=== FETCH RESPONSE RECEIVED ===');
+        console.log('Response status:', response.status);
+        console.log('Response headers:', response.headers);
+        console.log('Response ok:', response.ok);
+        
         if (!response.ok) {
-            throw new Error(`HTTP ${response.status}`);
+            return response.text().then(text => {
+                console.error('Response error text:', text);
+                throw new Error(`HTTP ${response.status}: ${text}`);
+            });
         }
         return response.json();
     })
     .then(data => {
+        console.log('=== FETCH SUCCESS ===');
+        console.log('Response data:', data);
         if (data.success) {
             closeModal();
             loadData();
             showToast(data.message, 'success');
         } else {
-            showToast('Terjadi kesalahan saat menyimpan data', 'error');
+            showToast(data.message || 'Terjadi kesalahan saat menyimpan data', 'error');
+            if (data.errors) {
+                console.error('Form errors:', data.errors);
+            }
         }
     })
     .catch(error => {
-        console.error('Error saving data:', error);
-        showToast('Terjadi kesalahan sistem', 'error');
+        console.error('=== FETCH ERROR ===');
+        console.error('Error type:', error.name);
+        console.error('Error message:', error.message);
+        console.error('Full error:', error);
+        
+        if (error.name === 'TypeError' && error.message.includes('fetch')) {
+            showToast('Tidak dapat terhubung ke server. Periksa koneksi internet Anda.', 'error');
+        } else if (error.message.includes('timeout')) {
+            showToast('Permintaan timeout. Server membutuhkan waktu terlalu lama untuk merespons.', 'error');
+        } else {
+            showToast('Terjadi kesalahan saat menyimpan data dusun: ' + error.message, 'error');
+        }
     });
 }
 
@@ -560,19 +560,26 @@ function deleteItem(id) {
 function confirmDelete() {
     if (!currentDeleteId) return;
     
-    fetch(`/api/references/api/dusun/${currentDeleteId}/`, {
+    console.log('Deleting item with ID:', currentDeleteId);
+    
+    fetch(`/pulosarok/references/admin-api/dusun/${currentDeleteId}/`, {
         method: 'DELETE',
         headers: {
             'X-CSRFToken': getCookie('csrftoken')
         }
     })
     .then(response => {
+        console.log('Delete response status:', response.status);
         if (!response.ok) {
-            throw new Error(`HTTP ${response.status}`);
+            return response.text().then(text => {
+                console.error('Delete response error:', text);
+                throw new Error(`HTTP ${response.status}: ${text}`);
+            });
         }
         return response.json();
     })
     .then(data => {
+        console.log('Delete response data:', data);
         closeDeleteModal();
         if (data.success) {
             loadData();
@@ -583,7 +590,7 @@ function confirmDelete() {
     })
     .catch(error => {
         console.error('Error deleting item:', error);
-        showToast('Terjadi kesalahan sistem', 'error');
+        showToast('Terjadi kesalahan: ' + error.message, 'error');
     });
 }
 
@@ -592,7 +599,7 @@ function bulkDelete() {
     
     if (confirm(`Apakah Anda yakin ingin menghapus ${selectedItems.size} item?`)) {
         const promises = Array.from(selectedItems).map(id => 
-            fetch(`/api/references/api/dusun/${id}/`, {
+            fetch(`/pulosarok/references/admin-api/dusun/${id}/`, {
                 method: 'DELETE',
                 headers: {
                     'X-CSRFToken': getCookie('csrftoken')
@@ -620,7 +627,7 @@ function bulkDelete() {
 
 // Export/Import Functions
 function exportData() {
-    window.location.href = `/api/references/api/export/dusun/`;
+    window.location.href = `/pulosarok/references/admin-api/export/dusun/`;
     showToast('Export dimulai, file akan diunduh segera', 'success');
 }
 
@@ -631,7 +638,7 @@ function importData() {
 function handleImport() {
     const formData = new FormData(document.getElementById('import-form'));
     
-    fetch(`/api/references/api/import/dusun/`, {
+    fetch(`/pulosarok/references/admin-api/import/dusun/`, {
         method: 'POST',
         headers: {
             'X-CSRFToken': getCookie('csrftoken')
@@ -660,7 +667,7 @@ function handleImport() {
 }
 
 function downloadTemplate() {
-    window.location.href = `/api/references/api/export/dusun/?template=true`;
+    window.location.href = `/pulosarok/references/admin-api/export/dusun/?template=true`;
 }
 
 // Utility Functions
@@ -675,10 +682,7 @@ function closeDeleteModal() {
     currentDeleteId = null;
 }
 
-function closeImportModal() {
-    document.getElementById('import-modal').classList.add('hidden');
-    document.getElementById('import-form').reset();
-}
+
 
 function showLoading() {
     document.getElementById('loading').classList.remove('hidden');
@@ -694,8 +698,32 @@ function hideLoading() {
     document.getElementById('mobile-view').classList.add('block', 'sm:hidden');
 }
 
-function showEmptyState() {
-    document.getElementById('empty-state').classList.remove('hidden');
+function showEmptyState(isSearching = false) {
+    const emptyStateEl = document.getElementById('empty-state');
+    
+    if (isSearching) {
+        emptyStateEl.innerHTML = `
+            <i class="fas fa-search text-4xl text-gray-300 mb-4"></i>
+            <h3 class="text-lg font-medium text-gray-900 mb-2">Tidak ada hasil pencarian</h3>
+            <p class="text-gray-500 mb-4">Coba gunakan kata kunci yang berbeda atau hapus filter pencarian</p>
+            <button onclick="clearSearch()" 
+                    class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700">
+                <i class="fas fa-times mr-2"></i>Hapus Pencarian
+            </button>
+        `;
+    } else {
+        emptyStateEl.innerHTML = `
+            <i class="fas fa-map-marker-alt text-4xl text-gray-300 mb-4"></i>
+            <h3 class="text-lg font-medium text-gray-900 mb-2">Belum ada data dusun</h3>
+            <p class="text-gray-500 mb-4">Mulai dengan menambahkan dusun pertama</p>
+            <button onclick="openCreateModal()" 
+                    class="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700">
+                <i class="fas fa-plus mr-2"></i>Tambah Dusun
+            </button>
+        `;
+    }
+    
+    emptyStateEl.classList.remove('hidden');
     document.getElementById('desktop-view').classList.add('hidden');
     document.getElementById('mobile-view').classList.add('hidden');
 }
@@ -856,5 +884,47 @@ function showToast(message, type) {
 
 // Set up delete confirmation
 document.getElementById('confirm-delete-btn').addEventListener('click', confirmDelete);
+
+// Add click outside to close modal functionality
+function setupModalClickOutside() {
+    const modals = ['crud-modal', 'delete-modal'];
+    
+    modals.forEach(modalId => {
+        const modal = document.getElementById(modalId);
+        if (modal) {
+            modal.addEventListener('click', function(e) {
+                // Check if click is on the modal backdrop (not on modal content)
+                if (e.target === modal) {
+                    if (modalId === 'crud-modal') {
+                        closeModal();
+                    } else if (modalId === 'delete-modal') {
+                        closeDeleteModal();
+                    }
+                }
+            });
+        }
+    });
+}
+
+// Add ESC key functionality to close modals
+function setupEscKeyHandler() {
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            // Check which modal is currently open and close it
+            const crudModal = document.getElementById('crud-modal');
+            const deleteModal = document.getElementById('delete-modal');
+            
+            if (crudModal && !crudModal.classList.contains('hidden')) {
+                closeModal();
+            } else if (deleteModal && !deleteModal.classList.contains('hidden')) {
+                closeDeleteModal();
+            }
+        }
+    });
+}
+
+// Initialize modal functionality
+setupModalClickOutside();
+setupEscKeyHandler();
 </script>
 {% endblock %}

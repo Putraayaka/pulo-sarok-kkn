@@ -14,7 +14,7 @@ import json
 from references.models import Penduduk, Dusun, Lorong
 from organization.models import PerangkatDesa, LembagaAdat, PenggerakPKK, Kepemudaan, KarangTaruna
 from business.models import Business
-# from news.models import News  # Temporarily commented out due to form error
+from news.models import News
 from letters.models import Letter
 from beneficiaries.models import Beneficiary
 from posyandu.models import PosyanduLocation
@@ -67,9 +67,9 @@ def admin_logout_view(request):
 def dashboard_stats_api(request):
     """API endpoint for dashboard statistics"""
     try:
-        # Get statistics
-        total_penduduk = Penduduk.objects.count()
-        total_dusun = Dusun.objects.count()
+        # Get statistics (using is_active filter for consistency)
+        total_penduduk = Penduduk.objects.filter(is_active=True).count()
+        total_dusun = Dusun.objects.filter(is_active=True).count()
         # Count all organization types
         total_perangkat = PerangkatDesa.objects.count()
         total_lembaga_adat = LembagaAdat.objects.count()
@@ -79,27 +79,33 @@ def dashboard_stats_api(request):
         total_organisasi = total_perangkat + total_lembaga_adat + total_pkk + total_kepemudaan + total_karang_taruna
         total_umkm = Business.objects.count()
         
-        # Gender statistics
-        male_count = Penduduk.objects.filter(jenis_kelamin='L').count()
-        female_count = Penduduk.objects.filter(jenis_kelamin='P').count()
+        # Gender statistics (using is_active filter for consistency)
+        male_count = Penduduk.objects.filter(gender='L', is_active=True).count()
+        female_count = Penduduk.objects.filter(gender='P', is_active=True).count()
         
         # Calculate percentages
         total_gender = male_count + female_count
         male_percentage = (male_count / total_gender * 100) if total_gender > 0 else 0
         female_percentage = (female_count / total_gender * 100) if total_gender > 0 else 0
         
-        # Age groups (approximate based on birth date)
+        # Age groups (approximate based on birth date, using is_active filter)
         today = timezone.now().date()
         age_0_17 = Penduduk.objects.filter(
-            tanggal_lahir__gte=today - timedelta(days=17*365)
+            birth_date__gte=today - timedelta(days=17*365),
+            is_active=True
         ).count()
         age_18_60 = Penduduk.objects.filter(
-            tanggal_lahir__lt=today - timedelta(days=17*365),
-            tanggal_lahir__gte=today - timedelta(days=60*365)
+            birth_date__lt=today - timedelta(days=17*365),
+            birth_date__gte=today - timedelta(days=60*365),
+            is_active=True
         ).count()
         age_60_plus = Penduduk.objects.filter(
-            tanggal_lahir__lt=today - timedelta(days=60*365)
+            birth_date__lt=today - timedelta(days=60*365),
+            is_active=True
         ).count()
+        
+        # Calculate average population per dusun
+        avg_population_per_dusun = round(total_penduduk / total_dusun, 0) if total_dusun > 0 else 0
         
         data = {
             'total_penduduk': total_penduduk,
@@ -112,7 +118,8 @@ def dashboard_stats_api(request):
             'female_percentage': round(female_percentage, 1),
             'age_0_17': age_0_17,
             'age_18_60': age_18_60,
-            'age_60_plus': age_60_plus
+            'age_60_plus': age_60_plus,
+            'avg_population_per_dusun': avg_population_per_dusun
         }
         
         return JsonResponse(data)
@@ -279,6 +286,57 @@ def module_view(request, module_name):
         'module_name': module_name
     }
     
+    # Special handling for news module to include statistics
+    if module_name == 'news':
+        print("DEBUG - Accessing news module dashboard")
+        try:
+            from news.models import News, NewsComment, Announcement
+            from django.db.models import Count
+            
+            # Calculate statistics
+            total_news = News.objects.count()
+            published_news = News.objects.filter(status='published').count()
+            draft_news = News.objects.filter(status='draft').count()
+            scheduled_news = News.objects.filter(status='scheduled').count()
+            print(f"DEBUG - News stats: Total={total_news}, Published={published_news}, Draft={draft_news}, Scheduled={scheduled_news}")
+            total_comments = NewsComment.objects.count()
+            total_announcements = Announcement.objects.count()
+            
+            # Get recent news
+            recent_news = News.objects.select_related('author', 'category').order_by('-created_at')[:5]
+            
+            # Get popular news (by views)
+            popular_news = News.objects.select_related('author', 'category').annotate(
+                total_views=Count('view_records')
+            ).order_by('-total_views')[:5]
+            
+            context.update({
+                'total_news': total_news,
+                'published_news': published_news,
+                'draft_news': draft_news,
+                'scheduled_news': scheduled_news,
+                'total_comments': total_comments,
+                'total_announcements': total_announcements,
+                'recent_news': recent_news,
+                'popular_news': popular_news,
+            })
+            
+            print(f"DEBUG - News statistics: total={total_news}, published={published_news}, draft={draft_news}, scheduled={scheduled_news}, comments={total_comments}")
+            
+        except ImportError as e:
+            print(f"DEBUG - Error importing news models: {e}")
+            # Set default values if models can't be imported
+            context.update({
+                'total_news': 0,
+                'published_news': 0,
+                'draft_news': 0,
+                'scheduled_news': 0,
+                'total_comments': 0,
+                'total_announcements': 0,
+                'recent_news': [],
+                'popular_news': [],
+            })
+    
     return render(request, config['template'], context)
 
 @login_required
@@ -342,9 +400,11 @@ def system_info_api(request):
         total_users = CustomUser.objects.count()
         active_users = CustomUser.objects.filter(is_active=True).count()
         
-        # Database size (approximate)
+        # Database size (approximate) - using active records for consistency
         total_records = (
-            Penduduk.objects.count() +
+            Penduduk.objects.filter(is_active=True).count() +
+            Dusun.objects.filter(is_active=True).count() +
+            Lorong.objects.filter(is_active=True).count() +
             PerangkatDesa.objects.count() +
             LembagaAdat.objects.count() +
             PenggerakPKK.objects.count() +
@@ -352,7 +412,10 @@ def system_info_api(request):
             KarangTaruna.objects.count() +
             Business.objects.count() +
             # News.objects.count() +  # Temporarily commented out
-            Letter.objects.count()
+            Letter.objects.count() +
+            Beneficiary.objects.count() +
+            PosyanduLocation.objects.count() +
+            Document.objects.count()
         )
         
         data = {
